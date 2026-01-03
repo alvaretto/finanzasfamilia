@@ -5,12 +5,15 @@ part 'account_model.g.dart';
 
 /// Tipos de cuenta disponibles
 enum AccountType {
-  cash,
-  bank,
-  credit,
-  savings,
-  investment,
-  wallet,
+  cash,        // Efectivo
+  bank,        // Cuenta bancaria
+  wallet,      // Billetera digital (Nequi, Daviplata, PayPal)
+  savings,     // Cuenta de ahorros, CDT
+  investment,  // Inversiones (acciones, cripto, fondos)
+  credit,      // Tarjeta de credito (PASIVO)
+  loan,        // Prestamo (PASIVO)
+  receivable,  // Cuenta por cobrar (dinero prestado a otros)
+  payable,     // Cuenta por pagar (deudas con terceros)
 }
 
 extension AccountTypeExtension on AccountType {
@@ -20,33 +23,60 @@ extension AccountTypeExtension on AccountType {
         return 'Efectivo';
       case AccountType.bank:
         return 'Cuenta Bancaria';
-      case AccountType.credit:
-        return 'Tarjeta de Crédito';
+      case AccountType.wallet:
+        return 'Billetera Digital';
       case AccountType.savings:
         return 'Ahorros';
       case AccountType.investment:
         return 'Inversiones';
-      case AccountType.wallet:
-        return 'Billetera Digital';
+      case AccountType.credit:
+        return 'Tarjeta de Credito';
+      case AccountType.loan:
+        return 'Prestamo';
+      case AccountType.receivable:
+        return 'Cuenta por Cobrar';
+      case AccountType.payable:
+        return 'Cuenta por Pagar';
     }
   }
 
   String get icon {
     switch (this) {
       case AccountType.cash:
-        return 'money';
+        return 'payments';
       case AccountType.bank:
         return 'account_balance';
-      case AccountType.credit:
-        return 'credit_card';
+      case AccountType.wallet:
+        return 'account_balance_wallet';
       case AccountType.savings:
         return 'savings';
       case AccountType.investment:
         return 'trending_up';
-      case AccountType.wallet:
-        return 'account_balance_wallet';
+      case AccountType.credit:
+        return 'credit_card';
+      case AccountType.loan:
+        return 'real_estate_agent';
+      case AccountType.receivable:
+        return 'arrow_circle_down';
+      case AccountType.payable:
+        return 'arrow_circle_up';
     }
   }
+
+  /// Indica si es cuenta de pasivo (resta al patrimonio neto)
+  bool get isLiability {
+    switch (this) {
+      case AccountType.credit:
+      case AccountType.loan:
+      case AccountType.payable:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// Indica si es cuenta de activo (suma al patrimonio neto)
+  bool get isAsset => !isLiability;
 }
 
 /// Modelo de cuenta financiera
@@ -120,8 +150,17 @@ class AccountModel with _$AccountModel {
     return balance;
   }
 
-  /// Indica si es cuenta de deuda (tarjeta de crédito)
-  bool get isDebtAccount => type == AccountType.credit;
+  /// Indica si es cuenta de deuda/pasivo
+  bool get isDebtAccount => type.isLiability;
+
+  /// Balance efectivo para patrimonio neto
+  /// Pasivos restan, activos suman
+  double get netWorthContribution {
+    if (type.isLiability) {
+      return -balance.abs();
+    }
+    return balance;
+  }
 
   /// Convierte a Map para Supabase
   Map<String, dynamic> toSupabaseMap() {

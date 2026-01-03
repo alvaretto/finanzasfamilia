@@ -64,17 +64,43 @@ void main() {
     test('displayName devuelve nombre correcto', () {
       expect(AccountType.bank.displayName, 'Cuenta Bancaria');
       expect(AccountType.savings.displayName, 'Ahorros');
-      expect(AccountType.credit.displayName, 'Tarjeta de Crédito');
+      expect(AccountType.credit.displayName, 'Tarjeta de Credito');
       expect(AccountType.cash.displayName, 'Efectivo');
       expect(AccountType.investment.displayName, 'Inversiones');
+      expect(AccountType.wallet.displayName, 'Billetera Digital');
+      expect(AccountType.loan.displayName, 'Prestamo');
+      expect(AccountType.receivable.displayName, 'Cuenta por Cobrar');
+      expect(AccountType.payable.displayName, 'Cuenta por Pagar');
     });
 
     test('icon devuelve icono correcto', () {
       expect(AccountType.bank.icon, 'account_balance');
       expect(AccountType.savings.icon, 'savings');
       expect(AccountType.credit.icon, 'credit_card');
-      expect(AccountType.cash.icon, 'money');
+      expect(AccountType.cash.icon, 'payments');
       expect(AccountType.investment.icon, 'trending_up');
+      expect(AccountType.wallet.icon, 'account_balance_wallet');
+      expect(AccountType.loan.icon, 'real_estate_agent');
+      expect(AccountType.receivable.icon, 'arrow_circle_down');
+      expect(AccountType.payable.icon, 'arrow_circle_up');
+    });
+
+    test('isLiability identifica pasivos correctamente', () {
+      expect(AccountType.credit.isLiability, true);
+      expect(AccountType.loan.isLiability, true);
+      expect(AccountType.payable.isLiability, true);
+      expect(AccountType.bank.isLiability, false);
+      expect(AccountType.cash.isLiability, false);
+      expect(AccountType.savings.isLiability, false);
+    });
+
+    test('isAsset identifica activos correctamente', () {
+      expect(AccountType.bank.isAsset, true);
+      expect(AccountType.cash.isAsset, true);
+      expect(AccountType.savings.isAsset, true);
+      expect(AccountType.receivable.isAsset, true);
+      expect(AccountType.credit.isAsset, false);
+      expect(AccountType.loan.isAsset, false);
     });
   });
 }

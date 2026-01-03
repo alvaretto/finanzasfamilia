@@ -336,17 +336,23 @@ class AccountDetailSheet extends ConsumerWidget {
   IconData _getAccountIcon(AccountType type) {
     switch (type) {
       case AccountType.cash:
-        return Icons.money;
+        return Icons.payments;
       case AccountType.bank:
         return Icons.account_balance;
-      case AccountType.credit:
-        return Icons.credit_card;
+      case AccountType.wallet:
+        return Icons.account_balance_wallet;
       case AccountType.savings:
         return Icons.savings;
       case AccountType.investment:
         return Icons.trending_up;
-      case AccountType.wallet:
-        return Icons.account_balance_wallet;
+      case AccountType.credit:
+        return Icons.credit_card;
+      case AccountType.loan:
+        return Icons.real_estate_agent;
+      case AccountType.receivable:
+        return Icons.arrow_circle_down;
+      case AccountType.payable:
+        return Icons.arrow_circle_up;
     }
   }
 }

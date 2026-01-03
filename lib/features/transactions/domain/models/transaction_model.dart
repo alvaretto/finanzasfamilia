@@ -10,6 +10,57 @@ enum TransactionType {
   transfer,
 }
 
+/// Metodos de pago disponibles
+enum PaymentMethod {
+  cash,
+  debitCard,
+  creditCard,
+  bankTransfer,
+  digitalWallet,
+  check,
+  other,
+}
+
+extension PaymentMethodExtension on PaymentMethod {
+  String get displayName {
+    switch (this) {
+      case PaymentMethod.cash:
+        return 'Efectivo';
+      case PaymentMethod.debitCard:
+        return 'Tarjeta de Debito';
+      case PaymentMethod.creditCard:
+        return 'Tarjeta de Credito';
+      case PaymentMethod.bankTransfer:
+        return 'Transferencia Bancaria';
+      case PaymentMethod.digitalWallet:
+        return 'Billetera Digital';
+      case PaymentMethod.check:
+        return 'Cheque';
+      case PaymentMethod.other:
+        return 'Otro';
+    }
+  }
+
+  String get icon {
+    switch (this) {
+      case PaymentMethod.cash:
+        return 'payments';
+      case PaymentMethod.debitCard:
+        return 'credit_card';
+      case PaymentMethod.creditCard:
+        return 'credit_score';
+      case PaymentMethod.bankTransfer:
+        return 'account_balance';
+      case PaymentMethod.digitalWallet:
+        return 'account_balance_wallet';
+      case PaymentMethod.check:
+        return 'receipt';
+      case PaymentMethod.other:
+        return 'more_horiz';
+    }
+  }
+}
+
 extension TransactionTypeExtension on TransactionType {
   String get displayName {
     switch (this) {
@@ -46,6 +97,7 @@ class TransactionModel with _$TransactionModel {
     int? categoryId,
     required double amount,
     required TransactionType type,
+    @Default(PaymentMethod.cash) PaymentMethod paymentMethod,
     String? description,
     required DateTime date,
     String? notes,
@@ -72,6 +124,7 @@ class TransactionModel with _$TransactionModel {
     required String accountId,
     required double amount,
     required TransactionType type,
+    PaymentMethod paymentMethod = PaymentMethod.cash,
     int? categoryId,
     String? description,
     DateTime? date,
@@ -87,6 +140,7 @@ class TransactionModel with _$TransactionModel {
       categoryId: categoryId,
       amount: amount.abs(),
       type: type,
+      paymentMethod: paymentMethod,
       description: description,
       date: date ?? DateTime.now(),
       notes: notes,
@@ -123,6 +177,7 @@ class TransactionModel with _$TransactionModel {
       'category_id': categoryId,
       'amount': amount,
       'type': type.name,
+      'payment_method': paymentMethod.name,
       'description': description,
       'date': date.toIso8601String(),
       'notes': notes,
@@ -144,6 +199,12 @@ class TransactionModel with _$TransactionModel {
         (e) => e.name == json['type'],
         orElse: () => TransactionType.expense,
       ),
+      paymentMethod: json['payment_method'] != null
+          ? PaymentMethod.values.firstWhere(
+              (e) => e.name == json['payment_method'],
+              orElse: () => PaymentMethod.cash,
+            )
+          : PaymentMethod.cash,
       description: json['description'] as String?,
       date: DateTime.parse(json['date'] as String),
       notes: json['notes'] as String?,
