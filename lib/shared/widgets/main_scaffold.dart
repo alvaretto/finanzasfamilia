@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/transactions/domain/models/transaction_model.dart';
 import '../../features/transactions/presentation/widgets/add_transaction_sheet.dart';
+import 'connectivity_indicator.dart';
 
 /// Scaffold principal con bottom navigation
-class MainScaffold extends StatelessWidget {
+class MainScaffold extends ConsumerWidget {
   final Widget child;
 
   const MainScaffold({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: child,
+      body: ConnectivityBanner(child: child),
       bottomNavigationBar: const _BottomNavBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

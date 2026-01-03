@@ -1,23 +1,43 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Cliente singleton de Supabase
 class SupabaseClientProvider {
   static SupabaseClient? _client;
+  static bool _isInitialized = false;
+
+  /// Verifica si Supabase esta inicializado
+  static bool get isInitialized => _isInitialized;
 
   /// Inicializa Supabase con las credenciales del .env
   static Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    final url = dotenv.env['SUPABASE_URL'];
+    final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+    if (url == null || url.isEmpty || anonKey == null || anonKey.isEmpty) {
+      debugPrint('Warning: Supabase credentials not found in .env');
+      return;
+    }
+
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL'] ?? '',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+      url: url,
+      anonKey: anonKey,
+      debug: kDebugMode,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
       realtimeClientOptions: const RealtimeClientOptions(
         logLevel: RealtimeLogLevel.info,
       ),
+      storageOptions: const StorageClientOptions(
+        retryAttempts: 3,
+      ),
     );
     _client = Supabase.instance.client;
+    _isInitialized = true;
   }
 
   /// Obtiene el cliente de Supabase
