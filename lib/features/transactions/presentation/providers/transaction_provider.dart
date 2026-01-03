@@ -122,12 +122,12 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
     state = state.copyWith(fromDate: fromDate, toDate: toDate);
     _loadTransactions(userId, fromDate, toDate);
 
-    // Observar conectividad
+    // Observar conectividad (sync silencioso)
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((results) {
       final hasConnection = results.any((r) => r != ConnectivityResult.none);
       if (hasConnection && !state.isSyncing) {
-        syncTransactions();
+        syncTransactions(showError: false);
       }
     });
 
@@ -165,7 +165,7 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
     final results = await Connectivity().checkConnectivity();
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
     if (hasConnection) {
-      await syncTransactions();
+      await syncTransactions(showError: false);
     }
   }
 
@@ -280,7 +280,8 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
   }
 
   /// Sincronizar con servidor
-  Future<void> syncTransactions() async {
+  /// [showError] - Si es false, los errores se ignoran silenciosamente (para syncs automaticos)
+  Future<void> syncTransactions({bool showError = true}) async {
     final userId = _userId;
     if (userId == null || state.isSyncing) return;
 
@@ -290,9 +291,10 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
       await _repository.syncWithSupabase(userId);
       state = state.copyWith(isSyncing: false);
     } catch (e) {
+      // Solo mostrar error si el usuario solicito sync manualmente
       state = state.copyWith(
         isSyncing: false,
-        errorMessage: 'Error de sincronizacion (modo offline activo)',
+        errorMessage: showError ? 'Error de sincronizacion (modo offline activo)' : null,
       );
     }
   }
@@ -301,7 +303,7 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
     final results = await Connectivity().checkConnectivity();
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
     if (hasConnection) {
-      syncTransactions();
+      syncTransactions(showError: false);
     }
   }
 

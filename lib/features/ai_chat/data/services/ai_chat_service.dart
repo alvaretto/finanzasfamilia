@@ -140,29 +140,32 @@ INSTRUCCIONES:
       final errorStr = e.toString().toLowerCase();
 
       // Error de API Key
-      if (errorStr.contains('api_key') || errorStr.contains('apikey') || errorStr.contains('invalid key')) {
+      if (errorStr.contains('api_key') || errorStr.contains('apikey') ||
+          errorStr.contains('invalid key') || errorStr.contains('api key not valid')) {
         return 'Error de configuracion: La clave de API de Gemini no es valida. Contacta al desarrollador.';
+      }
+
+      // Error de cuota/limite (429 o RESOURCE_EXHAUSTED de Google)
+      if (errorStr.contains('429') || errorStr.contains('resource_exhausted') ||
+          errorStr.contains('quota exceeded') || errorStr.contains('rate limit')) {
+        return 'Limite de uso alcanzado. Intenta de nuevo en unos minutos.';
       }
 
       // Error de red/conexion
       if (errorStr.contains('socket') || errorStr.contains('connection') ||
           errorStr.contains('network') || errorStr.contains('timeout') ||
-          errorStr.contains('failed host lookup')) {
+          errorStr.contains('failed host lookup') || errorStr.contains('no address')) {
         return 'Sin conexion a internet. Verifica tu conexion e intenta de nuevo.';
       }
 
-      // Error de cuota/limite
-      if (errorStr.contains('quota') || errorStr.contains('rate') || errorStr.contains('limit')) {
-        return 'Limite de uso alcanzado. Intenta de nuevo en unos minutos.';
-      }
-
       // Error de contenido bloqueado
-      if (errorStr.contains('blocked') || errorStr.contains('safety')) {
+      if (errorStr.contains('blocked') || errorStr.contains('safety') ||
+          errorStr.contains('harm') || errorStr.contains('prohibited')) {
         return 'No puedo responder a esa pregunta. Intenta reformularla.';
       }
 
       // Error generico con mas detalle
-      return 'Hubo un problema al conectar con la IA. Verifica tu conexion a internet e intenta de nuevo.';
+      return 'Hubo un problema al procesar tu solicitud. Por favor intenta de nuevo.';
     }
   }
 

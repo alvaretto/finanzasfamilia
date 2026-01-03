@@ -106,12 +106,12 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
       },
     );
 
-    // Observar conectividad para sincronizar
+    // Observar conectividad para sincronizar (silenciosamente)
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((results) {
       final hasConnection = results.any((r) => r != ConnectivityResult.none);
       if (hasConnection && !state.isSyncing) {
-        syncAccounts();
+        syncAccounts(showError: false);
       }
     });
 
@@ -123,7 +123,7 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
     final results = await Connectivity().checkConnectivity();
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
     if (hasConnection) {
-      await syncAccounts();
+      await syncAccounts(showError: false);
     }
   }
 
@@ -207,7 +207,8 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
   }
 
   /// Sincronizar con servidor
-  Future<void> syncAccounts() async {
+  /// [showError] - Si es false, los errores de sync se ignoran silenciosamente (para syncs automaticos)
+  Future<void> syncAccounts({bool showError = true}) async {
     final userId = _userId;
     if (userId == null || state.isSyncing) return;
 
@@ -217,9 +218,10 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
       await _repository.syncWithSupabase(userId);
       state = state.copyWith(isSyncing: false);
     } catch (e) {
+      // Solo mostrar error si el usuario solicito sync manualmente
       state = state.copyWith(
         isSyncing: false,
-        errorMessage: 'Error de sincronización (modo offline activo)',
+        errorMessage: showError ? 'Error de sincronización (modo offline activo)' : null,
       );
     }
   }
@@ -228,7 +230,7 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
     final results = await Connectivity().checkConnectivity();
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
     if (hasConnection) {
-      syncAccounts();
+      syncAccounts(showError: false);
     }
   }
 

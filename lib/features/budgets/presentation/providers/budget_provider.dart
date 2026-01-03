@@ -101,12 +101,12 @@ class BudgetsNotifier extends StateNotifier<BudgetsState> {
       },
     );
 
-    // Observar conectividad
+    // Observar conectividad (sync silencioso)
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((results) {
       final hasConnection = results.any((r) => r != ConnectivityResult.none);
       if (hasConnection && !state.isSyncing) {
-        syncBudgets();
+        syncBudgets(showError: false);
       }
     });
 
@@ -122,7 +122,7 @@ class BudgetsNotifier extends StateNotifier<BudgetsState> {
     final results = await Connectivity().checkConnectivity();
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
     if (hasConnection) {
-      await syncBudgets();
+      await syncBudgets(showError: false);
     }
   }
 
@@ -190,7 +190,8 @@ class BudgetsNotifier extends StateNotifier<BudgetsState> {
   }
 
   /// Sincronizar con servidor
-  Future<void> syncBudgets() async {
+  /// [showError] - Si es false, los errores se ignoran silenciosamente
+  Future<void> syncBudgets({bool showError = true}) async {
     final userId = _userId;
     if (userId == null || state.isSyncing) return;
 
@@ -202,7 +203,7 @@ class BudgetsNotifier extends StateNotifier<BudgetsState> {
     } catch (e) {
       state = state.copyWith(
         isSyncing: false,
-        errorMessage: 'Error de sincronización (modo offline activo)',
+        errorMessage: showError ? 'Error de sincronización (modo offline activo)' : null,
       );
     }
   }
@@ -211,7 +212,7 @@ class BudgetsNotifier extends StateNotifier<BudgetsState> {
     final results = await Connectivity().checkConnectivity();
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
     if (hasConnection) {
-      syncBudgets();
+      syncBudgets(showError: false);
     }
   }
 
