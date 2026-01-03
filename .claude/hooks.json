@@ -1,0 +1,32 @@
+{
+  "hooks": [
+    {
+      "name": "post-flutter-build",
+      "description": "Notifica cuando termina un build de Flutter",
+      "events": ["PostToolUse"],
+      "matcher": "Bash(flutter build.*)",
+      "script": "echo '✅ Build completado. Verifica el APK en build/app/outputs/'"
+    },
+    {
+      "name": "post-test-run",
+      "description": "Sugiere revisar coverage despues de tests",
+      "events": ["PostToolUse"],
+      "matcher": "Bash(flutter test.*)",
+      "script": "echo '💡 Tip: Ejecuta flutter test --coverage para generar reporte de coverage'"
+    },
+    {
+      "name": "pre-provider-edit",
+      "description": "Recuerda mantener consistencia de sync",
+      "events": ["PreToolUse"],
+      "matcher": "Edit(**/providers/*_provider.dart)",
+      "script": "echo '⚠️ Recuerda: Los syncs automaticos deben usar showError: false'"
+    },
+    {
+      "name": "post-model-edit",
+      "description": "Recuerda regenerar codigo despues de editar modelos",
+      "events": ["PostToolUse"],
+      "matcher": "Edit(**/models/*.dart)",
+      "script": "echo '🔄 Si editaste un modelo freezed, ejecuta: dart run build_runner build'"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 # Finanzas Familiares AS
 
-## Quick Start (Nivel 1)
-
 App de finanzas personales y familiares multiplataforma con soporte offline-first.
+
+## Quick Start
 
 ```bash
 # Desarrollo
@@ -11,192 +11,80 @@ flutter pub get && flutter run
 # Build Android
 flutter build apk --release
 
-# Build Linux Desktop
-flutter build linux --release
+# Tests
+flutter test
 ```
 
-## Arquitectura (Nivel 2)
+## Stack Tecnologico
 
-### Stack Tecnologico
-- **Flutter 3.24+** - Framework multiplataforma (Android, iOS, Linux, Windows, Web)
-- **Drift + SQLite** - Persistencia local offline-first
-- **Riverpod 3.0** - State management reactivo
-- **Supabase** - Backend (Auth, Database, Realtime Sync)
-- **fl_chart** - Visualizaciones financieras
-- **freezed** - Modelos inmutables type-safe
-- **go_router** - Navegacion declarativa
+| Tecnologia | Uso |
+|------------|-----|
+| Flutter 3.24+ | Framework UI multiplataforma |
+| Riverpod 3.0 | State management |
+| Drift + SQLite | Base de datos local |
+| Supabase | Backend (Auth, DB, Sync) |
+| go_router | Navegacion |
+| fl_chart | Graficos |
 
-### Estructura del Proyecto
+## Estructura
+
 ```
 lib/
-├── core/                  # Infraestructura base
-│   ├── database/          # Drift tables y DAOs
-│   ├── network/           # Supabase client, sync service
-│   ├── theme/             # Design system, colores, tipografia
-│   └── utils/             # Helpers, extensions, formatters
-├── features/              # Modulos por funcionalidad
-│   ├── auth/              # Login, registro, biometria
-│   ├── accounts/          # Cuentas bancarias y efectivo
-│   ├── transactions/      # Ingresos, gastos, transferencias
-│   ├── budgets/           # Presupuestos por categoria
-│   ├── goals/             # Metas de ahorro
-│   ├── reports/           # Graficos y analytics
-│   ├── family/            # Gestion familiar compartida
-│   └── settings/          # Configuracion y preferencias
-├── shared/                # Widgets y providers compartidos
-└── main.dart              # Entry point
+├── core/           # Infraestructura (DB, network, theme)
+├── features/       # Modulos por funcionalidad
+│   ├── accounts/   # Cuentas bancarias y efectivo
+│   ├── transactions/  # Ingresos, gastos, transferencias
+│   ├── budgets/    # Presupuestos por categoria
+│   ├── goals/      # Metas de ahorro
+│   └── ai_chat/    # Asistente financiero (Fina)
+└── shared/         # Widgets compartidos
 ```
 
-## Convenciones de Codigo (Nivel 3)
+## Skills Disponibles
 
-### Nombrado
-- **Archivos**: snake_case (`transaction_repository.dart`)
-- **Clases**: PascalCase (`TransactionRepository`)
-- **Variables/funciones**: camelCase (`getMonthlyBalance`)
-- **Constantes**: SCREAMING_SNAKE_CASE (`MAX_BUDGET_CATEGORIES`)
+Claude Code tiene skills especializados para este proyecto:
 
-### Patrones
-- **Repository Pattern**: Abstraccion de fuentes de datos (local/remote)
-- **Notifier Pattern**: Riverpod AsyncNotifier para estado reactivo
-- **Offline-First**: Guardar local primero, sincronizar despues
+| Skill | Descripcion | Cuando usar |
+|-------|-------------|-------------|
+| `sync-management` | Offline-first, sync silencioso | Implementar sync, manejar offline |
+| `financial-analysis` | Calculos financieros | Patrimonio neto, ratios, reportes |
+| `flutter-architecture` | Patrones Flutter + Riverpod | Crear providers, widgets |
+| `testing` | Tests unitarios, widgets, E2E | Crear o ejecutar tests |
 
-### Ejemplo de Feature Structure
+## Comandos Personalizados
+
 ```
-features/transactions/
-├── data/
-│   ├── models/
-│   │   └── transaction_model.dart      # freezed model
-│   ├── repositories/
-│   │   └── transaction_repository.dart # CRUD operations
-│   └── datasources/
-│       ├── transaction_local_ds.dart   # Drift queries
-│       └── transaction_remote_ds.dart  # Supabase API
-├── domain/
-│   └── entities/
-│       └── transaction.dart            # Domain entity
-├── presentation/
-│   ├── providers/
-│   │   └── transactions_provider.dart  # Riverpod notifiers
-│   ├── screens/
-│   │   ├── transactions_screen.dart
-│   │   └── transaction_detail_screen.dart
-│   └── widgets/
-│       ├── transaction_card.dart
-│       └── transaction_form.dart
-└── transactions.dart                   # Barrel export
+/build-apk          # Construir APK de release
+/run-tests          # Ejecutar suite completa de tests
+/sync-check         # Verificar implementacion de sync
+/analyze-finances   # Analizar calculos financieros
 ```
 
-## Base de Datos (Nivel 4)
+## Convenciones
 
-### Esquema Drift (Local)
-```dart
-// Tabla de transacciones
-class Transactions extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().unique()();
-  RealColumn get amount => real()();
-  TextColumn get description => text().nullable()();
-  IntColumn get categoryId => integer().references(Categories, #id)();
-  IntColumn get accountId => integer().references(Accounts, #id)();
-  DateTimeColumn get date => dateTime()();
-  BoolColumn get isIncome => boolean().withDefault(const Constant(false))();
-  BoolColumn get synced => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().nullable()();
-}
-```
+- **Archivos**: snake_case (`account_provider.dart`)
+- **Clases**: PascalCase (`AccountProvider`)
+- **Variables**: camelCase (`accountList`)
+- **Providers**: camelCase + Provider (`accountsProvider`)
 
-### Sincronizacion con Supabase
-- Usar campo `synced` para marcar registros pendientes
-- Timer cada 5 min para sync automatico
-- Sync inmediato cuando hay conexion disponible
-- Conflict resolution: Last Write Wins con timestamps
+## Principios Clave
 
-## Seguridad (Nivel 5)
+1. **Offline-First**: Guardar local primero, sincronizar despues
+2. **Sync Silencioso**: Syncs automaticos no muestran errores (`showError: false`)
+3. **Division por Cero**: Siempre proteger calculos financieros
+4. **Null Safety**: Manejar campos opcionales correctamente
 
-### Encriptacion
-- SQLCipher para base de datos local encriptada
-- flutter_secure_storage para credenciales
-- TLS 1.3 para comunicacion con Supabase
+## Documentacion Detallada
 
-### Autenticacion
-- Supabase Auth con email/password
-- Biometria (huella/face) con local_auth
-- JWT tokens con refresh automatico
-- Row Level Security (RLS) en Supabase
+Para informacion detallada, consulta los skills en `.claude/skills/`:
 
-### Datos Sensibles
-- NUNCA loggear datos financieros
-- Ofuscar montos en screenshots (FLAG_SECURE)
-- Timeout de sesion configurable
+- [Sync Management](.claude/skills/sync-management/SKILL.md)
+- [Financial Analysis](.claude/skills/financial-analysis/SKILL.md)
+- [Flutter Architecture](.claude/skills/flutter-architecture/SKILL.md)
+- [Testing](.claude/skills/testing/SKILL.md)
 
-## Testing (Nivel 6)
+## Estado del Proyecto
 
-### Estructura
-```
-test/
-├── unit/                 # Tests de logica pura
-│   ├── models/
-│   └── repositories/
-├── widget/               # Tests de UI
-│   └── features/
-├── integration/          # Tests end-to-end
-│   └── flows/
-└── mocks/                # Mocks compartidos
-```
-
-### Comandos
-```bash
-# Unit tests
-flutter test
-
-# Con coverage
-flutter test --coverage
-
-# Integration tests
-flutter test integration_test/
-```
-
-## Deployment (Nivel 7)
-
-### Android
-```bash
-# APK release
-flutter build apk --release --target-platform android-arm64
-
-# AAB para Play Store
-flutter build appbundle --release
-```
-
-### Linux Desktop
-```bash
-flutter build linux --release
-# Output en build/linux/x64/release/bundle/
-```
-
-### Variables de Entorno
-```bash
-# .env (no commitear)
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_ANON_KEY=xxx
-ENCRYPTION_KEY=xxx
-```
-
-## Comandos Utiles
-
-```bash
-# Generar codigo (freezed, drift, riverpod)
-dart run build_runner build --delete-conflicting-outputs
-
-# Watch mode
-dart run build_runner watch
-
-# Limpiar y regenerar
-flutter clean && flutter pub get && dart run build_runner build -d
-
-# Analisis estatico
-flutter analyze
-
-# Formatear codigo
-dart format lib/ test/
-```
+- **Version**: 1.2.0
+- **Tests**: 172 pasando (unit, widget, integration, production)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
