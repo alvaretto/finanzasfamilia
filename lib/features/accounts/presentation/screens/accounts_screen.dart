@@ -7,6 +7,7 @@ import '../../domain/models/account_model.dart';
 import '../providers/account_provider.dart';
 import '../widgets/add_account_sheet.dart';
 import '../widgets/account_detail_sheet.dart';
+import '../widgets/first_account_wizard.dart';
 
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
@@ -95,43 +96,10 @@ class AccountsScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
+    return const SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 80,
-              color: AppColors.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Sin cuentas',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Agrega tu primera cuenta para empezar a registrar tus finanzas',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            ElevatedButton.icon(
-              onPressed: () => _showAddAccountSheet(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar Cuenta'),
-            ),
-          ],
-        ),
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: FirstAccountWizard(),
       ),
     );
   }

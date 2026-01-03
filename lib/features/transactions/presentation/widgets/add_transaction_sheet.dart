@@ -607,7 +607,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   Widget _buildNoAccountsMessage(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.5,
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
       ),
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
@@ -623,14 +623,22 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Icon(
-            Icons.account_balance_wallet_outlined,
-            size: 80,
-            color: AppColors.warning.withValues(alpha: 0.7),
+          // Icono animado
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.rocket_launch,
+              size: 56,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Sin cuentas disponibles',
+            'Primero, crea tu cuenta',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -638,40 +646,76 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Para registrar transacciones, primero debes crear al menos una cuenta (efectivo, banco, tarjeta, etc.)',
+            'Solo toma 30 segundos crear tu primera cuenta y empezar a registrar tus finanzas.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.xl),
-          Row(
+          const SizedBox(height: AppSpacing.lg),
+          // Chips de tipos de cuenta
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            alignment: WrapAlignment.center,
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cerrar'),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Navegar a la pantalla de cuentas
-                    // Usamos GoRouter si está disponible
-                    try {
-                      final router = GoRouter.of(context);
-                      router.go('/accounts');
-                    } catch (e) {
-                      // Si no hay router, simplemente cerrar
-                    }
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Crear Cuenta'),
-                ),
-              ),
+              _buildAccountTypeChip(context, 'Efectivo', Icons.payments, const Color(0xFF4CAF50)),
+              _buildAccountTypeChip(context, 'Banco', Icons.account_balance, const Color(0xFF2196F3)),
+              _buildAccountTypeChip(context, 'Tarjeta', Icons.credit_card, const Color(0xFFF44336)),
             ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                try {
+                  GoRouter.of(context).go('/accounts');
+                } catch (e) {
+                  // Si no hay router, simplemente cerrar
+                }
+              },
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text('Crear mi primera cuenta'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Ahora no'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountTypeChip(BuildContext context, String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
