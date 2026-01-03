@@ -1,0 +1,367 @@
+import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../data/repositories/transaction_repository.dart';
+import '../../domain/models/transaction_model.dart';
+
+/// Provider del repositorio
+final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
+  return TransactionRepository();
+});
+
+/// Estado de transacciones
+class TransactionsState {
+  final List<TransactionModel> transactions;
+  final List<CategoryModel> categories;
+  final bool isLoading;
+  final bool isSyncing;
+  final String? errorMessage;
+  final DateTime? fromDate;
+  final DateTime? toDate;
+  final String? filterAccountId;
+  final int? filterCategoryId;
+  final TransactionType? filterType;
+
+  const TransactionsState({
+    this.transactions = const [],
+    this.categories = const [],
+    this.isLoading = false,
+    this.isSyncing = false,
+    this.errorMessage,
+    this.fromDate,
+    this.toDate,
+    this.filterAccountId,
+    this.filterCategoryId,
+    this.filterType,
+  });
+
+  TransactionsState copyWith({
+    List<TransactionModel>? transactions,
+    List<CategoryModel>? categories,
+    bool? isLoading,
+    bool? isSyncing,
+    String? errorMessage,
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? filterAccountId,
+    int? filterCategoryId,
+    TransactionType? filterType,
+  }) {
+    return TransactionsState(
+      transactions: transactions ?? this.transactions,
+      categories: categories ?? this.categories,
+      isLoading: isLoading ?? this.isLoading,
+      isSyncing: isSyncing ?? this.isSyncing,
+      errorMessage: errorMessage,
+      fromDate: fromDate ?? this.fromDate,
+      toDate: toDate ?? this.toDate,
+      filterAccountId: filterAccountId ?? this.filterAccountId,
+      filterCategoryId: filterCategoryId ?? this.filterCategoryId,
+      filterType: filterType ?? this.filterType,
+    );
+  }
+
+  /// Total de ingresos
+  double get totalIncome => transactions
+      .where((t) => t.type == TransactionType.income)
+      .fold(0, (sum, t) => sum + t.amount);
+
+  /// Total de gastos
+  double get totalExpenses => transactions
+      .where((t) => t.type == TransactionType.expense)
+      .fold(0, (sum, t) => sum + t.amount);
+
+  /// Balance del periodo
+  double get periodBalance => totalIncome - totalExpenses;
+
+  /// Categorias de gasto
+  List<CategoryModel> get expenseCategories =>
+      categories.where((c) => c.isExpense).toList();
+
+  /// Categorias de ingreso
+  List<CategoryModel> get incomeCategories =>
+      categories.where((c) => c.isIncome).toList();
+}
+
+/// Notifier de transacciones
+class TransactionsNotifier extends StateNotifier<TransactionsState> {
+  final TransactionRepository _repository;
+  final String? _userId;
+  StreamSubscription<List<TransactionModel>>? _transactionsSubscription;
+  StreamSubscription<List<CategoryModel>>? _categoriesSubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+
+  TransactionsNotifier(this._repository, this._userId)
+      : super(const TransactionsState(isLoading: true)) {
+    if (_userId != null) {
+      _init();
+    } else {
+      // Si no hay usuario, no mostrar loading infinito
+      state = const TransactionsState(isLoading: false);
+    }
+  }
+
+  void _init() {
+    final userId = _userId;
+    if (userId == null) return;
+
+    // Cargar categorias
+    _categoriesSubscription = _repository.watchCategories().listen(
+      (categories) {
+        state = state.copyWith(categories: categories);
+      },
+    );
+
+    // Cargar transacciones (ultimo mes por defecto)
+    final now = DateTime.now();
+    final fromDate = DateTime(now.year, now.month, 1);
+    final toDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+    state = state.copyWith(fromDate: fromDate, toDate: toDate);
+    _loadTransactions(userId, fromDate, toDate);
+
+    // Observar conectividad
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen((results) {
+      final hasConnection = results.any((r) => r != ConnectivityResult.none);
+      if (hasConnection && !state.isSyncing) {
+        syncTransactions();
+      }
+    });
+
+    _checkAndSync();
+  }
+
+  void _loadTransactions(String userId, DateTime? from, DateTime? to) {
+    _transactionsSubscription?.cancel();
+    _transactionsSubscription = _repository
+        .watchTransactions(
+          userId,
+          fromDate: from,
+          toDate: to,
+          accountId: state.filterAccountId,
+          categoryId: state.filterCategoryId,
+          type: state.filterType,
+        )
+        .listen(
+          (transactions) {
+            state = state.copyWith(
+              transactions: transactions,
+              isLoading: false,
+            );
+          },
+          onError: (error) {
+            state = state.copyWith(
+              isLoading: false,
+              errorMessage: 'Error al cargar transacciones: $error',
+            );
+          },
+        );
+  }
+
+  Future<void> _checkAndSync() async {
+    final results = await Connectivity().checkConnectivity();
+    final hasConnection = results.any((r) => r != ConnectivityResult.none);
+    if (hasConnection) {
+      await syncTransactions();
+    }
+  }
+
+  /// Crear transaccion
+  Future<bool> createTransaction({
+    required String accountId,
+    required double amount,
+    required TransactionType type,
+    int? categoryId,
+    String? description,
+    DateTime? date,
+    String? notes,
+    List<String>? tags,
+    String? transferToAccountId,
+  }) async {
+    final userId = _userId;
+    if (userId == null) return false;
+
+    try {
+      final transaction = TransactionModel.create(
+        userId: userId,
+        accountId: accountId,
+        amount: amount,
+        type: type,
+        categoryId: categoryId,
+        description: description,
+        date: date,
+        notes: notes,
+        tags: tags,
+        transferToAccountId: transferToAccountId,
+      );
+
+      await _repository.createTransaction(transaction);
+      _trySyncInBackground();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: 'Error al crear transaccion: $e');
+      return false;
+    }
+  }
+
+  /// Actualizar transaccion
+  Future<bool> updateTransaction(
+    TransactionModel oldTx,
+    TransactionModel newTx,
+  ) async {
+    try {
+      await _repository.updateTransaction(oldTx, newTx);
+      _trySyncInBackground();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: 'Error al actualizar: $e');
+      return false;
+    }
+  }
+
+  /// Eliminar transaccion
+  Future<bool> deleteTransaction(TransactionModel transaction) async {
+    try {
+      await _repository.deleteTransaction(transaction);
+      _trySyncInBackground();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: 'Error al eliminar: $e');
+      return false;
+    }
+  }
+
+  /// Cambiar periodo de fechas
+  void setDateRange(DateTime from, DateTime to) {
+    final userId = _userId;
+    if (userId == null) return;
+
+    state = state.copyWith(
+      fromDate: from,
+      toDate: to,
+      isLoading: true,
+    );
+    _loadTransactions(userId, from, to);
+  }
+
+  /// Aplicar filtros
+  void setFilters({
+    String? accountId,
+    int? categoryId,
+    TransactionType? type,
+  }) {
+    final userId = _userId;
+    if (userId == null) return;
+
+    state = state.copyWith(
+      filterAccountId: accountId,
+      filterCategoryId: categoryId,
+      filterType: type,
+      isLoading: true,
+    );
+    _loadTransactions(userId, state.fromDate, state.toDate);
+  }
+
+  /// Limpiar filtros
+  void clearFilters() {
+    final userId = _userId;
+    if (userId == null) return;
+
+    state = TransactionsState(
+      categories: state.categories,
+      fromDate: state.fromDate,
+      toDate: state.toDate,
+      isLoading: true,
+    );
+    _loadTransactions(userId, state.fromDate, state.toDate);
+  }
+
+  /// Sincronizar con servidor
+  Future<void> syncTransactions() async {
+    final userId = _userId;
+    if (userId == null || state.isSyncing) return;
+
+    state = state.copyWith(isSyncing: true, errorMessage: null);
+
+    try {
+      await _repository.syncWithSupabase(userId);
+      state = state.copyWith(isSyncing: false);
+    } catch (e) {
+      state = state.copyWith(
+        isSyncing: false,
+        errorMessage: 'Error de sincronizacion (modo offline activo)',
+      );
+    }
+  }
+
+  void _trySyncInBackground() async {
+    final results = await Connectivity().checkConnectivity();
+    final hasConnection = results.any((r) => r != ConnectivityResult.none);
+    if (hasConnection) {
+      syncTransactions();
+    }
+  }
+
+  /// Limpiar error
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
+  }
+
+  /// Obtener transaccion por ID
+  TransactionModel? getById(String id) {
+    try {
+      return state.transactions.firstWhere((t) => t.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Obtener categoria por ID
+  CategoryModel? getCategoryById(int id) {
+    try {
+      return state.categories.firstWhere((c) => c.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _transactionsSubscription?.cancel();
+    _categoriesSubscription?.cancel();
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+}
+
+/// Provider principal
+final transactionsProvider =
+    StateNotifierProvider<TransactionsNotifier, TransactionsState>((ref) {
+  final repository = ref.watch(transactionRepositoryProvider);
+  final authState = ref.watch(authProvider);
+  return TransactionsNotifier(repository, authState.user?.id);
+});
+
+/// Provider de categorias
+final categoriesProvider = Provider<List<CategoryModel>>((ref) {
+  return ref.watch(transactionsProvider).categories;
+});
+
+/// Provider de categorias de gasto
+final expenseCategoriesProvider = Provider<List<CategoryModel>>((ref) {
+  return ref.watch(transactionsProvider).expenseCategories;
+});
+
+/// Provider de categorias de ingreso
+final incomeCategoriesProvider = Provider<List<CategoryModel>>((ref) {
+  return ref.watch(transactionsProvider).incomeCategories;
+});
+
+/// Provider de transacciones recientes (para dashboard)
+final recentTransactionsProvider = Provider<List<TransactionModel>>((ref) {
+  final transactions = ref.watch(transactionsProvider).transactions;
+  return transactions.take(5).toList();
+});
