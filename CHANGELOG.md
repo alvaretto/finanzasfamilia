@@ -2,6 +2,108 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.9.4] - 2026-01-04
+
+### Fix Crítico de Sincronización Supabase
+
+Resuelto problema que impedía sincronización de transacciones a Supabase (errores 400).
+
+#### Problema Identificado
+- **Error**: POST 400 en `/rest/v1/transactions`
+- **Causa**: Columna `payment_method` faltante en tabla Supabase
+- **Impacto**: 0 transacciones sincronizadas a pesar de 739+ locales
+- **Logs**: 100+ errores 400 en logs API de Supabase
+
+#### Solución Aplicada
+- **Migración**: `add_payment_method_to_transactions`
+- **Columna Agregada**: `payment_method TEXT DEFAULT 'cash'`
+- **CHECK Constraint**: Valores permitidos: `cash`, `debitCard`, `creditCard`, `bankTransfer`, `digitalWallet`, `check`, `other`
+- **Compatibilidad**: Alineado con enum `PaymentMethod` de Flutter
+
+#### Problemas Adicionales Diagnosticados
+1. **Proyecto Incorrecto**: Inicialmente trabajando en proyecto `gxezvqqbxgycmaqpgfpe` en lugar de `arawzleeiohoyhonisvo`
+2. **RLS Recursivo**: Políticas en `family_members` con recursión infinita (ya corregidas previamente)
+
+#### Resultado
+- ✅ **739 transacciones** sincronizadas exitosamente
+- ✅ **6 cuentas** sincronizadas
+- ✅ Sincronización en tiempo real funcionando
+- ✅ 587 transacciones nuevas sincronizadas en esta sesión
+
+#### Archivos Modificados
+- **Nueva Migración**: `supabase/migrations/add_payment_method_to_transactions.sql`
+- **Esquema Actualizado**: Tabla `transactions` con columna `payment_method`
+
+#### Documentación Agregada
+- `fix_rls_recursion.sql` - Script para corregir políticas RLS recursivas
+- `INSTRUCCIONES_FIX_RLS.md` - Guía paso a paso para arreglar RLS
+
+#### Verificación
+- Proyecto Supabase: `arawzleeiohoyhonisvo` (finanzas-familiares)
+- Región: `us-east-1`
+- Status: `ACTIVE_HEALTHY`
+
+---
+
+## [1.9.3] - 2026-01-04
+
+### Mejoras de Sincronización, CRUD y Testing
+
+#### Sincronización Mejorada
+- **Fix Generador de Datos**: Await explícito para sync de cuenta ANTES de crear transacciones
+- **Batch Sync**: Sincronización cada 10 transacciones para evitar foreign key violations
+- **Sync Final**: Sincronización garantizada al terminar generación de datos
+- **Archivos**: `lib/features/settings/presentation/screens/import_test_data_screen.dart:189-238`
+
+#### CRUD de Cuentas Mejorado
+- **Validación de Eliminación**: Solo permite eliminar cuentas SIN movimientos asociados
+- **Método de Conteo**: `TransactionRepository.countTransactionsByAccount()`
+- **Mensaje de Error**: Informa cantidad de movimientos que impiden eliminación
+- **Archivos Modificados**:
+  - `lib/features/transactions/data/repositories/transaction_repository.dart:226-234`
+  - `lib/features/accounts/presentation/providers/account_provider.dart:187-209`
+  - `lib/features/accounts/presentation/widgets/account_detail_sheet.dart:285-339`
+
+#### Cuenta por Defecto
+- **Cuenta "Préstamos"**: Se crea automáticamente para nuevos usuarios
+- **Tipo**: `AccountType.payable` (Cuenta por Pagar)
+- **Balance Inicial**: 0 COP
+- **Color**: Rojo (#ef4444) para indicar deuda
+- **Archivo**: `lib/features/accounts/presentation/providers/account_provider.dart:129-145`
+
+#### Testing Unificado
+- **Nuevo Skill**: `data-testing` en `.claude/skills/data-testing/SKILL.md`
+- **Escenarios**: In-App (Flutter) + RPA (Python CLI)
+- **Patrones**: Datos colombianos realistas (COP)
+- **Características**: Generación, importación, preview, validación
+
+#### MCP Servers
+- **Context7 Habilitado**: Agregado permanentemente a `.vscode/mcp.json`
+- **Permisos**: Wildcard `mcp__context7__*` en `.claude/settings.local.json`
+- **Supabase MCP**: Mantenido con token permanente
+
+#### Documentación Actualizada
+- **CLAUDE_WORKFLOW.md**:
+  - Agregado skill "data-testing" a todos los diagramas
+  - Actualizado mindmap de skills
+  - Versión 2.1.0
+- **SYNC_DIAGNOSIS.md**: Ya incluye la solución implementada
+- **Skills**: 5 dominios (sync, financial, architecture, testing, data-testing)
+
+#### Archivos Creados
+- `.claude/skills/data-testing/SKILL.md` - Skill unificado de testing
+
+#### Archivos Modificados
+- `lib/features/settings/presentation/screens/import_test_data_screen.dart` - Fix sync
+- `lib/features/transactions/data/repositories/transaction_repository.dart` - Count method
+- `lib/features/accounts/presentation/providers/account_provider.dart` - Validation + Default account
+- `lib/features/accounts/presentation/widgets/account_detail_sheet.dart` - Error handling
+- `.vscode/mcp.json` - Context7 server
+- `.claude/settings.local.json` - Context7 permissions
+- `docs/CLAUDE_WORKFLOW.md` - Diagramas actualizados
+
+---
+
 ## [1.9.2] - 2026-01-04
 
 ### Testing y Documentacion
