@@ -198,6 +198,13 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
         transferToAccountId: transferToAccountId,
       );
 
+      // Validar transacción antes de crear
+      if (!transaction.isValid) {
+        final errors = transaction.validationErrors.join(', ');
+        state = state.copyWith(errorMessage: errors);
+        return false;
+      }
+
       await _repository.createTransaction(transaction);
       _trySyncInBackground();
       return true;
@@ -213,6 +220,13 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
     TransactionModel newTx,
   ) async {
     try {
+      // Validar transacción antes de actualizar
+      if (!newTx.isValid) {
+        final errors = newTx.validationErrors.join(', ');
+        state = state.copyWith(errorMessage: errors);
+        return false;
+      }
+
       await _repository.updateTransaction(oldTx, newTx);
       _trySyncInBackground();
       return true;

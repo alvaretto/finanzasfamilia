@@ -171,6 +171,51 @@ class TransactionModel with _$TransactionModel {
   /// Es transferencia
   bool get isTransfer => type == TransactionType.transfer;
 
+  /// Validaciones de la transaccion
+  /// Retorna lista de errores (vacía si es válida)
+  List<String> get validationErrors {
+    final errors = <String>[];
+
+    // Validación 1: Monto debe ser > 0
+    if (amount <= 0) {
+      errors.add('El monto debe ser mayor a cero');
+    }
+
+    // Validación 2: Fecha no puede ser futura (con margen de 1 día)
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    if (date.isAfter(tomorrow)) {
+      errors.add('La fecha no puede ser futura');
+    }
+
+    // Validación 3: Categoría es obligatoria (excepto para transferencias)
+    if (type != TransactionType.transfer && categoryId == null) {
+      errors.add('Debes seleccionar una categoría');
+    }
+
+    // Validación 4: Transferencias requieren cuenta destino
+    if (type == TransactionType.transfer && transferToAccountId == null) {
+      errors.add('Debes seleccionar la cuenta de destino');
+    }
+
+    // Validación 5: Cuenta destino debe ser diferente a origen
+    if (type == TransactionType.transfer && transferToAccountId == accountId) {
+      errors.add('La cuenta de destino debe ser diferente a la de origen');
+    }
+
+    return errors;
+  }
+
+  /// Indica si la transacción es válida
+  bool get isValid => validationErrors.isEmpty;
+
+  /// Valida la transacción y lanza excepción si hay errores
+  void validate() {
+    final errors = validationErrors;
+    if (errors.isNotEmpty) {
+      throw ArgumentError('Transacción inválida:\n${errors.join('\n')}');
+    }
+  }
+
   /// Convierte a Map para Supabase
   Map<String, dynamic> toSupabaseMap() {
     return {
