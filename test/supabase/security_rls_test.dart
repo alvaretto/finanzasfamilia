@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:finanzas_familiares/core/database/app_database.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
 import 'package:finanzas_familiares/features/accounts/data/repositories/account_repository.dart';
 import 'package:finanzas_familiares/features/transactions/data/repositories/transaction_repository.dart';
@@ -14,9 +15,29 @@ import 'package:finanzas_familiares/features/budgets/domain/models/budget_model.
 import 'package:finanzas_familiares/features/goals/domain/models/goal_model.dart';
 import 'package:uuid/uuid.dart';
 
+import '../helpers/test_helpers.dart';
+
 void main() {
+  late AppDatabase testDb;
+  late AccountRepository accountRepo;
+  late TransactionRepository txRepo;
+  late BudgetRepository budgetRepo;
+  late GoalRepository goalRepo;
+
   setUpAll(() {
-    SupabaseClientProvider.enableTestMode();
+    setupFullTestEnvironment();
+  });
+
+  setUp(() {
+    testDb = createTestDatabase();
+    accountRepo = AccountRepository(database: testDb);
+    txRepo = TransactionRepository(database: testDb, accountRepository: accountRepo);
+    budgetRepo = BudgetRepository(database: testDb);
+    goalRepo = GoalRepository(database: testDb);
+  });
+
+  tearDown(() async {
+    await testDb.close();
   });
 
   tearDownAll(() {
@@ -28,41 +49,39 @@ void main() {
     // TEST 1: Cada usuario tiene su propio espacio de datos
     // =========================================================================
     test('Cuentas se filtran por userId', () async {
-      final repo = AccountRepository();
-
       // Crear cuentas para dos usuarios diferentes
       final user1Id = 'user-1-${DateTime.now().millisecondsSinceEpoch}';
       final user2Id = 'user-2-${DateTime.now().millisecondsSinceEpoch}';
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: user1Id,
         name: 'Cuenta User 1',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 1000.0,
       ));
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: user2Id,
         name: 'Cuenta User 2',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 2000.0,
       ));
 
       // User 1 solo debe ver sus cuentas
-      final user1Accounts = await repo.watchAccounts(user1Id).first;
+      final user1Accounts = await accountRepo.watchAccounts(user1Id).first;
       expect(user1Accounts.every((a) => a.userId == user1Id), true);
       expect(user1Accounts.any((a) => a.userId == user2Id), false);
     });
 
     test('Transacciones se filtran por userId', () async {
-      final repo = TransactionRepository();
-
       final user1Id = 'tx-user-1-${DateTime.now().millisecondsSinceEpoch}';
       final user2Id = 'tx-user-2-${DateTime.now().millisecondsSinceEpoch}';
 
-      await repo.createTransaction(TransactionModel(
+      await txRepo.createTransaction(TransactionModel(
         id: const Uuid().v4(),
         userId: user1Id,
         accountId: 'acc-1',
@@ -72,7 +91,7 @@ void main() {
         date: DateTime.now(),
       ));
 
-      await repo.createTransaction(TransactionModel(
+      await txRepo.createTransaction(TransactionModel(
         id: const Uuid().v4(),
         userId: user2Id,
         accountId: 'acc-2',
@@ -82,7 +101,7 @@ void main() {
         date: DateTime.now(),
       ));
 
-      final user1Txs = await repo.watchTransactions(user1Id).first;
+      final user1Txs = await txRepo.watchTransactions(user1Id).first;
       expect(user1Txs.every((t) => t.userId == user1Id), true);
     });
 
@@ -90,11 +109,9 @@ void main() {
     // TEST 2: Presupuestos aislados por usuario
     // =========================================================================
     test('Presupuestos se filtran por userId', () async {
-      final repo = BudgetRepository();
-
       final userId = 'budget-user-${DateTime.now().millisecondsSinceEpoch}';
 
-      await repo.createBudget(BudgetModel(
+      await budgetRepo.createBudget(BudgetModel(
         id: const Uuid().v4(),
         userId: userId,
         categoryId: 1,
@@ -103,7 +120,7 @@ void main() {
         startDate: DateTime.now(),
       ));
 
-      final budgets = await repo.watchBudgets(userId).first;
+      final budgets = await budgetRepo.watchBudgets(userId).first;
       expect(budgets.every((b) => b.userId == userId), true);
     });
 
@@ -111,11 +128,9 @@ void main() {
     // TEST 3: Metas aisladas por usuario
     // =========================================================================
     test('Metas se filtran por userId', () async {
-      final repo = GoalRepository();
-
       final userId = 'goal-user-${DateTime.now().millisecondsSinceEpoch}';
 
-      await repo.createGoal(GoalModel(
+      await goalRepo.createGoal(GoalModel(
         id: const Uuid().v4(),
         userId: userId,
         name: 'Meta Test',
@@ -123,7 +138,7 @@ void main() {
         currentAmount: 0.0,
       ));
 
-      final goals = await repo.watchGoals(userId).first;
+      final goals = await goalRepo.watchGoals(userId).first;
       expect(goals.every((g) => g.userId == userId), true);
     });
   });
@@ -133,18 +148,17 @@ void main() {
     // TEST 4: Datos con userId invalido no se crean
     // =========================================================================
     test('userId vacio es rechazado', () async {
-      final repo = AccountRepository();
-
       final account = AccountModel(
         id: const Uuid().v4(),
         userId: '', // userId vacio
         name: 'Invalid Account',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 100.0,
       );
 
       // Debe fallar o crear con userId vacio (validar en UI/repo)
-      final created = await repo.createAccount(account);
+      final created = await accountRepo.createAccount(account);
       expect(created.userId, isEmpty);
     });
 
@@ -152,17 +166,16 @@ void main() {
     // TEST 5: Montos negativos en cuentas de activos
     // =========================================================================
     test('Balance negativo es permitido (para deudas)', () async {
-      final repo = AccountRepository();
-
       final account = AccountModel(
         id: const Uuid().v4(),
         userId: 'negative-test',
         name: 'Tarjeta Credito',
         type: AccountType.credit,
+        currency: 'COP',
         balance: -5000.0, // Deuda
       );
 
-      final created = await repo.createAccount(account);
+      final created = await accountRepo.createAccount(account);
       expect(created.balance, -5000.0);
     });
 
@@ -170,8 +183,6 @@ void main() {
     // TEST 6: Transacciones con monto cero
     // =========================================================================
     test('Transaccion con monto cero es permitida', () async {
-      final repo = TransactionRepository();
-
       final tx = TransactionModel(
         id: const Uuid().v4(),
         userId: 'zero-amount-test',
@@ -182,7 +193,7 @@ void main() {
         date: DateTime.now(),
       );
 
-      final created = await repo.createTransaction(tx);
+      final created = await txRepo.createTransaction(tx);
       expect(created.amount, 0.0);
     });
   });
@@ -192,12 +203,11 @@ void main() {
     // TEST 7: Sync solo sincroniza datos del usuario actual
     // =========================================================================
     test('syncWithSupabase recibe userId especifico', () async {
-      final repo = AccountRepository();
       final userId = 'sync-security-test';
 
       // La funcion sync requiere userId explicito
       await expectLater(
-        repo.syncWithSupabase(userId),
+        accountRepo.syncWithSupabase(userId),
         completes,
       );
     });
@@ -206,19 +216,18 @@ void main() {
     // TEST 8: getUnsyncedAccounts retorna solo del usuario
     // =========================================================================
     test('getUnsyncedAccounts retorna datos correctos', () async {
-      final repo = AccountRepository();
-
       final userId = 'unsynced-security-${DateTime.now().millisecondsSinceEpoch}';
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: userId,
         name: 'Unsynced Account',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 100.0,
       ));
 
-      final unsynced = await repo.getUnsyncedAccounts();
+      final unsynced = await accountRepo.getUnsyncedAccounts();
       // Debe retornar al menos la cuenta creada
       expect(unsynced.isNotEmpty, true);
     });
@@ -229,8 +238,6 @@ void main() {
     // TEST 9: Caracteres especiales en nombres
     // =========================================================================
     test('Nombres con caracteres especiales son manejados', () async {
-      final repo = AccountRepository();
-
       final specialNames = [
         "Cuenta con 'comillas'",
         'Cuenta con "dobles"',
@@ -245,10 +252,11 @@ void main() {
           userId: 'special-chars-test',
           name: name,
           type: AccountType.bank,
+          currency: 'COP',
           balance: 100.0,
         );
 
-        final created = await repo.createAccount(account);
+        final created = await accountRepo.createAccount(account);
         expect(created.name, name, reason: 'Nombre debe preservarse: $name');
       }
     });
@@ -257,8 +265,6 @@ void main() {
     // TEST 10: Descripciones con contenido potencialmente peligroso
     // =========================================================================
     test('Descripciones con scripts son almacenadas como texto', () async {
-      final repo = TransactionRepository();
-
       final dangerousDescriptions = [
         '<script>alert("XSS")</script>',
         'javascript:void(0)',
@@ -277,7 +283,7 @@ void main() {
           date: DateTime.now(),
         );
 
-        final created = await repo.createTransaction(tx);
+        final created = await txRepo.createTransaction(tx);
         expect(created.description, desc,
             reason: 'Descripcion debe preservarse como texto plano');
       }

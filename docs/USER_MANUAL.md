@@ -329,6 +329,7 @@ Si tienes problemas o sugerencias:
 
 ---
 
-**Version**: 1.9.0
+**Version**: 1.9.2
 **Moneda por defecto**: COP (Peso Colombiano)
-**Ultima actualizacion**: 2026-01-03
+**Monedas soportadas**: COP, USD, EUR, MXN, ARS, PEN, CLP, BRL
+**Ultima actualizacion**: 2026-01-04

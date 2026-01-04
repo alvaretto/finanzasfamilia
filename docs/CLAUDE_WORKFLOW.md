@@ -360,6 +360,100 @@ flowchart TB
 
 ---
 
+## Flujo /full-workflow Completo
+
+```mermaid
+flowchart TD
+    START(["/full-workflow"]) --> DOCS["1. Actualizar Docs"]
+    DOCS --> |README, Manual, Walkthrough| DEPS["2. flutter pub get"]
+    DEPS --> RUNNER["3. dart run build_runner build -d"]
+    RUNNER --> ANALYZE["4. flutter analyze"]
+    ANALYZE --> TEST_CRIT["5. Tests Criticos"]
+
+    TEST_CRIT --> CRIT_OK{Pasaron?}
+    CRIT_OK --> |Si| TEST_ALL["6. Tests Completos"]
+    CRIT_OK --> |No| FIX["Corregir"]
+    FIX --> TEST_CRIT
+
+    TEST_ALL --> BUILD["7. flutter build apk --release"]
+    BUILD --> COPY["8. cp APK ~/Descargas/"]
+    COPY --> GIT_ADD["9. git add -A"]
+    GIT_ADD --> GIT_COMMIT["10. git commit -m 'detallado'"]
+    GIT_COMMIT --> GIT_PUSH["11. git push --force"]
+    GIT_PUSH --> DEPLOY["12. adb install -r"]
+    DEPLOY --> VERIFY["13. Verificar App"]
+    VERIFY --> REPORT(["Reporte Final"])
+
+    subgraph Tests Criticos
+        TC1[unit/]
+        TC2[widget/]
+        TC3[integration/]
+    end
+
+    subgraph Tests Adicionales
+        TA1[pwa/]
+        TA2[performance/]
+        TA3[supabase/]
+    end
+
+    TEST_CRIT --> TC1
+    TEST_CRIT --> TC2
+    TEST_CRIT --> TC3
+    TEST_ALL --> TA1
+    TEST_ALL --> TA2
+    TEST_ALL --> TA3
+```
+
+## Mapa de Dependencias de Skills
+
+```mermaid
+mindmap
+    root((Skills))
+        sync-management
+            Offline-First Strategy
+            Sync Silencioso
+            Conflict Resolution
+            Queue Management
+        financial-analysis
+            Balance Calculations
+            Financial Ratios
+            Category Management
+            Amount Validation
+        flutter-architecture
+            Repository Pattern
+            Riverpod Providers
+            GoRouter Navigation
+            State Management
+        testing
+            Unit Tests
+            Widget Tests
+            Integration Tests
+            PWA/Offline Tests
+            Supabase/RLS Tests
+            Performance Tests
+```
+
+## Ciclo de Vida de Release
+
+```mermaid
+stateDiagram-v2
+    [*] --> Development: Nuevo feature/fix
+
+    Development --> Testing: Codigo listo
+    Testing --> Development: Tests fallan
+    Testing --> Build: Tests pasan
+
+    Build --> Documentation: APK generado
+    Documentation --> Git: Docs actualizados
+    Git --> Deploy: Push exitoso
+
+    Deploy --> Verification: Instalado
+    Verification --> [*]: Release completo
+    Verification --> Development: Problemas encontrados
+```
+
+---
+
 ## Leyenda
 
 | Simbolo | Significado |
@@ -372,5 +466,8 @@ flowchart TB
 
 ---
 
-**Version**: 1.8.0
-**Ultima actualizacion**: 2026-01-03
+**Version**: 2.0.0
+**Ultima actualizacion**: 2026-01-04
+**Tests**: 500+
+**Skills**: 4 dominios
+**Commands**: 11

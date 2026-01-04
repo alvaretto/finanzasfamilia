@@ -2,13 +2,86 @@
 /// Configuración base para tests que requieren GoRouter y providers
 library;
 
+import 'package:drift/drift.dart' hide Column;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:finanzas_familiares/core/database/app_database.dart';
 import 'package:finanzas_familiares/core/theme/app_theme.dart';
 import 'package:finanzas_familiares/shared/widgets/main_scaffold.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
+
+// ============================================================================
+// DRIFT DATABASE TESTING UTILITIES
+// ============================================================================
+
+/// Crea una base de datos in-memory para tests
+/// Siguiendo la documentación oficial de Drift: https://drift.simonbinder.eu/testing/
+AppDatabase createTestDatabase() {
+  return AppDatabase(
+    DatabaseConnection(
+      NativeDatabase.memory(),
+      closeStreamsSynchronously: true,
+    ),
+  );
+}
+
+/// Clase para gestionar el ciclo de vida de la base de datos en tests
+class TestDatabaseManager {
+  AppDatabase? _database;
+
+  /// Obtiene la base de datos de test (crea una nueva si no existe)
+  AppDatabase get database {
+    _database ??= createTestDatabase();
+    return _database!;
+  }
+
+  /// Cierra y limpia la base de datos
+  Future<void> close() async {
+    await _database?.close();
+    _database = null;
+  }
+
+  /// Reinicia la base de datos (cierra la actual y crea una nueva)
+  Future<AppDatabase> reset() async {
+    await close();
+    return database;
+  }
+}
+
+/// Singleton global para tests que necesitan compartir la base de datos
+final testDatabaseManager = TestDatabaseManager();
+
+/// Setup para tests que usan Drift (llamar en setUp)
+Future<AppDatabase> setupDriftTest() async {
+  return testDatabaseManager.database;
+}
+
+/// Teardown para tests que usan Drift (llamar en tearDown)
+Future<void> tearDownDriftTest() async {
+  await testDatabaseManager.close();
+}
+
+// ============================================================================
+// FLUTTER BINDING UTILITIES
+// ============================================================================
+
+/// Inicializa los bindings de Flutter para tests
+/// Debe llamarse al inicio del main() de cada archivo de test
+void initializeTestBindings() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+}
+
+/// Setup completo para tests (Supabase + bindings + path_provider mock)
+void setupFullTestEnvironment() {
+  initializeTestBindings();
+  setupMockPathProvider();
+  SupabaseClientProvider.enableTestMode();
+}
 
 /// Configura el entorno de tests (llamar en setUpAll)
 void setupTestEnvironment() {
@@ -18,6 +91,40 @@ void setupTestEnvironment() {
 /// Limpia el entorno de tests (llamar en tearDownAll)
 void tearDownTestEnvironment() {
   SupabaseClientProvider.reset();
+}
+
+// ============================================================================
+// MOCK PATH PROVIDER
+// ============================================================================
+
+/// Configura un mock para path_provider en tests
+/// Esto evita el error "Binding has not yet been initialized"
+void setupMockPathProvider() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  const channel = MethodChannel('plugins.flutter.io/path_provider');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+    switch (methodCall.method) {
+      case 'getTemporaryDirectory':
+        return '/tmp';
+      case 'getApplicationDocumentsDirectory':
+        return '/tmp/documents';
+      case 'getApplicationSupportDirectory':
+        return '/tmp/support';
+      case 'getExternalStorageDirectory':
+        return '/tmp/external';
+      default:
+        return null;
+    }
+  });
+}
+
+/// Limpia el mock de path_provider
+void tearDownMockPathProvider() {
+  const channel = MethodChannel('plugins.flutter.io/path_provider');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(channel, null);
 }
 
 /// Crea un widget wrapper para tests que requieren GoRouter

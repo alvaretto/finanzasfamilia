@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:finanzas_familiares/core/database/app_database.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
 import 'package:finanzas_familiares/features/accounts/data/repositories/account_repository.dart';
 import 'package:finanzas_familiares/features/transactions/data/repositories/transaction_repository.dart';
@@ -10,9 +11,25 @@ import 'package:finanzas_familiares/features/accounts/domain/models/account_mode
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:uuid/uuid.dart';
 
+import '../helpers/test_helpers.dart';
+
 void main() {
+  late AppDatabase testDb;
+  late AccountRepository accountRepo;
+  late TransactionRepository txRepo;
+
   setUpAll(() {
-    SupabaseClientProvider.enableTestMode();
+    setupFullTestEnvironment();
+  });
+
+  setUp(() {
+    testDb = createTestDatabase();
+    accountRepo = AccountRepository(database: testDb);
+    txRepo = TransactionRepository(database: testDb, accountRepository: accountRepo);
+  });
+
+  tearDown(() async {
+    await testDb.close();
   });
 
   tearDownAll(() {
@@ -24,14 +41,14 @@ void main() {
     // TEST 1: Creacion de cuenta < 100ms
     // =========================================================================
     test('Crear cuenta completa en < 100ms', () async {
-      final repo = AccountRepository();
       final stopwatch = Stopwatch()..start();
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: 'perf-test',
         name: 'Performance Account',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 1000.0,
       ));
 
@@ -44,19 +61,19 @@ void main() {
     // TEST 2: Lectura de cuenta < 50ms
     // =========================================================================
     test('Leer cuenta por ID en < 50ms', () async {
-      final repo = AccountRepository();
       final id = const Uuid().v4();
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: id,
         userId: 'read-perf-test',
         name: 'Read Performance',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 500.0,
       ));
 
       final stopwatch = Stopwatch()..start();
-      await repo.getAccountById(id);
+      await accountRepo.getAccountById(id);
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(50),
@@ -67,12 +84,11 @@ void main() {
     // TEST 3: Query de transacciones < 200ms
     // =========================================================================
     test('Obtener transacciones de usuario en < 200ms', () async {
-      final repo = TransactionRepository();
       final userId = 'tx-perf-${DateTime.now().millisecondsSinceEpoch}';
 
       // Crear algunas transacciones primero
       for (int i = 0; i < 20; i++) {
-        await repo.createTransaction(TransactionModel(
+        await txRepo.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -84,7 +100,7 @@ void main() {
       }
 
       final stopwatch = Stopwatch()..start();
-      await repo.watchTransactions(userId).first;
+      await txRepo.watchTransactions(userId).first;
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(200),
@@ -97,13 +113,12 @@ void main() {
     // TEST 4: Insertar 100 transacciones < 2s
     // =========================================================================
     test('Insertar 100 transacciones en < 2 segundos', () async {
-      final repo = TransactionRepository();
       final userId = 'bulk-${DateTime.now().millisecondsSinceEpoch}';
 
       final stopwatch = Stopwatch()..start();
 
       for (int i = 0; i < 100; i++) {
-        await repo.createTransaction(TransactionModel(
+        await txRepo.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -123,13 +138,12 @@ void main() {
     // TEST 5: Insertar 100 transacciones en paralelo < 3s
     // =========================================================================
     test('Insertar 100 transacciones en paralelo < 3s', () async {
-      final repo = TransactionRepository();
       final userId = 'parallel-${DateTime.now().millisecondsSinceEpoch}';
 
       final stopwatch = Stopwatch()..start();
 
       final futures = List.generate(100, (i) {
-        return repo.createTransaction(TransactionModel(
+        return txRepo.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -153,13 +167,12 @@ void main() {
     // TEST 6: Filtrar transacciones por fecha < 100ms
     // =========================================================================
     test('Filtrar por rango de fechas es eficiente', () async {
-      final repo = TransactionRepository();
       final userId = 'filter-${DateTime.now().millisecondsSinceEpoch}';
 
       // Crear transacciones en diferentes fechas
       final now = DateTime.now();
       for (int i = 0; i < 50; i++) {
-        await repo.createTransaction(TransactionModel(
+        await txRepo.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -171,7 +184,7 @@ void main() {
       }
 
       final stopwatch = Stopwatch()..start();
-      await repo.watchTransactions(userId).first;
+      await txRepo.watchTransactions(userId).first;
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(100),
@@ -182,22 +195,22 @@ void main() {
     // TEST 7: Calcular balance total < 50ms
     // =========================================================================
     test('Calcular balance total es eficiente', () async {
-      final repo = AccountRepository();
       final userId = 'balance-${DateTime.now().millisecondsSinceEpoch}';
 
       // Crear varias cuentas
       for (int i = 0; i < 10; i++) {
-        await repo.createAccount(AccountModel(
+        await accountRepo.createAccount(AccountModel(
           id: const Uuid().v4(),
           userId: userId,
           name: 'Account $i',
           type: AccountType.bank,
+          currency: 'COP',
           balance: 1000.0 * i,
         ));
       }
 
       final stopwatch = Stopwatch()..start();
-      await repo.getTotalBalance(userId);
+      await accountRepo.getTotalBalance(userId);
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(50),
@@ -210,7 +223,6 @@ void main() {
     // TEST 8: No memory leak en operaciones repetidas
     // =========================================================================
     test('1000 operaciones no causan memory leak', () async {
-      final repo = TransactionRepository();
       final userId = 'memory-${DateTime.now().millisecondsSinceEpoch}';
 
       // Ejecutar 1000 operaciones
@@ -224,11 +236,11 @@ void main() {
           description: 'Memory test $i',
           date: DateTime.now(),
         );
-        await repo.createTransaction(tx);
+        await txRepo.createTransaction(tx);
 
         // Cada 100, leer para simular uso real
         if (i % 100 == 0) {
-          await repo.watchTransactions(userId).first;
+          await txRepo.watchTransactions(userId).first;
         }
       }
 
@@ -240,26 +252,26 @@ void main() {
     // TEST 9: Streams no acumulan listeners
     // =========================================================================
     test('Multiples subscriptions a streams funcionan', () async {
-      final repo = AccountRepository();
       final userId = 'stream-${DateTime.now().millisecondsSinceEpoch}';
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: userId,
         name: 'Stream Test',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 100.0,
       ));
 
       // Crear y cancelar multiples subscriptions
       for (int i = 0; i < 50; i++) {
-        final subscription = repo.watchAccounts(userId).listen((_) {});
+        final subscription = accountRepo.watchAccounts(userId).listen((_) {});
         await Future.delayed(const Duration(milliseconds: 10));
         await subscription.cancel();
       }
 
       // Verificar que aun funciona
-      final accounts = await repo.watchAccounts(userId).first;
+      final accounts = await accountRepo.watchAccounts(userId).first;
       expect(accounts.isNotEmpty, true);
     });
   });
@@ -269,8 +281,6 @@ void main() {
     // TEST 10: Operaciones concurrentes no bloquean
     // =========================================================================
     test('Lecturas y escrituras concurrentes funcionan', () async {
-      final accountRepo = AccountRepository();
-      final txRepo = TransactionRepository();
       final userId = 'concurrent-${DateTime.now().millisecondsSinceEpoch}';
 
       final stopwatch = Stopwatch()..start();
@@ -284,6 +294,7 @@ void main() {
             userId: userId,
             name: 'Concurrent $i',
             type: AccountType.bank,
+            currency: 'COP',
             balance: 100.0,
           )),
         // Crear transacciones

@@ -2,6 +2,74 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.9.2] - 2026-01-04
+
+### Testing y Documentacion
+
+Suite de tests mejorada con soporte Drift in-memory y documentacion completa de workflow.
+
+#### Testing
+- **Drift In-Memory**: Tests usan `NativeDatabase.memory()` con `closeStreamsSynchronously: true`
+- **Test Helpers**: Nuevas utilidades en `test/helpers/test_helpers.dart`
+  - `createTestDatabase()` - Base de datos aislada por test
+  - `setupFullTestEnvironment()` - Bindings + PathProvider mock + Supabase test mode
+  - `TestMainScaffold` - Scaffold simplificado para tests
+- **Soft Delete**: Tests actualizados para comportamiento correcto de eliminacion
+- **Resultados**: 452 tests pasando, 50 fallos (E2E UI-especificos)
+
+#### Documentacion Actualizada
+- `README.md` - Version 1.9.2, stats de tests, seccion Claude Code
+- `CLAUDE.md` - Workflow automatizado, version actualizada
+- `docs/WALKTHROUGH.md` - Seccion Testing con Drift, integracion Claude Code
+- `docs/USER_MANUAL.md` - Version 1.9.2, monedas soportadas
+- `docs/CLAUDE_WORKFLOW.md` - Nuevos diagramas Mermaid de workflow
+
+#### Claude Code Workflow
+- `.claude/README.md` - Documentacion Progressive Disclosure completa
+- `.claude/commands/full-workflow.md` - Workflow automatizado completo
+- Diagramas Mermaid para flujos de trabajo, skills y hooks
+
+#### Archivos Modificados
+- `test/helpers/test_helpers.dart` - setupMockPathProvider en setupFullTestEnvironment
+- `test/pwa/offline_sync_test.dart` - Test CRUD con soft-delete
+- `test/pwa/service_worker_test.dart` - Test CRUD con soft-delete
+- `test/security/api_security_test.dart` - Fix isFinite matcher
+
+---
+
+## [1.9.1] - 2026-01-03
+
+### Pantalla de Configuración Actualizada
+
+Correcciones completas en la pantalla de Configuración para mostrar valores dinámicos.
+
+#### Cambios Principales
+- **Moneda**: Ahora muestra COP por defecto con selector interactivo de 8 monedas
+- **Versión**: Actualizada a 1.9.1 (antes mostraba 1.0.0)
+- **Sincronización**: Muestra tiempo real desde última sincronización
+- **Biometría**: Switch funcional para activar/desactivar
+- **Bloqueo Automático**: Selector de tiempo (1-30 minutos)
+
+#### Archivos Modificados
+- `lib/features/settings/presentation/screens/settings_screen.dart` - Refactorizado completo
+- `lib/shared/providers/providers.dart` - Nuevo `UserPreferences` y `userPreferencesProvider`
+- `lib/core/network/sync_service.dart` - Nuevo `SyncState` con `lastSyncFormatted`
+
+#### Nuevas Funcionalidades
+- `_showCurrencyDialog`: Selector visual de moneda con banderas
+- `_showAutoLockDialog`: Selector de tiempo de bloqueo
+- `_showComingSoonDialog`: Indicador para funciones pendientes
+- `_SyncTile`: Widget especializado con estado de sincronización
+
+#### Funciones Marcadas como "Próximamente"
+- Mi Perfil (editar nombre, foto)
+- Cambiar Contraseña
+- Respaldo
+- Centro de Ayuda
+- Enviar Comentarios
+
+---
+
 ## [1.9.0] - 2026-01-03
 
 ### Cambio de Moneda por Defecto

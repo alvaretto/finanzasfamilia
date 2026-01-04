@@ -129,19 +129,21 @@ flutter test test/android/
 flutter test --coverage
 ```
 
-### Categorias de Tests (300+)
+### Categorias de Tests (500+)
 
-| Categoria | Descripcion |
-|-----------|-------------|
-| Unit | Logica de negocio, modelos |
-| Widget | Componentes UI |
-| Integration | Flujos completos |
-| AI Chat | Servicio Gemini, mensajes |
-| Security | Validacion, RLS, API |
-| Performance | Tiempos, memoria |
-| PWA | Offline-first, sync |
-| Android | Compatibilidad, temas |
-| Production | Casos extremos, stress |
+| Categoria | Descripcion | Tests |
+|-----------|-------------|-------|
+| Unit | Logica de negocio, modelos | 70+ |
+| Widget | Componentes UI | 50+ |
+| Integration | Flujos completos | 40+ |
+| E2E | End-to-end agresivos | 80+ |
+| AI Chat | Servicio Gemini, mensajes | 30+ |
+| Security | Validacion, RLS, API | 40+ |
+| Performance | Tiempos, memoria | 35+ |
+| PWA | Offline-first, sync | 45+ |
+| Supabase | Auth, realtime, RLS | 40+ |
+| Android | Compatibilidad, temas | 25+ |
+| Production | Casos extremos, stress | 45+ |
 
 ## Seguridad
 
@@ -189,6 +191,21 @@ flutter pub outdated
 - [CLAUDE.md](CLAUDE.md) - Guia para desarrollo con Claude
 - [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md) - Tutorial paso a paso
 - [docs/USER_MANUAL.md](docs/USER_MANUAL.md) - Manual de usuario
+- [docs/CLAUDE_WORKFLOW.md](docs/CLAUDE_WORKFLOW.md) - Diagramas de workflow
+
+## Claude Code Integration
+
+Este proyecto incluye configuracion completa para Claude Code:
+
+```
+.claude/
+├── commands/     # 11 comandos disponibles (/build-apk, /run-tests, etc.)
+├── skills/       # 4 dominios de conocimiento
+├── hooks/        # 4 automatizaciones
+└── README.md     # Documentacion Progressive Disclosure
+```
+
+Ver [CLAUDE.md](CLAUDE.md) para detalles.
 
 ## Licencia
 
@@ -201,6 +218,7 @@ MIT License - ver [LICENSE](LICENSE) para detalles.
 
 ---
 
-**Version**: 1.9.0
+**Version**: 1.9.2
 **Moneda por defecto**: COP (Peso Colombiano)
-**Ultima actualizacion**: 2026-01-03
+**Tests**: 500+ en 11 categorias
+**Ultima actualizacion**: 2026-01-04

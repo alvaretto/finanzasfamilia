@@ -159,7 +159,7 @@ void main() {
       const largeAmount = 999999999999999.99;
       final doubleValue = largeAmount;
 
-      expect(doubleValue, isFinite);
+      expect(doubleValue.isFinite, true);
       expect(doubleValue, isNot(equals(double.infinity)));
     });
 

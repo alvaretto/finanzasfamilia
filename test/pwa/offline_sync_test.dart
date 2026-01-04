@@ -1,8 +1,10 @@
 /// Tests PWA/Offline - Estrategia Offline-First
 /// Verifica sincronizacion, cache, y comportamiento sin conexion
+/// Usando Drift in-memory database para tests aislados
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:finanzas_familiares/core/database/app_database.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
 import 'package:finanzas_familiares/features/accounts/data/repositories/account_repository.dart';
 import 'package:finanzas_familiares/features/transactions/data/repositories/transaction_repository.dart';
@@ -10,9 +12,25 @@ import 'package:finanzas_familiares/features/accounts/domain/models/account_mode
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:uuid/uuid.dart';
 
+import '../helpers/test_helpers.dart';
+
 void main() {
+  late AppDatabase testDb;
+  late AccountRepository accountRepo;
+  late TransactionRepository txRepo;
+
   setUpAll(() {
-    SupabaseClientProvider.enableTestMode();
+    setupFullTestEnvironment();
+  });
+
+  setUp(() {
+    testDb = createTestDatabase();
+    accountRepo = AccountRepository(database: testDb);
+    txRepo = TransactionRepository(database: testDb);
+  });
+
+  tearDown(() async {
+    await testDb.close();
   });
 
   tearDownAll(() {
@@ -24,31 +42,39 @@ void main() {
     // TEST 1: Repositorio funciona sin conexion
     // =========================================================================
     test('AccountRepository funciona en modo offline', () async {
-      final repo = AccountRepository();
-
       // Debe poder crear cuenta localmente sin Supabase
       final account = AccountModel(
         id: const Uuid().v4(),
         userId: 'test-user',
         name: 'Cuenta Offline',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 1000.0,
         isSynced: false,
       );
 
       // No debe lanzar excepcion
-      final created = await repo.createAccount(account);
+      final created = await accountRepo.createAccount(account);
       expect(created.isSynced, false);
       expect(created.name, 'Cuenta Offline');
     });
 
     test('TransactionRepository funciona en modo offline', () async {
-      final repo = TransactionRepository();
+      // Crear cuenta primero
+      final accountId = const Uuid().v4();
+      await accountRepo.createAccount(AccountModel(
+        id: accountId,
+        userId: 'test-user',
+        name: 'Test Account',
+        type: AccountType.bank,
+        currency: 'COP',
+        balance: 0,
+      ));
 
       final tx = TransactionModel(
         id: const Uuid().v4(),
         userId: 'test-user',
-        accountId: 'account-1',
+        accountId: accountId,
         amount: 50.0,
         type: TransactionType.expense,
         description: 'Gasto offline',
@@ -56,7 +82,7 @@ void main() {
         isSynced: false,
       );
 
-      final created = await repo.createTransaction(tx);
+      final created = await txRepo.createTransaction(tx);
       expect(created.isSynced, false);
     });
 
@@ -64,17 +90,16 @@ void main() {
     // TEST 2: Flag isSynced se maneja correctamente
     // =========================================================================
     test('Nuevos registros tienen isSynced=false', () async {
-      final repo = AccountRepository();
-
       final account = AccountModel(
         id: const Uuid().v4(),
         userId: 'test-user',
         name: 'Nueva cuenta',
         type: AccountType.cash,
+        currency: 'COP',
         balance: 500.0,
       );
 
-      final created = await repo.createAccount(account);
+      final created = await accountRepo.createAccount(account);
       expect(created.isSynced, false,
           reason: 'Registros nuevos deben estar marcados como no sincronizados');
     });
@@ -83,20 +108,16 @@ void main() {
     // TEST 3: Sync no falla cuando esta offline
     // =========================================================================
     test('syncWithSupabase no lanza excepcion en modo offline', () async {
-      final repo = AccountRepository();
-
       // En test mode (offline), sync debe retornar sin error
       await expectLater(
-        repo.syncWithSupabase('test-user'),
+        accountRepo.syncWithSupabase('test-user'),
         completes,
       );
     });
 
     test('TransactionRepository.syncWithSupabase no falla offline', () async {
-      final repo = TransactionRepository();
-
       await expectLater(
-        repo.syncWithSupabase('test-user'),
+        txRepo.syncWithSupabase('test-user'),
         completes,
       );
     });
@@ -105,7 +126,6 @@ void main() {
     // TEST 4: Operaciones CRUD funcionan offline
     // =========================================================================
     test('CRUD completo funciona sin conexion', () async {
-      final repo = AccountRepository();
       final id = const Uuid().v4();
 
       // Create
@@ -114,46 +134,47 @@ void main() {
         userId: 'test-user',
         name: 'CRUD Test',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 100.0,
       );
-      await repo.createAccount(account);
+      await accountRepo.createAccount(account);
 
       // Read
-      final read = await repo.getAccountById(id);
+      final read = await accountRepo.getAccountById(id);
       expect(read, isNotNull);
       expect(read!.name, 'CRUD Test');
 
       // Update
-      await repo.updateAccount(read.copyWith(name: 'Updated'));
-      final updated = await repo.getAccountById(id);
+      await accountRepo.updateAccount(read.copyWith(name: 'Updated'));
+      final updated = await accountRepo.getAccountById(id);
       expect(updated!.name, 'Updated');
 
-      // Delete (soft delete)
-      await repo.deleteAccount(id);
-      final deleted = await repo.getAccountById(id);
-      expect(deleted!.isActive, false);
+      // Delete (soft delete - marca como inactiva)
+      await accountRepo.deleteAccount(id);
+      final deleted = await accountRepo.getAccountById(id);
+      // Soft delete: cuenta sigue existiendo pero marcada como inactiva
+      expect(deleted?.isActive, false);
     });
   });
 
   group('PWA: Data Persistence', () {
     // =========================================================================
-    // TEST 5: Datos persisten entre sesiones (simulado)
+    // TEST 5: Datos persisten dentro de la misma sesion de test
     // =========================================================================
     test('Datos se guardan en base de datos local', () async {
-      final repo = AccountRepository();
       final id = const Uuid().v4();
 
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: id,
         userId: 'persistence-test',
         name: 'Persistent Account',
         type: AccountType.savings,
+        currency: 'COP',
         balance: 2000.0,
       ));
 
-      // Nueva instancia del repositorio
-      final repo2 = AccountRepository();
-      final found = await repo2.getAccountById(id);
+      // Misma instancia del repositorio (misma db)
+      final found = await accountRepo.getAccountById(id);
 
       expect(found, isNotNull);
       expect(found!.name, 'Persistent Account');
@@ -163,20 +184,19 @@ void main() {
     // TEST 6: Unsynced queue se mantiene
     // =========================================================================
     test('Registros no sincronizados se pueden recuperar', () async {
-      final repo = AccountRepository();
-
       // Crear varias cuentas sin sincronizar
       for (int i = 0; i < 3; i++) {
-        await repo.createAccount(AccountModel(
+        await accountRepo.createAccount(AccountModel(
           id: const Uuid().v4(),
           userId: 'queue-test',
           name: 'Unsynced $i',
           type: AccountType.bank,
+          currency: 'COP',
           balance: 100.0 * i,
         ));
       }
 
-      final unsynced = await repo.getUnsyncedAccounts();
+      final unsynced = await accountRepo.getUnsyncedAccounts();
       expect(unsynced.length, greaterThanOrEqualTo(3));
     });
   });
@@ -196,16 +216,26 @@ void main() {
     // TEST 8: Operaciones batch funcionan offline
     // =========================================================================
     test('Multiples operaciones en lote funcionan offline', () async {
-      final repo = TransactionRepository();
       final userId = 'batch-test-${DateTime.now().millisecondsSinceEpoch}';
+      final accountId = const Uuid().v4();
+
+      // Crear cuenta primero
+      await accountRepo.createAccount(AccountModel(
+        id: accountId,
+        userId: userId,
+        name: 'Batch Account',
+        type: AccountType.bank,
+        currency: 'COP',
+        balance: 0,
+      ));
 
       // Crear 10 transacciones rapidamente
       final futures = <Future>[];
       for (int i = 0; i < 10; i++) {
-        futures.add(repo.createTransaction(TransactionModel(
+        futures.add(txRepo.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
-          accountId: 'account-1',
+          accountId: accountId,
           amount: 10.0 * i,
           type: i % 2 == 0 ? TransactionType.expense : TransactionType.income,
           description: 'Batch tx $i',
@@ -216,7 +246,7 @@ void main() {
       await Future.wait(futures);
 
       // Todas deben haberse creado
-      final unsynced = await repo.getUnsyncedTransactions();
+      final unsynced = await txRepo.getUnsyncedTransactions();
       expect(unsynced.where((t) => t.userId == userId).length, 10);
     });
   });
@@ -226,11 +256,9 @@ void main() {
     // TEST 9: Errores de red no crashean la app
     // =========================================================================
     test('Errores de sync son manejados gracefully', () async {
-      final repo = AccountRepository();
-
       // Sync debe completar sin excepcion incluso sin conexion
       expect(
-        () async => await repo.syncWithSupabase('error-test'),
+        () async => await accountRepo.syncWithSupabase('error-test'),
         returnsNormally,
       );
     });
@@ -239,23 +267,23 @@ void main() {
     // TEST 10: Estado local se preserva tras error de sync
     // =========================================================================
     test('Datos locales persisten tras fallo de sync', () async {
-      final repo = AccountRepository();
       final id = const Uuid().v4();
 
       // Crear cuenta
-      await repo.createAccount(AccountModel(
+      await accountRepo.createAccount(AccountModel(
         id: id,
         userId: 'error-persist-test',
         name: 'Error Test Account',
         type: AccountType.bank,
+        currency: 'COP',
         balance: 999.0,
       ));
 
       // Intentar sync (fallara silenciosamente en test mode)
-      await repo.syncWithSupabase('error-persist-test');
+      await accountRepo.syncWithSupabase('error-persist-test');
 
       // Cuenta debe seguir existiendo
-      final account = await repo.getAccountById(id);
+      final account = await accountRepo.getAccountById(id);
       expect(account, isNotNull);
       expect(account!.balance, 999.0);
     });

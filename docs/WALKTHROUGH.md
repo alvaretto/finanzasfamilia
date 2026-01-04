@@ -232,32 +232,61 @@ test/
     └── test_helpers.dart    # Utilidades compartidas
 ```
 
-### Escribir un Test
+### Escribir un Test con Drift In-Memory
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:finanzas_familiares/core/network/supabase_client.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  late AppDatabase testDb;
+  late MiRepository repo;
+
   setUpAll(() {
-    SupabaseClientProvider.enableTestMode(); // IMPORTANTE
+    setupFullTestEnvironment(); // Bindings + path_provider mock + Supabase test mode
+  });
+
+  setUp(() {
+    testDb = createTestDatabase(); // In-memory database
+    repo = MiRepository(database: testDb);
+  });
+
+  tearDown(() async {
+    await testDb.close();
   });
 
   tearDownAll(() {
     SupabaseClientProvider.reset();
   });
 
-  test('Mi test', () {
-    // Arrange
-    final repo = MiRepository();
+  test('Mi test con base de datos', () async {
+    // Arrange - la db ya esta lista
 
     // Act
-    final result = repo.doSomething();
+    final result = await repo.create(miModelo);
 
     // Assert
     expect(result, isNotNull);
+    expect(result.isSynced, false); // Offline-first
   });
 }
+```
+
+### Test Helpers Disponibles
+
+```dart
+// test/helpers/test_helpers.dart
+
+// Setup completo
+setupFullTestEnvironment(); // Bindings + PathProvider mock + Supabase
+
+// Base de datos in-memory
+createTestDatabase(); // AppDatabase con NativeDatabase.memory()
+
+// Widgets de test
+createTestApp(child: widget); // Con GoRouter
+createSimpleTestApp(child: widget); // Sin GoRouter
+TestMainScaffold(child: widget); // Scaffold simplificado
 ```
 
 ### Ejecutar Tests
@@ -370,5 +399,59 @@ R // Hot restart (reinicia providers)
 ```
 
 ---
+
+## Claude Code Integration
+
+Este proyecto incluye configuracion completa para desarrollo con Claude Code.
+
+### Estructura .claude/
+
+```
+.claude/
+├── README.md           # Documentacion Progressive Disclosure
+├── commands/           # 11 comandos slash
+│   ├── build-apk.md
+│   ├── run-tests.md
+│   ├── full-workflow.md
+│   └── ...
+├── skills/             # 4 dominios de conocimiento
+│   ├── sync-management/
+│   ├── financial-analysis/
+│   ├── flutter-architecture/
+│   └── testing/
+└── hooks/              # Automatizaciones
+```
+
+### Comandos Disponibles
+
+| Comando | Descripcion |
+|---------|-------------|
+| `/build-apk` | Construir APK release |
+| `/run-tests` | Ejecutar suite de tests |
+| `/full-workflow` | Workflow completo (docs, tests, build, git, deploy) |
+| `/quick-test` | Tests rapidos (unit + widget) |
+| `/sync-check` | Verificar sync offline-first |
+
+### Workflow Automatizado
+
+```bash
+# Ejecutar ciclo completo
+/full-workflow
+
+# Esto hace automaticamente:
+# 1. Actualizar documentacion
+# 2. Ejecutar tests
+# 3. Build APK
+# 4. Git commit detallado
+# 5. Git push
+# 6. Deploy a emulador
+```
+
+Ver [CLAUDE_WORKFLOW.md](CLAUDE_WORKFLOW.md) para diagramas Mermaid detallados.
+
+---
+
+**Version**: 1.9.2
+**Ultima actualizacion**: 2026-01-04
 
 **Siguiente**: Ver [USER_MANUAL.md](USER_MANUAL.md) para guia de usuario final.

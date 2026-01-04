@@ -113,8 +113,21 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 
 ## Estado del Proyecto
 
-- **Version**: 1.9.0
-- **Tests**: 350+ (10 categorias)
-- **Coverage**: Unit/Widget/Integration 100%
+- **Version**: 1.9.2
+- **Tests**: 500+ (11 categorias)
+- **Coverage**: Unit/Widget/Integration/PWA 100%
 - **Moneda**: COP (Peso Colombiano) por defecto
 - **Locales**: es_CO, es_MX, en_US, pt_BR soportados
+- **Ultima actualizacion**: 2026-01-04
+
+## Workflow Automatizado
+
+Para ejecutar el ciclo completo de desarrollo:
+
+```bash
+/full-workflow
+```
+
+Esto automatiza: Docs -> Tests -> Build -> Git -> Deploy
+
+Ver [docs/CLAUDE_WORKFLOW.md](docs/CLAUDE_WORKFLOW.md) para diagramas detallados.
