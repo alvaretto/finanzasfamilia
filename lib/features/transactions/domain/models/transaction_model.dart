@@ -240,6 +240,7 @@ class CategoryModel with _$CategoryModel {
     required String name,
     required String type, // income, expense
     String? icon,
+    String? emoji, // Emoji representativo (ej: 🍔, 🏠, 🚗)
     String? color,
     int? parentId,
     @Default(false) bool isSystem,

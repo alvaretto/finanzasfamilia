@@ -40,6 +40,7 @@ class Categories extends Table {
   TextColumn get name => text().withLength(min: 1, max: 50)();
   TextColumn get type => text()(); // income, expense
   TextColumn get icon => text().nullable()();
+  TextColumn get emoji => text().nullable()(); // Emoji representativo
   TextColumn get color => text().nullable()();
   IntColumn get parentId => integer().nullable().references(Categories, #id)();
   BoolColumn get isSystem => boolean().withDefault(const Constant(false))();
@@ -195,230 +196,231 @@ class AppDatabase extends _$AppDatabase {
     // ============================================================
 
     // 1. Alimentacion
-    final alimentacionId = await _insertCategory('Alimentacion', 'expense', 'restaurant', '#ef4444');
+    final alimentacionId = await _insertCategory('Alimentacion', 'expense', 'restaurant', '🍔', '#ef4444');
     parentIds['alimentacion'] = alimentacionId;
     await _insertSubcategories(alimentacionId, 'expense', '#ef4444', [
-      ('Supermercado', 'shopping_cart'),
-      ('Restaurantes', 'restaurant'),
-      ('Delivery', 'delivery_dining'),
-      ('Cafeteria / Snacks', 'local_cafe'),
-      ('Licores y bebidas', 'liquor'),
+      ('Supermercado', 'shopping_cart', '🛒'),
+      ('Restaurantes', 'restaurant', '🍽️'),
+      ('Delivery', 'delivery_dining', '🚚'),
+      ('Cafeteria / Snacks', 'local_cafe', '☕'),
+      ('Licores y bebidas', 'liquor', '🍺'),
     ]);
 
     // 2. Vivienda
-    final viviendaId = await _insertCategory('Vivienda', 'expense', 'home', '#3b82f6');
+    final viviendaId = await _insertCategory('Vivienda', 'expense', 'home', '🏠', '#3b82f6');
     parentIds['vivienda'] = viviendaId;
     await _insertSubcategories(viviendaId, 'expense', '#3b82f6', [
-      ('Renta / Hipoteca', 'house'),
-      ('Administracion', 'apartment'),
-      ('Agua', 'water_drop'),
-      ('Energia electrica', 'bolt'),
-      ('Gas', 'local_fire_department'),
-      ('Internet / TV / Telefono', 'wifi'),
-      ('Mantenimiento hogar', 'handyman'),
-      ('Seguro hogar', 'security'),
+      ('Renta / Hipoteca', 'house', '🏡'),
+      ('Administracion', 'apartment', '🏢'),
+      ('Agua', 'water_drop', '💧'),
+      ('Energia electrica', 'bolt', '⚡'),
+      ('Gas', 'local_fire_department', '🔥'),
+      ('Internet / TV / Telefono', 'wifi', '📡'),
+      ('Mantenimiento hogar', 'handyman', '🔧'),
+      ('Seguro hogar', 'security', '🛡️'),
     ]);
 
     // 3. Transporte
-    final transporteId = await _insertCategory('Transporte', 'expense', 'directions_car', '#22c55e');
+    final transporteId = await _insertCategory('Transporte', 'expense', 'directions_car', '🚗', '#22c55e');
     parentIds['transporte'] = transporteId;
     await _insertSubcategories(transporteId, 'expense', '#22c55e', [
-      ('Combustible', 'local_gas_station'),
-      ('Transporte publico', 'directions_bus'),
-      ('Taxi / Uber', 'local_taxi'),
-      ('Mantenimiento vehiculo', 'car_repair'),
-      ('Seguro vehiculo', 'verified_user'),
-      ('Parqueadero', 'local_parking'),
-      ('Peajes', 'toll'),
+      ('Combustible', 'local_gas_station', '⛽'),
+      ('Transporte publico', 'directions_bus', '🚌'),
+      ('Taxi / Uber', 'local_taxi', '🚕'),
+      ('Mantenimiento vehiculo', 'car_repair', '🔧'),
+      ('Seguro vehiculo', 'verified_user', '🛡️'),
+      ('Parqueadero', 'local_parking', '🅿️'),
+      ('Peajes', 'toll', '🚧'),
     ]);
 
     // 4. Salud
-    final saludId = await _insertCategory('Salud', 'expense', 'favorite', '#ec4899');
+    final saludId = await _insertCategory('Salud', 'expense', 'favorite', '❤️', '#ec4899');
     parentIds['salud'] = saludId;
     await _insertSubcategories(saludId, 'expense', '#ec4899', [
-      ('Medicina prepagada / EPS', 'health_and_safety'),
-      ('Consultas medicas', 'medical_services'),
-      ('Medicamentos', 'medication'),
-      ('Examenes / Laboratorio', 'biotech'),
-      ('Odontologia', 'dentistry'),
-      ('Optica', 'visibility'),
-      ('Terapias', 'psychology'),
+      ('Medicina prepagada / EPS', 'health_and_safety', '🏥'),
+      ('Consultas medicas', 'medical_services', '👨‍⚕️'),
+      ('Medicamentos', 'medication', '💊'),
+      ('Examenes / Laboratorio', 'biotech', '🔬'),
+      ('Odontologia', 'dentistry', '🦷'),
+      ('Optica', 'visibility', '👓'),
+      ('Terapias', 'psychology', '🧠'),
     ]);
 
     // 5. Bienestar
-    final bienestarId = await _insertCategory('Bienestar', 'expense', 'spa', '#a855f7');
+    final bienestarId = await _insertCategory('Bienestar', 'expense', 'spa', '💆', '#a855f7');
     parentIds['bienestar'] = bienestarId;
     await _insertSubcategories(bienestarId, 'expense', '#a855f7', [
-      ('Gimnasio / Deportes', 'fitness_center'),
-      ('Cuidado personal', 'face'),
-      ('Productos de aseo', 'soap'),
-      ('Cosmeticos', 'brush'),
-      ('Salud mental', 'self_improvement'),
+      ('Gimnasio / Deportes', 'fitness_center', '💪'),
+      ('Cuidado personal', 'face', '✨'),
+      ('Productos de aseo', 'soap', '🧼'),
+      ('Cosmeticos', 'brush', '💄'),
+      ('Salud mental', 'self_improvement', '🧘'),
     ]);
 
     // 6. Educacion
-    final educacionId = await _insertCategory('Educacion', 'expense', 'school', '#f59e0b');
+    final educacionId = await _insertCategory('Educacion', 'expense', 'school', '🎓', '#f59e0b');
     parentIds['educacion'] = educacionId;
     await _insertSubcategories(educacionId, 'expense', '#f59e0b', [
-      ('Matricula / Pension', 'school'),
-      ('Cursos / Capacitaciones', 'cast_for_education'),
-      ('Libros / Material', 'menu_book'),
-      ('Utiles escolares', 'edit'),
-      ('Uniformes', 'checkroom'),
+      ('Matricula / Pension', 'school', '🏫'),
+      ('Cursos / Capacitaciones', 'cast_for_education', '📚'),
+      ('Libros / Material', 'menu_book', '📖'),
+      ('Utiles escolares', 'edit', '✏️'),
+      ('Uniformes', 'checkroom', '👔'),
     ]);
 
     // 7. Ropa y Calzado
-    final ropaId = await _insertCategory('Ropa y Calzado', 'expense', 'shopping_bag', '#06b6d4');
+    final ropaId = await _insertCategory('Ropa y Calzado', 'expense', 'shopping_bag', '👗', '#06b6d4');
     parentIds['ropa'] = ropaId;
     await _insertSubcategories(ropaId, 'expense', '#06b6d4', [
-      ('Ropa', 'dry_cleaning'),
-      ('Calzado', 'ice_skating'),
-      ('Accesorios', 'watch'),
-      ('Ropa deportiva', 'sports'),
+      ('Ropa', 'dry_cleaning', '👕'),
+      ('Calzado', 'ice_skating', '👟'),
+      ('Accesorios', 'watch', '⌚'),
+      ('Ropa deportiva', 'sports', '🏃'),
     ]);
 
     // 8. Entretenimiento
-    final entretenimientoId = await _insertCategory('Entretenimiento', 'expense', 'movie', '#8b5cf6');
+    final entretenimientoId = await _insertCategory('Entretenimiento', 'expense', 'movie', '🎬', '#8b5cf6');
     parentIds['entretenimiento'] = entretenimientoId;
     await _insertSubcategories(entretenimientoId, 'expense', '#8b5cf6', [
-      ('Streaming', 'play_circle'),
-      ('Cine / Teatro', 'theaters'),
-      ('Eventos / Conciertos', 'celebration'),
-      ('Videojuegos', 'sports_esports'),
-      ('Hobbies', 'palette'),
-      ('Libros / Revistas', 'auto_stories'),
-      ('Salidas / Bares', 'nightlife'),
-      ('Vacaciones / Viajes', 'flight'),
+      ('Streaming', 'play_circle', '📺'),
+      ('Cine / Teatro', 'theaters', '🎭'),
+      ('Eventos / Conciertos', 'celebration', '🎉'),
+      ('Videojuegos', 'sports_esports', '🎮'),
+      ('Hobbies', 'palette', '🎨'),
+      ('Libros / Revistas', 'menu_book', '📚'),
+      ('Salidas / Vida social', 'nightlife', '🌟'),
+      ('Vacaciones / Viajes', 'flight', '✈️'),
     ]);
 
     // 9. Tecnologia
-    final tecnologiaId = await _insertCategory('Tecnologia', 'expense', 'devices', '#64748b');
+    final tecnologiaId = await _insertCategory('Tecnologia', 'expense', 'devices', '💻', '#64748b');
     parentIds['tecnologia'] = tecnologiaId;
     await _insertSubcategories(tecnologiaId, 'expense', '#64748b', [
-      ('Celular / Plan movil', 'smartphone'),
-      ('Equipos', 'computer'),
-      ('Accesorios tech', 'headphones'),
-      ('Software / Apps', 'apps'),
-      ('Reparaciones', 'build'),
+      ('Celular / Telefonia', 'smartphone', '📱'),
+      ('Equipos / Hardware', 'computer', '🖥️'),
+      ('Accesorios tecnologicos', 'headphones', '🎧'),
+      ('Software / Apps', 'apps', '📲'),
+      ('Reparaciones', 'build', '🔧'),
     ]);
 
     // 10. Mascotas
-    final mascotasId = await _insertCategory('Mascotas', 'expense', 'pets', '#f97316');
+    final mascotasId = await _insertCategory('Mascotas', 'expense', 'pets', '🐾', '#f97316');
     parentIds['mascotas'] = mascotasId;
     await _insertSubcategories(mascotasId, 'expense', '#f97316', [
-      ('Alimento mascota', 'restaurant'),
-      ('Veterinario', 'vaccines'),
-      ('Accesorios mascota', 'shopping_bag'),
-      ('Peluqueria mascota', 'content_cut'),
+      ('Alimento', 'set_meal', '🍖'),
+      ('Veterinario', 'local_hospital', '🏥'),
+      ('Accesorios', 'shopping_bag', '🎾'),
+      ('Peluqueria / Grooming', 'cut', '✂️'),
     ]);
 
     // 11. Servicios Financieros
-    final financierosId = await _insertCategory('Servicios Financieros', 'expense', 'account_balance', '#0891b2');
-    parentIds['financieros'] = financierosId;
-    await _insertSubcategories(financierosId, 'expense', '#0891b2', [
-      ('Cuota manejo tarjeta', 'credit_card'),
-      ('Comisiones bancarias', 'receipt'),
-      ('Seguros de vida', 'security'),
-      ('Intereses creditos', 'percent'),
+    final serviciosFinId = await _insertCategory('Servicios Financieros', 'expense', 'account_balance', '🏦', '#0891b2');
+    parentIds['servicios_financieros'] = serviciosFinId;
+    await _insertSubcategories(serviciosFinId, 'expense', '#0891b2', [
+      ('Cuota manejo', 'credit_card', '💳'),
+      ('Comisiones bancarias', 'receipt', '🧾'),
+      ('Seguros de vida', 'shield', '🛡️'),
+      ('Intereses', 'trending_down', '📉'),
     ]);
 
     // 12. Impuestos
-    final impuestosId = await _insertCategory('Impuestos', 'expense', 'receipt_long', '#dc2626');
+    final impuestosId = await _insertCategory('Impuestos', 'expense', 'receipt_long', '📋', '#dc2626');
     parentIds['impuestos'] = impuestosId;
     await _insertSubcategories(impuestosId, 'expense', '#dc2626', [
-      ('Declaracion renta', 'description'),
-      ('IVA', 'calculate'),
-      ('Otros impuestos', 'receipt'),
+      ('Declaracion de renta', 'description', '📄'),
+      ('IVA', 'percent', '💸'),
+      ('Otros impuestos', 'gavel', '⚖️'),
     ]);
 
     // 13. Regalos y Donaciones
-    final regalosGastoId = await _insertCategory('Regalos y Donaciones', 'expense', 'card_giftcard', '#e11d48');
-    parentIds['regalos_gasto'] = regalosGastoId;
-    await _insertSubcategories(regalosGastoId, 'expense', '#e11d48', [
-      ('Regalos', 'redeem'),
-      ('Donaciones', 'volunteer_activism'),
-      ('Propinas', 'paid'),
+    final regalosId = await _insertCategory('Regalos y Donaciones', 'expense', 'card_giftcard', '🎁', '#e11d48');
+    parentIds['regalos'] = regalosId;
+    await _insertSubcategories(regalosId, 'expense', '#e11d48', [
+      ('Regalos', 'redeem', '🎀'),
+      ('Donaciones', 'volunteer_activism', '🤝'),
+      ('Propinas', 'payments', '💵'),
     ]);
 
     // 14. Suscripciones
-    final suscripcionesId = await _insertCategory('Suscripciones', 'expense', 'subscriptions', '#7c3aed');
+    final suscripcionesId = await _insertCategory('Suscripciones', 'expense', 'subscriptions', '📱', '#7c3aed');
     parentIds['suscripciones'] = suscripcionesId;
     await _insertSubcategories(suscripcionesId, 'expense', '#7c3aed', [
-      ('Membresias', 'card_membership'),
-      ('Suscripciones digitales', 'cloud'),
-      ('Clubes / Asociaciones', 'groups'),
+      ('Membresias', 'card_membership', '💳'),
+      ('Suscripciones digitales', 'subscriptions', '📲'),
+      ('Clubes', 'groups', '👥'),
     ]);
 
     // 15. Otros Gastos
-    await _insertCategory('Otros Gastos', 'expense', 'more_horiz', '#6b7280');
+    await _insertCategory('Otros Gastos', 'expense', 'more_horiz', '📦', '#6b7280');
 
     // ============================================================
     // CATEGORIAS DE INGRESOS
     // ============================================================
 
     // 1. Salario / Empleo
-    final salarioId = await _insertCategory('Salario / Empleo', 'income', 'work', '#22c55e');
+    final salarioId = await _insertCategory('Salario / Empleo', 'income', 'work', '💼', '#22c55e');
     parentIds['salario'] = salarioId;
     await _insertSubcategories(salarioId, 'income', '#22c55e', [
-      ('Salario mensual', 'payments'),
-      ('Bonificaciones', 'celebration'),
-      ('Comisiones', 'trending_up'),
-      ('Horas extras', 'schedule'),
-      ('Prima / Aguinaldo', 'card_giftcard'),
+      ('Salario mensual', 'attach_money', '💰'),
+      ('Bonificaciones', 'star', '⭐'),
+      ('Comisiones', 'trending_up', '📈'),
+      ('Horas extras', 'schedule', '⏰'),
+      ('Prima', 'card_giftcard', '🎁'),
     ]);
 
     // 2. Negocio / Freelance
-    final freelanceId = await _insertCategory('Negocio / Freelance', 'income', 'laptop', '#3b82f6');
-    parentIds['freelance'] = freelanceId;
-    await _insertSubcategories(freelanceId, 'income', '#3b82f6', [
-      ('Ventas', 'store'),
-      ('Servicios', 'handyman'),
-      ('Consultoria', 'support_agent'),
-      ('Proyectos', 'assignment'),
+    final negocioId = await _insertCategory('Negocio / Freelance', 'income', 'laptop', '💻', '#3b82f6');
+    parentIds['negocio'] = negocioId;
+    await _insertSubcategories(negocioId, 'income', '#3b82f6', [
+      ('Ventas', 'storefront', '🏪'),
+      ('Servicios', 'handshake', '🤝'),
+      ('Consultoria', 'lightbulb', '💡'),
+      ('Proyectos', 'folder', '📁'),
     ]);
 
     // 3. Inversiones
-    final inversionesId = await _insertCategory('Inversiones', 'income', 'trending_up', '#8b5cf6');
+    final inversionesId = await _insertCategory('Inversiones', 'income', 'trending_up', '📈', '#8b5cf6');
     parentIds['inversiones'] = inversionesId;
     await _insertSubcategories(inversionesId, 'income', '#8b5cf6', [
-      ('Dividendos', 'attach_money'),
-      ('Intereses', 'percent'),
-      ('Ganancias capital', 'show_chart'),
-      ('Rendimientos', 'insights'),
+      ('Dividendos', 'pie_chart', '📊'),
+      ('Intereses', 'savings', '💵'),
+      ('Ganancias de capital', 'show_chart', '📉'),
+      ('Rendimientos', 'account_balance', '🏦'),
     ]);
 
     // 4. Arriendos
-    final arriendosId = await _insertCategory('Arriendos', 'income', 'home_work', '#f97316');
+    final arriendosId = await _insertCategory('Arriendos', 'income', 'home_work', '🏘️', '#f97316');
     parentIds['arriendos'] = arriendosId;
     await _insertSubcategories(arriendosId, 'income', '#f97316', [
-      ('Arriendo inmueble', 'apartment'),
-      ('Arriendo vehiculo', 'directions_car'),
-      ('Arriendo equipos', 'devices'),
+      ('Arriendo de inmueble', 'apartment', '🏢'),
+      ('Arriendo de vehiculo', 'directions_car', '🚗'),
+      ('Arriendo de equipos', 'devices', '🖥️'),
     ]);
 
     // 5. Otros Ingresos
-    final otrosIngresosId = await _insertCategory('Otros Ingresos', 'income', 'add_circle', '#6b7280');
+    final otrosIngresosId = await _insertCategory('Otros Ingresos', 'income', 'add_circle', '➕', '#6b7280');
     parentIds['otros_ingresos'] = otrosIngresosId;
     await _insertSubcategories(otrosIngresosId, 'income', '#6b7280', [
-      ('Reembolsos', 'undo'),
-      ('Regalos recibidos', 'redeem'),
-      ('Venta articulos', 'sell'),
-      ('Subsidios', 'account_balance'),
-      ('Pension', 'elderly'),
+      ('Reembolsos', 'receipt_long', '🧾'),
+      ('Regalos recibidos', 'redeem', '🎁'),
+      ('Venta articulos', 'sell', '💸'),
+      ('Subsidios', 'account_balance', '💰'),
+      ('Pension', 'elderly', '👴'),
     ]);
 
     // 6. Ingresos Extraordinarios
-    await _insertCategory('Ingresos Extraordinarios', 'income', 'stars', '#eab308');
+    await _insertCategory('Ingresos Extraordinarios', 'income', 'stars', '⭐', '#eab308');
   }
 
   /// Inserta una categoria principal y retorna su ID
-  Future<int> _insertCategory(String name, String type, String icon, String color) async {
+  Future<int> _insertCategory(String name, String type, String icon, String emoji, String color) async {
     final uuid = '${DateTime.now().millisecondsSinceEpoch}_${name.replaceAll(' ', '_')}';
     return await into(categories).insert(CategoriesCompanion.insert(
       uuid: uuid,
       name: name,
       type: type,
       icon: Value(icon),
+      emoji: Value(emoji),
       color: Value(color),
       isSystem: const Value(true),
       synced: const Value(true),
@@ -430,7 +432,7 @@ class AppDatabase extends _$AppDatabase {
     int parentId,
     String type,
     String color,
-    List<(String name, String icon)> subcats,
+    List<(String name, String icon, String emoji)> subcats,
   ) async {
     for (final sub in subcats) {
       final uuid = '${DateTime.now().millisecondsSinceEpoch}_${sub.$1.replaceAll(' ', '_')}';
@@ -439,6 +441,7 @@ class AppDatabase extends _$AppDatabase {
         name: sub.$1,
         type: type,
         icon: Value(sub.$2),
+        emoji: Value(sub.$3),
         color: Value(color),
         parentId: Value(parentId),
         isSystem: const Value(true),
