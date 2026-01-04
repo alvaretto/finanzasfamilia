@@ -28,6 +28,7 @@ class SupabaseClientProvider {
       debug: kDebugMode,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
+        detectSessionInUri: true,
       ),
       realtimeClientOptions: const RealtimeClientOptions(
         logLevel: RealtimeLogLevel.info,

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/network/supabase_client.dart';
 
@@ -86,12 +87,37 @@ class AuthRepository {
     return response;
   }
 
-  /// Iniciar sesion con Google
-  Future<bool> signInWithGoogle() async {
-    final response = await _auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: 'io.supabase.finanzasfamiliares://login-callback/',
+  /// Iniciar sesion con Google (Native Sign-In)
+  /// Usa el SDK nativo de Google en lugar de OAuth web para mejor UX
+  Future<AuthResponse> signInWithGoogle() async {
+    // Web Client ID de Google Cloud Console
+    const webClientId =
+        '796177647122-cr4kvhd4225204298r198ksdcla8i4q4.apps.googleusercontent.com';
+
+    final googleSignIn = GoogleSignIn(
+      serverClientId: webClientId,
     );
+
+    final googleUser = await googleSignIn.signIn();
+    if (googleUser == null) {
+      throw const AuthException('Google Sign-In cancelado por el usuario');
+    }
+
+    final googleAuth = await googleUser.authentication;
+    final idToken = googleAuth.idToken;
+    final accessToken = googleAuth.accessToken;
+
+    if (idToken == null) {
+      throw const AuthException('No se pudo obtener el ID token de Google');
+    }
+
+    // Usar el ID token para autenticarse con Supabase
+    final response = await _auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
+    );
+
     return response;
   }
 

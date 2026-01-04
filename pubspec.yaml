@@ -32,6 +32,9 @@ dependencies:
   # Charts
   fl_chart: ^0.70.0
 
+  # Google Sign-In (Native - more reliable than OAuth web)
+  google_sign_in: ^6.2.2
+
   # Utils
   intl: ^0.20.2
   uuid: ^4.5.1

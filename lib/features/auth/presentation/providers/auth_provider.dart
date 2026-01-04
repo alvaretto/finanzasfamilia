@@ -181,23 +181,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Iniciar sesion con Google
+  /// Iniciar sesion con Google (Native Sign-In)
   Future<bool> signInWithGoogle() async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
     try {
-      final success = await _repository.signInWithGoogle();
-      if (!success) {
-        state = state.copyWith(
-          status: AuthStatus.unauthenticated,
-          errorMessage: 'Error al iniciar con Google',
+      final response = await _repository.signInWithGoogle();
+
+      if (response.user != null) {
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          user: response.user,
         );
+        return true;
       }
-      return success;
+
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        errorMessage: 'No se pudo iniciar sesión con Google',
+      );
+      return false;
+    } on supabase.AuthException catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        errorMessage: _parseAuthError(e.message),
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
-        errorMessage: 'Error al iniciar con Google',
+        errorMessage: 'Error al iniciar con Google: $e',
       );
       return false;
     }
