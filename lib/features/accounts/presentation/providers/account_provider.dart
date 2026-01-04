@@ -131,7 +131,7 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
   Future<bool> createAccount({
     required String name,
     required AccountType type,
-    String currency = 'MXN',
+    String currency = 'COP',
     double balance = 0.0,
     String? familyId,
     String? color,

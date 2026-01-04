@@ -14,8 +14,8 @@ class CurrencyFormatter {
   /// [compact] - Si usar formato compacto (1.5K, 2M)
   static String format(
     double amount, {
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
     bool compact = false,
     int decimalDigits = 2,
@@ -44,8 +44,8 @@ class CurrencyFormatter {
   /// Formatea para display (sin decimales si es entero)
   static String formatSmart(
     double amount, {
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     final hasDecimals = amount != amount.roundToDouble();
@@ -61,8 +61,8 @@ class CurrencyFormatter {
   /// Formatea monto con signo (+/-)
   static String formatWithSign(
     double amount, {
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     final sign = amount >= 0 ? '+' : '';
@@ -73,14 +73,14 @@ class CurrencyFormatter {
   static String formatPercent(
     double value, {
     int decimalDigits = 1,
-    String locale = 'es_MX',
+    String locale = 'es_CO',
   }) {
     final formatter = NumberFormat.percentPattern(locale);
     return formatter.format(value / 100);
   }
 
   /// Parsea un string de moneda a double
-  static double? parse(String value, {String locale = 'es_MX'}) {
+  static double? parse(String value, {String locale = 'es_CO'}) {
     try {
       // Remover simbolos de moneda y espacios
       final cleanValue = value
@@ -116,10 +116,10 @@ class CurrencyFormatter {
     }
   }
 
-  /// Lista de monedas soportadas
+  /// Lista de monedas soportadas (COP por defecto)
   static const List<CurrencyInfo> supportedCurrencies = [
-    CurrencyInfo(code: 'MXN', name: 'Peso Mexicano', symbol: '\$', locale: 'es_MX'),
     CurrencyInfo(code: 'COP', name: 'Peso Colombiano', symbol: '\$', locale: 'es_CO'),
+    CurrencyInfo(code: 'MXN', name: 'Peso Mexicano', symbol: '\$', locale: 'es_MX'),
     CurrencyInfo(code: 'USD', name: 'Dolar Estadounidense', symbol: '\$', locale: 'en_US'),
     CurrencyInfo(code: 'EUR', name: 'Euro', symbol: '\u20AC', locale: 'es_ES'),
     CurrencyInfo(code: 'ARS', name: 'Peso Argentino', symbol: '\$', locale: 'es_AR'),

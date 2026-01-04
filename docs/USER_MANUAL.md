@@ -329,5 +329,6 @@ Si tienes problemas o sugerencias:
 
 ---
 
-**Version**: 1.8.0
+**Version**: 1.9.0
+**Moneda por defecto**: COP (Peso Colombiano)
 **Ultima actualizacion**: 2026-01-03

@@ -14,7 +14,7 @@ class Accounts extends Table {
   TextColumn get familyId => text().nullable()();
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get type => text()(); // cash, bank, credit, savings, investment, wallet
-  TextColumn get currency => text().withDefault(const Constant('MXN'))();
+  TextColumn get currency => text().withDefault(const Constant('COP'))();
   RealColumn get balance => real().withDefault(const Constant(0.0))();
   RealColumn get creditLimit => real().withDefault(const Constant(0.0))();
   TextColumn get color => text().nullable()();

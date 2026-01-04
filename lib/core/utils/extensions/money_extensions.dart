@@ -4,8 +4,8 @@ import '../formatters/currency_formatter.dart';
 extension MoneyDouble on double {
   /// Formatea como moneda con configuracion por defecto
   String toMoney({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return CurrencyFormatter.format(
@@ -18,8 +18,8 @@ extension MoneyDouble on double {
 
   /// Formatea de forma inteligente (sin decimales si es entero)
   String toMoneySmart({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return CurrencyFormatter.formatSmart(
@@ -32,8 +32,8 @@ extension MoneyDouble on double {
 
   /// Formatea en formato compacto (1.5K, 2M)
   String toMoneyCompact({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return CurrencyFormatter.format(
@@ -47,8 +47,8 @@ extension MoneyDouble on double {
 
   /// Formatea con signo (+/-)
   String toMoneyWithSign({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return CurrencyFormatter.formatWithSign(
@@ -60,7 +60,7 @@ extension MoneyDouble on double {
   }
 
   /// Formatea como porcentaje
-  String toPercent({int decimalDigits = 1, String locale = 'es_MX'}) {
+  String toPercent({int decimalDigits = 1, String locale = 'es_CO'}) {
     return CurrencyFormatter.formatPercent(
       this,
       decimalDigits: decimalDigits,
@@ -73,8 +73,8 @@ extension MoneyDouble on double {
 extension MoneyInt on int {
   /// Formatea como moneda con configuracion por defecto
   String toMoney({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return toDouble().toMoney(
@@ -86,8 +86,8 @@ extension MoneyInt on int {
 
   /// Formatea de forma inteligente (sin decimales si es entero)
   String toMoneySmart({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return toDouble().toMoneySmart(
@@ -99,8 +99,8 @@ extension MoneyInt on int {
 
   /// Formatea en formato compacto (1.5K, 2M)
   String toMoneyCompact({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return toDouble().toMoneyCompact(
@@ -112,8 +112,8 @@ extension MoneyInt on int {
 
   /// Formatea con signo (+/-)
   String toMoneyWithSign({
-    String currency = 'MXN',
-    String locale = 'es_MX',
+    String currency = 'COP',
+    String locale = 'es_CO',
     bool showSymbol = true,
   }) {
     return toDouble().toMoneyWithSign(
@@ -124,7 +124,7 @@ extension MoneyInt on int {
   }
 
   /// Formatea como porcentaje
-  String toPercent({int decimalDigits = 1, String locale = 'es_MX'}) {
+  String toPercent({int decimalDigits = 1, String locale = 'es_CO'}) {
     return toDouble().toPercent(
       decimalDigits: decimalDigits,
       locale: locale,
@@ -135,12 +135,12 @@ extension MoneyInt on int {
 /// Extension para parsear strings a montos
 extension MoneyString on String {
   /// Parsea string de moneda a double
-  double? toMoneyValue({String locale = 'es_MX'}) {
+  double? toMoneyValue({String locale = 'es_CO'}) {
     return CurrencyFormatter.parse(this, locale: locale);
   }
 
   /// Parsea string de moneda a double, retorna 0 si falla
-  double toMoneyValueOrZero({String locale = 'es_MX'}) {
+  double toMoneyValueOrZero({String locale = 'es_CO'}) {
     return CurrencyFormatter.parse(this, locale: locale) ?? 0.0;
   }
 }

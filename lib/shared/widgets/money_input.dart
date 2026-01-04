@@ -20,8 +20,8 @@ class MoneyInput extends StatefulWidget {
   const MoneyInput({
     super.key,
     this.initialValue,
-    this.currency = 'MXN',
-    this.locale = 'es_MX',
+    this.currency = 'COP',
+    this.locale = 'es_CO',
     required this.onChanged,
     this.label,
     this.hint,
@@ -226,9 +226,9 @@ class QuickAmountButtons extends StatelessWidget {
 
   const QuickAmountButtons({
     super.key,
-    this.amounts = const [50, 100, 200, 500, 1000],
-    this.currency = 'MXN',
-    this.locale = 'es_MX',
+    this.amounts = const [10000, 50000, 100000, 200000, 500000],
+    this.currency = 'COP',
+    this.locale = 'es_CO',
     required this.onSelected,
   });
 

@@ -24,14 +24,14 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
   final _lastFourController = TextEditingController();
 
   AccountType _selectedType = AccountType.bank;
-  String _selectedCurrency = 'MXN';
+  String _selectedCurrency = 'COP';
   String _selectedColor = '#4CAF50';
   bool _includeInTotal = true;
   bool _isLoading = false;
 
   bool get isEditing => widget.account != null;
 
-  final List<String> _currencies = ['MXN', 'USD', 'EUR', 'GBP'];
+  final List<String> _currencies = ['COP', 'USD', 'EUR', 'MXN', 'ARS', 'PEN', 'CLP', 'BRL'];
   final List<String> _colors = [
     '#4CAF50', // Green
     '#2196F3', // Blue

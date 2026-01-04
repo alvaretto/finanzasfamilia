@@ -2,6 +2,8 @@
 
 App de finanzas personales y familiares multiplataforma con soporte offline-first.
 
+**Moneda por defecto**: COP (Peso Colombiano) - con soporte internacional (USD, EUR, MXN, ARS, PEN, CLP, BRL)
+
 ## Quick Start
 
 ```bash
@@ -11,11 +13,14 @@ flutter pub get && flutter run
 # Build Android
 flutter build apk --release
 
-# Tests (suite completa)
+# Tests (suite completa 350+)
 flutter test
 
 # Tests rapidos (solo unit/widget)
 flutter test test/unit/ test/widget/
+
+# Workflow completo
+# Ver /full-workflow para automatizacion
 ```
 
 ## Stack Tecnologico
@@ -108,6 +113,8 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 
 ## Estado del Proyecto
 
-- **Version**: 1.7.0
-- **Tests**: 300+ (9 categorias)
+- **Version**: 1.9.0
+- **Tests**: 350+ (10 categorias)
 - **Coverage**: Unit/Widget/Integration 100%
+- **Moneda**: COP (Peso Colombiano) por defecto
+- **Locales**: es_CO, es_MX, en_US, pt_BR soportados

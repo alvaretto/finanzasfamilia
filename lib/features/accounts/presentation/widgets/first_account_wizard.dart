@@ -392,7 +392,7 @@ class _FirstAccountWizardState extends ConsumerState<FirstAccountWizard> {
       final success = await ref.read(accountsProvider.notifier).createAccount(
             name: _nameController.text.trim(),
             type: template.type,
-            currency: 'MXN',
+            currency: 'COP',
             balance: template.type == AccountType.credit ? -balance : balance,
             color: template.colorHex,
           );

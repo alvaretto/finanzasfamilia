@@ -2,6 +2,73 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.9.0] - 2026-01-03
+
+### Cambio de Moneda por Defecto
+
+**BREAKING CHANGE**: La moneda por defecto ahora es COP (Peso Colombiano) en lugar de MXN.
+
+#### Archivos Actualizados
+- `lib/features/accounts/domain/models/account_model.dart` - Default COP
+- `lib/core/utils/formatters/currency_formatter.dart` - Default COP, locale es_CO
+- `lib/core/database/app_database.dart` - Schema default COP
+- `lib/shared/widgets/money_input.dart` - Default COP, montos colombianos
+- `lib/core/utils/extensions/money_extensions.dart` - Default COP
+- `lib/features/accounts/presentation/widgets/*.dart` - Default COP
+- `lib/features/accounts/presentation/providers/account_provider.dart` - Default COP
+
+#### Monedas Soportadas (en orden)
+1. COP - Peso Colombiano (por defecto)
+2. USD - Dolar Estadounidense
+3. EUR - Euro
+4. MXN - Peso Mexicano
+5. ARS - Peso Argentino
+6. PEN - Sol Peruano
+7. CLP - Peso Chileno
+8. BRL - Real Brasileno
+
+#### Montos Rapidos Actualizados
+- Antes: 50, 100, 200, 500, 1000 (MXN)
+- Ahora: 10000, 50000, 100000, 200000, 500000 (COP)
+
+### Nuevos Tests (39 adicionales)
+
+#### Tests Bundle Optimization (`test/pwa/bundle_optimization_test.dart`)
+- 16 tests de optimizacion de assets
+- Code splitting patterns
+- Core Web Vitals simulation (FCP, LCP, CLS, FID)
+- Tree shaking verification
+
+#### Tests Realtime Supabase (`test/supabase/realtime_test.dart`)
+- 17 tests de conexion en tiempo real
+- Subscription management
+- Event handling y deduplication
+- Backoff exponencial
+- Conflict resolution (Last Write Wins)
+
+#### Tests Browser Compatibility (`test/android/browser_compatibility_test.dart`)
+- 22 tests de compatibilidad de navegadores
+- Feature detection (LocalStorage, IndexedDB, Service Worker)
+- CSS compatibility (Flexbox, Grid, Variables)
+- PWA installation requirements
+- Android version support (8+)
+
+### .claude Workflow Actualizado
+
+#### Nuevo Comando
+- `/full-workflow` - Workflow automatizado completo (tests, build, deploy)
+
+#### Documentacion Actualizada
+- CLAUDE.md con informacion de moneda COP
+- Version actualizada a 1.9.0
+
+### Metricas
+
+- **350+ tests** en 10 categorias
+- **39 tests nuevos** agregados
+- **12 archivos** modificados para COP
+- Soporte para **8 monedas** internacionales
+
 ## [1.8.0] - 2026-01-03
 
 ### Documentacion Completa
