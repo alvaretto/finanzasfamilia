@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -23,9 +24,7 @@ class DashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              // TODO: Ir a configuracion
-            },
+            onPressed: () => context.push(AppRoutes.settings),
           ),
         ],
       ),
@@ -40,7 +39,7 @@ class DashboardScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Saludo
-              _buildGreeting(context),
+              _buildGreeting(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
               // Balance total
@@ -72,7 +71,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGreeting(BuildContext context) {
+  Widget _buildGreeting(BuildContext context, WidgetRef ref) {
     final hour = DateTime.now().hour;
     String greeting;
     if (hour < 12) {
@@ -82,6 +81,13 @@ class DashboardScreen extends ConsumerWidget {
     } else {
       greeting = 'Buenas noches';
     }
+
+    // Obtener nombre del usuario desde Supabase Auth
+    final user = ref.watch(currentUserProvider);
+    final userName = user?.userMetadata?['full_name'] ??
+        user?.userMetadata?['name'] ??
+        user?.email?.split('@').first ??
+        'Usuario';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +99,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
         ),
         Text(
-          'Usuario', // TODO: Nombre del usuario
+          userName,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
