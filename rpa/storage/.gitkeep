@@ -1,0 +1,4 @@
+# Session storage directory
+# Contains encrypted browser sessions - DO NOT COMMIT
+*.json
+!.gitkeep
