@@ -174,9 +174,10 @@ class FakeTransactionGenerator:
         # Elegir categoria aleatoria
         category_key = random.choice(list(self.MERCHANTS.keys()))
         merchant = random.choice(self.MERCHANTS[category_key])
-        description, category, (min_amount, max_amount) = merchant
+        description, category, (amount_a, amount_b) = merchant
 
-        # Los gastos son negativos
+        # Los gastos son negativos - asegurar orden correcto para randint
+        min_amount, max_amount = min(amount_a, amount_b), max(amount_a, amount_b)
         amount = random.randint(min_amount, max_amount)
 
         return {
