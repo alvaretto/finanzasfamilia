@@ -7,6 +7,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../shared/utils/motivational_messages.dart';
+import '../../../../shared/widgets/budget_503020_widget.dart';
+import '../../../../shared/services/budget_503020_service.dart';
+import '../../../transactions/presentation/providers/transaction_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -45,6 +48,10 @@ class DashboardScreen extends ConsumerWidget {
 
               // Mensaje motivacional
               _buildMotivationalMessage(context),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Widget Regla 50/30/20
+              _build503020Widget(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
               // Balance total
@@ -156,6 +163,29 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _build503020Widget(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+
+    // Calcular ingresos del mes actual
+    final monthlyIncome = transactionsState.totalIncome;
+
+    // Obtener transacciones del mes actual
+    final transactions = transactionsState.transactions;
+
+    // Calcular presupuesto 50/30/20
+    final budget = Budget503020Service.calculate(
+      transactions: transactions,
+      monthlyIncome: monthlyIncome,
+    );
+
+    // Si no hay ingresos, no mostrar el widget
+    if (monthlyIncome == 0) {
+      return const SizedBox.shrink();
+    }
+
+    return Budget503020Widget(budget: budget);
   }
 
   Widget _buildBalanceCard(BuildContext context) {
