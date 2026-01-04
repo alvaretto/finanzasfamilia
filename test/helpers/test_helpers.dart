@@ -8,6 +8,17 @@ import 'package:go_router/go_router.dart';
 
 import 'package:finanzas_familiares/core/theme/app_theme.dart';
 import 'package:finanzas_familiares/shared/widgets/main_scaffold.dart';
+import 'package:finanzas_familiares/core/network/supabase_client.dart';
+
+/// Configura el entorno de tests (llamar en setUpAll)
+void setupTestEnvironment() {
+  SupabaseClientProvider.enableTestMode();
+}
+
+/// Limpia el entorno de tests (llamar en tearDownAll)
+void tearDownTestEnvironment() {
+  SupabaseClientProvider.reset();
+}
 
 /// Crea un widget wrapper para tests que requieren GoRouter
 Widget createTestApp({
@@ -292,24 +303,25 @@ class _NavItem extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 4,
+          horizontal: 4,
+          vertical: 2,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(isActive ? activeIcon : icon, color: color),
-            const SizedBox(height: 2),
+            Icon(isActive ? activeIcon : icon, color: color, size: 20),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 color: color,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

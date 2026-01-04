@@ -16,8 +16,11 @@ import 'package:finanzas_familiares/features/settings/presentation/screens/setti
 import 'package:finanzas_familiares/features/accounts/presentation/widgets/add_account_sheet.dart';
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: ProviderScope Initialization', () {
     // =========================================================================
     // TEST 1: ProviderScope se inicializa correctamente
@@ -45,7 +48,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -90,7 +93,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -342,7 +345,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -375,7 +378,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -420,7 +423,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -449,7 +452,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -478,7 +481,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -551,7 +554,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -575,7 +578,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // No debe haber errores de dispose
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
     });
 
     // =========================================================================
@@ -710,7 +713,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -732,7 +735,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.dark(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),

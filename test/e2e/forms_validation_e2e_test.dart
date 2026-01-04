@@ -13,8 +13,11 @@ import 'package:finanzas_familiares/features/auth/presentation/screens/register_
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:finanzas_familiares/features/accounts/presentation/widgets/add_account_sheet.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: Login Form Validation', () {
     // =========================================================================
     // TEST 1: Login form se renderiza con todos los campos

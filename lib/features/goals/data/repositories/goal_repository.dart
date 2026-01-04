@@ -8,13 +8,16 @@ import '../../domain/models/goal_model.dart';
 /// Repositorio de metas con soporte offline-first
 class GoalRepository {
   final AppDatabase _db;
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   GoalRepository({
     AppDatabase? database,
     SupabaseClient? supabaseClient,
   })  : _db = database ?? AppDatabase(),
-        _supabase = supabaseClient ?? SupabaseClientProvider.client;
+        _supabase = supabaseClient ?? SupabaseClientProvider.clientOrNull;
+
+  /// Verifica si Supabase está disponible
+  bool get _isOnline => _supabase != null && SupabaseClientProvider.isInitialized;
 
   // ==================== OPERACIONES LOCALES ====================
 
@@ -198,11 +201,12 @@ class GoalRepository {
   }
 
   Future<void> _upsertToSupabase(GoalModel goal) async {
-    await _supabase.from('goals').upsert(goal.toSupabaseMap());
+    if (_isOnline) await _supabase!.from('goals').upsert(goal.toSupabaseMap());
   }
 
   Future<List<GoalModel>> _fetchFromSupabase(String userId) async {
-    final response = await _supabase
+    if (!_isOnline) return [];
+    final response = await _supabase!
         .from('goals')
         .select()
         .eq('user_id', userId)

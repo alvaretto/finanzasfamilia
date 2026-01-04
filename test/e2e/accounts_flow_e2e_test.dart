@@ -10,8 +10,11 @@ import 'package:finanzas_familiares/core/theme/app_theme.dart';
 import 'package:finanzas_familiares/features/accounts/presentation/screens/accounts_screen.dart';
 import 'package:finanzas_familiares/features/accounts/presentation/widgets/add_account_sheet.dart';
 import 'package:finanzas_familiares/features/accounts/domain/models/account_model.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: Pantalla de Cuentas', () {
     // =========================================================================
     // TEST 1: Pantalla de cuentas se renderiza correctamente

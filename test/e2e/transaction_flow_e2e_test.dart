@@ -11,8 +11,11 @@ import 'package:finanzas_familiares/features/transactions/domain/models/transact
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:finanzas_familiares/features/accounts/domain/models/account_model.dart';
 import 'package:finanzas_familiares/shared/widgets/main_scaffold.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: Flujo Completo de Transacciones', () {
     // =========================================================================
     // TEST 1: Apertura del selector de tipo de transacción
@@ -22,7 +25,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),
@@ -58,7 +61,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),
@@ -98,7 +101,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),
@@ -129,7 +132,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),
@@ -160,7 +163,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),
@@ -195,7 +198,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),
@@ -381,7 +384,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Scaffold(body: Center(child: Text('Dashboard'))),
             ),
           ),

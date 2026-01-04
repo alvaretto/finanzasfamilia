@@ -8,13 +8,16 @@ import '../../domain/models/account_model.dart';
 /// Repositorio de cuentas con soporte offline-first
 class AccountRepository {
   final AppDatabase _db;
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   AccountRepository({
     AppDatabase? database,
     SupabaseClient? supabaseClient,
   })  : _db = database ?? AppDatabase(),
-        _supabase = supabaseClient ?? SupabaseClientProvider.client;
+        _supabase = supabaseClient ?? SupabaseClientProvider.clientOrNull;
+
+  /// Verifica si Supabase está disponible
+  bool get _isOnline => _supabase != null && SupabaseClientProvider.isInitialized;
 
   // ==================== OPERACIONES LOCALES ====================
 
@@ -153,6 +156,8 @@ class AccountRepository {
 
   /// Sincronizar cuentas con Supabase
   Future<void> syncWithSupabase(String userId) async {
+    if (!_isOnline) return; // Sin conexión, solo modo offline
+
     try {
       // 1. Subir cuentas locales no sincronizadas
       final unsyncedAccounts = await getUnsyncedAccounts();
@@ -187,12 +192,15 @@ class AccountRepository {
 
   /// Subir/actualizar cuenta en Supabase
   Future<void> _upsertToSupabase(AccountModel account) async {
-    await _supabase.from('accounts').upsert(account.toSupabaseMap());
+    if (!_isOnline) return;
+    await _supabase!.from('accounts').upsert(account.toSupabaseMap());
   }
 
   /// Obtener cuentas de Supabase
   Future<List<AccountModel>> _fetchFromSupabase(String userId) async {
-    final response = await _supabase
+    if (!_isOnline) return [];
+
+    final response = await _supabase!
         .from('accounts')
         .select()
         .eq('user_id', userId)
@@ -250,7 +258,8 @@ class AccountRepository {
 
   /// Eliminar cuenta en Supabase
   Future<void> deleteFromSupabase(String id) async {
-    await _supabase.from('accounts').delete().eq('id', id);
+    if (!_isOnline) return;
+    await _supabase!.from('accounts').delete().eq('id', id);
   }
 
   // ==================== HELPERS ====================

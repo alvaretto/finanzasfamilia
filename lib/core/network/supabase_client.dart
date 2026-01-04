@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,9 +7,30 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseClientProvider {
   static SupabaseClient? _client;
   static bool _isInitialized = false;
+  static bool _isTestMode = false;
 
   /// Verifica si Supabase esta inicializado
-  static bool get isInitialized => _isInitialized;
+  static bool get isInitialized => _isInitialized || _isTestMode;
+
+  /// Activa modo de pruebas (no requiere Supabase real)
+  @visibleForTesting
+  static void enableTestMode() {
+    _isTestMode = true;
+  }
+
+  /// Desactiva modo de pruebas
+  @visibleForTesting
+  static void disableTestMode() {
+    _isTestMode = false;
+  }
+
+  /// Resetea el estado (para tests)
+  @visibleForTesting
+  static void reset() {
+    _client = null;
+    _isInitialized = false;
+    _isTestMode = false;
+  }
 
   /// Inicializa Supabase con las credenciales del .env
   static Future<void> initialize() async {
@@ -43,10 +65,25 @@ class SupabaseClientProvider {
 
   /// Obtiene el cliente de Supabase
   static SupabaseClient get client {
+    if (_isTestMode) {
+      throw Exception('Test mode: Use mock providers instead of real Supabase client.');
+    }
     if (_client == null) {
       throw Exception('Supabase not initialized. Call initialize() first.');
     }
     return _client!;
+  }
+
+  /// Obtiene el cliente de Supabase (null-safe para tests)
+  static SupabaseClient? get clientOrNull {
+    if (_isTestMode) return null;
+    return _client;
+  }
+
+  /// Obtiene el cliente de autenticacion (null-safe)
+  static GoTrueClient? get authOrNull {
+    if (_isTestMode || _client == null) return null;
+    return _client!.auth;
   }
 
   /// Obtiene el cliente de autenticacion
@@ -62,16 +99,37 @@ class SupabaseClientProvider {
   static SupabaseStorageClient get storage => client.storage;
 
   /// Usuario actual (puede ser null)
-  static User? get currentUser => auth.currentUser;
+  static User? get currentUser {
+    if (_isTestMode || _client == null) return null;
+    try {
+      return _client!.auth.currentUser;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Sesion actual (puede ser null)
-  static Session? get currentSession => auth.currentSession;
+  static Session? get currentSession {
+    if (_isTestMode || _client == null) return null;
+    try {
+      return _client!.auth.currentSession;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Stream de cambios de autenticacion
-  static Stream<AuthState> get authStateChanges => auth.onAuthStateChange;
+  static Stream<AuthState> get authStateChanges {
+    if (_isTestMode || _client == null) {
+      // Retornar stream vacio para tests
+      return const Stream.empty();
+    }
+    return _client!.auth.onAuthStateChange;
+  }
 
   /// Cierra sesion
   static Future<void> signOut() async {
-    await auth.signOut();
+    if (_isTestMode || _client == null) return;
+    await _client!.auth.signOut();
   }
 }

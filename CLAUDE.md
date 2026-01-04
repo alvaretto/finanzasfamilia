@@ -11,8 +11,11 @@ flutter pub get && flutter run
 # Build Android
 flutter build apk --release
 
-# Tests
+# Tests (suite completa)
 flutter test
+
+# Tests rapidos (solo unit/widget)
+flutter test test/unit/ test/widget/
 ```
 
 ## Stack Tecnologico
@@ -40,51 +43,71 @@ lib/
 └── shared/         # Widgets compartidos
 ```
 
+## Testing Integral
+
+Suite completa de tests para PWA Flutter + Supabase:
+
+| Categoria | Path | Descripcion |
+|-----------|------|-------------|
+| Unit | `test/unit/` | Logica de negocio |
+| Widget | `test/widget/` | Componentes UI |
+| Integration | `test/integration/` | Flujos completos |
+| E2E | `test/e2e/` | End-to-end agresivos |
+| PWA/Offline | `test/pwa/` | Comportamiento offline-first |
+| Supabase | `test/supabase/` | Auth y seguridad RLS |
+| Performance | `test/performance/` | Rendimiento y memory |
+| Android | `test/android/` | Compatibilidad dispositivos |
+| Production | `test/production/` | Robustez extrema |
+
+Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles.
+
 ## Skills Disponibles
 
-Claude Code tiene skills especializados para este proyecto:
+| Skill | Descripcion |
+|-------|-------------|
+| `sync-management` | Offline-first, sync silencioso |
+| `financial-analysis` | Calculos financieros, ratios |
+| `flutter-architecture` | Patrones Flutter + Riverpod |
+| `testing` | Tests PWA, auth, RLS, performance |
 
-| Skill | Descripcion | Cuando usar |
-|-------|-------------|-------------|
-| `sync-management` | Offline-first, sync silencioso | Implementar sync, manejar offline |
-| `financial-analysis` | Calculos financieros | Patrimonio neto, ratios, reportes |
-| `flutter-architecture` | Patrones Flutter + Riverpod | Crear providers, widgets |
-| `testing` | Tests unitarios, widgets, E2E | Crear o ejecutar tests |
+## Comandos
 
-## Comandos Personalizados
+| Comando | Descripcion |
+|---------|-------------|
+| `/test-all` | Suite completa de tests |
+| `/test-category [cat]` | Tests de categoria especifica |
+| `/quick-test` | Tests rapidos (unit + widget) |
+| `/full-release` | Workflow completo de release |
+| `/build-apk` | Construir APK |
+| `/run-tests` | Ejecutar tests |
 
-```
-/build-apk          # Construir APK de release
-/run-tests          # Ejecutar suite completa de tests
-/sync-check         # Verificar implementacion de sync
-/analyze-finances   # Analizar calculos financieros
-```
+## Hooks Automaticos
 
-## Convenciones
-
-- **Archivos**: snake_case (`account_provider.dart`)
-- **Clases**: PascalCase (`AccountProvider`)
-- **Variables**: camelCase (`accountList`)
-- **Providers**: camelCase + Provider (`accountsProvider`)
+| Hook | Trigger |
+|------|---------|
+| `pre-commit` | Antes de commit - valida tests y formato |
+| `pre-build` | Antes de build - ejecuta tests |
+| `post-build` | Despues de build - copia APK |
+| `post-test-write` | Al crear test - sugiere setup |
 
 ## Principios Clave
 
 1. **Offline-First**: Guardar local primero, sincronizar despues
-2. **Sync Silencioso**: Syncs automaticos no muestran errores (`showError: false`)
-3. **Division por Cero**: Siempre proteger calculos financieros
-4. **Null Safety**: Manejar campos opcionales correctamente
+2. **Sync Silencioso**: Syncs automaticos usan `showError: false`
+3. **Test Mode**: Usar `SupabaseClientProvider.enableTestMode()` en tests
+4. **RLS**: Filtrar siempre por userId en queries
 
-## Documentacion Detallada
+## Documentacion
 
-Para informacion detallada, consulta los skills en `.claude/skills/`:
-
+- [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md)
+- [PWA/Offline Tests](.claude/skills/testing/PWA_OFFLINE_TESTS.md)
+- [Supabase Auth](.claude/skills/testing/SUPABASE_AUTH_TESTS.md)
+- [Security RLS](.claude/skills/testing/SECURITY_RLS_TESTS.md)
 - [Sync Management](.claude/skills/sync-management/SKILL.md)
-- [Financial Analysis](.claude/skills/financial-analysis/SKILL.md)
-- [Flutter Architecture](.claude/skills/flutter-architecture/SKILL.md)
-- [Testing](.claude/skills/testing/SKILL.md)
+- [CHANGELOG](CHANGELOG.md)
 
 ## Estado del Proyecto
 
-- **Version**: 1.2.0
-- **Tests**: 172 pasando (unit, widget, integration, production)
-- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+- **Version**: 1.7.0
+- **Tests**: 300+ (9 categorias)
+- **Coverage**: Unit/Widget/Integration 100%

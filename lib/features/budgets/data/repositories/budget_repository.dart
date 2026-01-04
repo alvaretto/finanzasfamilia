@@ -8,13 +8,16 @@ import '../../domain/models/budget_model.dart';
 /// Repositorio de presupuestos con soporte offline-first
 class BudgetRepository {
   final AppDatabase _db;
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   BudgetRepository({
     AppDatabase? database,
     SupabaseClient? supabaseClient,
   })  : _db = database ?? AppDatabase(),
-        _supabase = supabaseClient ?? SupabaseClientProvider.client;
+        _supabase = supabaseClient ?? SupabaseClientProvider.clientOrNull;
+
+  /// Verifica si Supabase está disponible
+  bool get _isOnline => _supabase != null && SupabaseClientProvider.isInitialized;
 
   // ==================== OPERACIONES LOCALES ====================
 
@@ -220,11 +223,12 @@ class BudgetRepository {
   }
 
   Future<void> _upsertToSupabase(BudgetModel budget) async {
-    await _supabase.from('budgets').upsert(budget.toSupabaseMap());
+    if (_isOnline) await _supabase!.from('budgets').upsert(budget.toSupabaseMap());
   }
 
   Future<List<BudgetModel>> _fetchFromSupabase(String userId) async {
-    final response = await _supabase
+    if (!_isOnline) return [];
+    final response = await _supabase!
         .from('budgets')
         .select()
         .eq('user_id', userId)

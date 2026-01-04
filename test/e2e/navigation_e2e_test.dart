@@ -16,8 +16,11 @@ import 'package:finanzas_familiares/features/transactions/presentation/screens/t
 import 'package:finanzas_familiares/features/reports/presentation/screens/reports_screen.dart';
 import 'package:finanzas_familiares/features/settings/presentation/screens/settings_screen.dart';
 import 'package:finanzas_familiares/features/auth/presentation/screens/login_screen.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: Bottom Navigation Bar', () {
     // =========================================================================
     // TEST 1: BottomNavigationBar se renderiza correctamente
@@ -27,7 +30,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -55,7 +58,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -79,7 +82,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -102,7 +105,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -135,7 +138,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -280,7 +283,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -291,7 +294,7 @@ void main() {
 
       // Intentar swipe horizontal
       await tester.drag(
-        find.byType(MainScaffold),
+        find.byType(TestMainScaffold),
         const Offset(-200, 0),
       );
       await tester.pumpAndSettle();
@@ -307,7 +310,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -333,7 +336,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -363,7 +366,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -401,7 +404,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),

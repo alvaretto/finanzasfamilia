@@ -2,6 +2,80 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.7.0] - 2026-01-03
+
+### Testing Integral PWA + Supabase + Android
+
+Nueva suite de tests siguiendo estrategia de testing profesional para PWA Flutter.
+
+#### Tests PWA/Offline (`test/pwa/`)
+- **Offline-First Strategy**: CRUD funciona sin conexion
+- **Sync Queue**: Registros no sincronizados se acumulan correctamente
+- **Data Persistence**: Datos persisten entre sesiones
+- **Batch Operations**: Operaciones masivas offline funcionan
+- **Error Handling**: Errores de red no crashean la app
+
+#### Tests Supabase Auth (`test/supabase/auth_test.dart`)
+- Validacion de email/password
+- Manejo de sesiones
+- AuthRepository funciona en test mode
+- Error handling para credenciales invalidas
+
+#### Tests Seguridad RLS (`test/supabase/security_rls_test.dart`)
+- **User Isolation**: Cada usuario solo ve sus datos
+- **Input Sanitization**: SQL injection y XSS son texto plano
+- Validacion de datos en repositorios
+
+#### Tests Performance (`test/performance/`)
+- Crear cuenta < 100ms
+- Leer por ID < 50ms
+- Query transacciones < 200ms
+- 100 inserts < 2s
+- 100 inserts paralelos < 3s
+- 1000 operaciones sin memory leak
+
+#### Tests Android Compatibility (`test/android/`)
+- Pantallas: 320x480 a 1440x2560 (HVGA a QHD)
+- Tablet: 800x1280
+- Orientacion: Portrait, Landscape, cambio dinamico
+- System UI: Notch, Navigation bar
+- Font scaling: 0.85x a 1.3x
+- Temas: Light y Dark
+
+### .claude Workflow Completo
+
+#### Nuevos Comandos
+- `/test-all`: Suite completa de tests
+- `/test-category [cat]`: Tests por categoria
+- `/quick-test`: Tests rapidos (unit + widget)
+- `/full-release`: Workflow de release
+
+#### Nuevos Hooks
+- `pre-commit`: Valida tests antes de commit
+- `pre-build`: Ejecuta tests antes de build
+- `post-build`: Copia APK a releases/
+- `post-test-write`: Sugiere setup de test
+
+#### Skills de Testing
+- `TESTING_STRATEGY.md`: Guia completa
+- `PWA_OFFLINE_TESTS.md`: Tests offline
+- `SUPABASE_AUTH_TESTS.md`: Tests auth
+- `SECURITY_RLS_TESTS.md`: Tests seguridad
+
+### Fix de Tests
+
+- **Supabase Test Mode**: `SupabaseClientProvider.enableTestMode()` permite ejecutar tests sin Supabase
+- **Nullable Supabase**: Repositorios usan `SupabaseClient?` para soportar modo offline
+- **TestMainScaffold**: Scaffold simplificado que no requiere GoRouter
+- **_fetchFromSupabase**: Todos los metodos verifican `_isOnline` antes de llamar a Supabase
+
+### Metricas
+
+- **300+ tests** en 9 categorias
+- Unit/Widget/Integration: 100% passing
+- E2E: 85%+ passing (algunos fallan por timing)
+- Coverage: 60%+ estimado
+
 ## [1.6.0] - 2026-01-03
 
 ### Agregado

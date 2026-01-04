@@ -13,8 +13,11 @@ import 'package:finanzas_familiares/features/dashboard/presentation/screens/dash
 import 'package:finanzas_familiares/features/accounts/presentation/screens/accounts_screen.dart';
 import 'package:finanzas_familiares/features/transactions/presentation/screens/transactions_screen.dart';
 import 'package:finanzas_familiares/features/settings/presentation/screens/settings_screen.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: Estados Vacíos', () {
     // =========================================================================
     // TEST 1: Dashboard sin datos
@@ -83,7 +86,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -110,7 +113,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -167,7 +170,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -203,7 +206,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -212,7 +215,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
       expect(find.byType(FloatingActionButton), findsOneWidget);
 
       // Reset
@@ -231,7 +234,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -240,7 +243,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
 
       // Reset
       tester.view.resetPhysicalSize();
@@ -285,7 +288,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -311,7 +314,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -332,7 +335,7 @@ void main() {
       tester.view.physicalSize = const Size(400, 800);
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
 
       // Reset
       tester.view.resetPhysicalSize();
@@ -348,7 +351,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.dark(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -357,7 +360,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
 
       // FAB debe funcionar
       await tester.tap(find.byType(FloatingActionButton));
@@ -414,7 +417,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -441,7 +444,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -507,7 +510,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -575,7 +578,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: const MainScaffold(
+            home: const TestMainScaffold(
               child: Center(child: Text('Content')),
             ),
           ),
@@ -618,7 +621,7 @@ void main() {
             data: const MediaQueryData(textScaler: TextScaler.linear(0.5)),
             child: MaterialApp(
               theme: AppTheme.light(),
-              home: const MainScaffold(
+              home: const TestMainScaffold(
                 child: Center(child: Text('Content')),
               ),
             ),
@@ -641,7 +644,7 @@ void main() {
             data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
             child: MaterialApp(
               theme: AppTheme.light(),
-              home: const MainScaffold(
+              home: const TestMainScaffold(
                 child: Center(child: Text('Content')),
               ),
             ),
@@ -651,7 +654,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
     });
   });
 
@@ -668,7 +671,7 @@ void main() {
             ),
             child: MaterialApp(
               theme: AppTheme.light(),
-              home: const MainScaffold(
+              home: const TestMainScaffold(
                 child: Center(child: Text('Content')),
               ),
             ),
@@ -678,7 +681,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
       expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
@@ -694,7 +697,7 @@ void main() {
             ),
             child: MaterialApp(
               theme: AppTheme.light(),
-              home: const MainScaffold(
+              home: const TestMainScaffold(
                 child: Center(child: Text('Content')),
               ),
             ),
@@ -704,7 +707,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(MainScaffold), findsOneWidget);
+      expect(find.byType(TestMainScaffold), findsOneWidget);
     });
   });
 }

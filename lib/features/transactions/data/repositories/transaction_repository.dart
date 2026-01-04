@@ -9,7 +9,7 @@ import '../../domain/models/transaction_model.dart';
 /// Repositorio de transacciones con soporte offline-first
 class TransactionRepository {
   final AppDatabase _db;
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
   final AccountRepository _accountRepository;
 
   TransactionRepository({
@@ -17,8 +17,11 @@ class TransactionRepository {
     SupabaseClient? supabaseClient,
     AccountRepository? accountRepository,
   })  : _db = database ?? AppDatabase(),
-        _supabase = supabaseClient ?? SupabaseClientProvider.client,
+        _supabase = supabaseClient ?? SupabaseClientProvider.clientOrNull,
         _accountRepository = accountRepository ?? AccountRepository();
+
+  /// Verifica si Supabase está disponible
+  bool get _isOnline => _supabase != null && SupabaseClientProvider.isInitialized;
 
   // ==================== OPERACIONES LOCALES ====================
 
@@ -279,7 +282,8 @@ class TransactionRepository {
 
     // Sync to Supabase
     try {
-      final response = await _supabase.from('categories').insert({
+      if (!_isOnline) throw Exception('Offline mode');
+      final response = await _supabase!.from('categories').insert({
         'user_id': userId,
         'name': name,
         'type': type,
@@ -323,7 +327,8 @@ class TransactionRepository {
     final cat = await (_db.select(_db.categories)..where((t) => t.id.equals(id))).getSingle();
 
     try {
-      await _supabase.from('categories').update({
+      if (!_isOnline) throw Exception('Offline mode');
+      await _supabase!.from('categories').update({
         'name': name,
         'icon': icon,
         'color': color,
@@ -354,7 +359,7 @@ class TransactionRepository {
     await (_db.delete(_db.categories)..where((t) => t.id.equals(id))).go();
 
     try {
-      await _supabase.from('categories').delete().eq('id', cat.uuid);
+      if (_isOnline) await _supabase!.from('categories').delete().eq('id', cat.uuid);
     } catch (_) {
       // Ignore remote errors
     }
@@ -460,11 +465,12 @@ class TransactionRepository {
   }
 
   Future<void> _upsertToSupabase(TransactionModel tx) async {
-    await _supabase.from('transactions').upsert(tx.toSupabaseMap());
+    if (_isOnline) await _supabase!.from('transactions').upsert(tx.toSupabaseMap());
   }
 
   Future<List<TransactionModel>> _fetchFromSupabase(String userId, DateTime fromDate) async {
-    final response = await _supabase
+    if (!_isOnline) return [];
+    final response = await _supabase!
         .from('transactions')
         .select()
         .eq('user_id', userId)

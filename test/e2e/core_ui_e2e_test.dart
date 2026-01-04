@@ -11,6 +11,8 @@ import 'package:finanzas_familiares/core/theme/app_theme.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() => setupTestEnvironment());
+  tearDownAll(() => tearDownTestEnvironment());
   group('E2E: Bottom Navigation Bar', () {
     // =========================================================================
     // TEST 1: BottomNavigationBar se renderiza correctamente
