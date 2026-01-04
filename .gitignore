@@ -69,3 +69,4 @@ venv/
 google-services.json
 GoogleService-Info.plist
 releases/
+rpa/output/*.json

@@ -10,6 +10,7 @@ import '../../../recurring/presentation/screens/recurring_screen.dart';
 import '../../../transactions/presentation/screens/categories_screen.dart';
 import 'notifications_screen.dart';
 import 'export_screen.dart';
+import 'import_test_data_screen.dart';
 
 /// Versión de la aplicación
 const String appVersion = '1.9.1';
@@ -203,6 +204,16 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Respaldo',
                 subtitle: 'Próximamente',
                 onTap: () => _showComingSoonDialog(context, 'Respaldo'),
+              ),
+              _SettingsTile(
+                icon: Icons.science_outlined,
+                title: 'Datos de Prueba',
+                subtitle: 'Generar transacciones fake',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ImportTestDataScreen()),
+                  );
+                },
               ),
             ],
           ),
