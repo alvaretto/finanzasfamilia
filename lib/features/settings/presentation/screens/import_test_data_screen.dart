@@ -185,6 +185,11 @@ class _ImportTestDataScreenState extends ConsumerState<ImportTestDataScreen> {
       if (_createTestAccount) {
         setState(() => _status = 'Creando cuenta de prueba...');
         accountId = await _createTestAccountIfNeeded();
+
+        // ✅ FIX: Sincronizar cuenta ANTES de crear transacciones
+        setState(() => _status = 'Sincronizando cuenta a Supabase...');
+        await ref.read(accountsProvider.notifier).syncAccounts();
+        await Future.delayed(const Duration(seconds: 2));
       } else {
         // Use first available account
         final accountsState = ref.read(accountsProvider);
@@ -192,6 +197,11 @@ class _ImportTestDataScreenState extends ConsumerState<ImportTestDataScreen> {
         if (accounts.isEmpty) {
           setState(() => _status = 'Creando cuenta de prueba (no hay cuentas)...');
           accountId = await _createTestAccountIfNeeded();
+
+          // ✅ FIX: Sincronizar cuenta ANTES de crear transacciones
+          setState(() => _status = 'Sincronizando cuenta a Supabase...');
+          await ref.read(accountsProvider.notifier).syncAccounts();
+          await Future.delayed(const Duration(seconds: 2));
         } else {
           accountId = accounts.first.id;
         }
@@ -213,10 +223,19 @@ class _ImportTestDataScreenState extends ConsumerState<ImportTestDataScreen> {
           date: tx.date,
         );
         saved++;
+
+        // ✅ FIX: Sincronizar en batches cada 10 transacciones
         if (saved % 10 == 0) {
-          setState(() => _status = 'Guardando... $saved/$_transactionCount');
+          setState(() => _status = 'Guardando... $saved/$_transactionCount (sincronizando...)');
+          await ref.read(transactionsProvider.notifier).syncTransactions();
+          await Future.delayed(const Duration(milliseconds: 500));
         }
       }
+
+      // ✅ FIX: Sincronización final de transacciones restantes
+      setState(() => _status = 'Sincronizando transacciones finales...');
+      await ref.read(transactionsProvider.notifier).syncTransactions();
+      await Future.delayed(const Duration(seconds: 1));
 
       setState(() {
         _isGenerating = false;

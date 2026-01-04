@@ -104,12 +104,23 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 
 ## Documentacion
 
+### Testing
 - [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md)
 - [PWA/Offline Tests](.claude/skills/testing/PWA_OFFLINE_TESTS.md)
 - [Supabase Auth](.claude/skills/testing/SUPABASE_AUTH_TESTS.md)
 - [Security RLS](.claude/skills/testing/SECURITY_RLS_TESTS.md)
+
+### Sincronizacion
 - [Sync Management](.claude/skills/sync-management/SKILL.md)
+- [Sync Testing Guide](docs/SYNC_TESTING_GUIDE.md)
+
+### Supabase
+- [Supabase MCP Setup](docs/SUPABASE_MCP_SETUP.md) - Acceso permanente de Claude
+- [Sync Testing Guide](docs/SYNC_TESTING_GUIDE.md) - Pruebas de sincronizacion
+
+### General
 - [CHANGELOG](CHANGELOG.md)
+- [Claude Workflow](docs/CLAUDE_WORKFLOW.md)
 
 ## Estado del Proyecto
 

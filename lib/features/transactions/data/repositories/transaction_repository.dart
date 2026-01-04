@@ -223,6 +223,16 @@ class TransactionRepository {
     }
   }
 
+  /// Contar transacciones asociadas a una cuenta
+  Future<int> countTransactionsByAccount(String accountId) async {
+    final query = _db.selectOnly(_db.transactions)
+      ..addColumns([_db.transactions.id.count()])
+      ..where(_db.transactions.accountId.equals(accountId));
+
+    final result = await query.getSingleOrNull();
+    return result?.read(_db.transactions.id.count()) ?? 0;
+  }
+
   /// Obtener transacciones no sincronizadas
   Future<List<TransactionModel>> getUnsyncedTransactions() async {
     final query = _db.select(_db.transactions)

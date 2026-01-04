@@ -18,6 +18,7 @@ flowchart TB
             S2[financial-analysis]
             S3[flutter-architecture]
             S4[testing]
+            S5[data-testing]
         end
 
         subgraph Commands["Commands Layer"]
@@ -109,6 +110,7 @@ flowchart TB
     S2 --> Features
     S3 --> Core
     S4 --> Testing
+    S5 --> Testing
 
     %% App architecture
     Core --> Features
@@ -242,6 +244,7 @@ flowchart TB
         S2[financial-analysis/]
         S3[flutter-architecture/]
         S4[testing/]
+        S5[data-testing/]
     end
 
     subgraph Level4["Nivel 4: Detalles"]
@@ -431,6 +434,11 @@ mindmap
             PWA/Offline Tests
             Supabase/RLS Tests
             Performance Tests
+        data-testing
+            In-App Generator
+            RPA Python CLI
+            Test Data Patterns
+            Import/Export
 ```
 
 ## Ciclo de Vida de Release
@@ -466,8 +474,8 @@ stateDiagram-v2
 
 ---
 
-**Version**: 2.0.0
+**Version**: 2.1.0
 **Ultima actualizacion**: 2026-01-04
 **Tests**: 500+
-**Skills**: 4 dominios
+**Skills**: 5 dominios
 **Commands**: 11

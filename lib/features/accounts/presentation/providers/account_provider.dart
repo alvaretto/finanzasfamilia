@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../transactions/data/repositories/transaction_repository.dart';
 import '../../data/repositories/account_repository.dart';
 import '../../domain/models/account_model.dart';
 
@@ -70,11 +71,12 @@ class AccountsState {
 /// Notifier de cuentas
 class AccountsNotifier extends StateNotifier<AccountsState> {
   final AccountRepository _repository;
+  final TransactionRepository _transactionRepository;
   final String? _userId;
   StreamSubscription<List<AccountModel>>? _accountsSubscription;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
-  AccountsNotifier(this._repository, this._userId)
+  AccountsNotifier(this._repository, this._transactionRepository, this._userId)
       : super(const AccountsState(isLoading: true)) {
     if (_userId != null) {
       _init();
@@ -97,6 +99,11 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
           isLoading: false,
           totalBalance: total,
         );
+
+        // Crear cuentas por defecto si es la primera vez
+        if (accounts.isEmpty) {
+          await _createDefaultAccounts();
+        }
       },
       onError: (error) {
         state = state.copyWith(
@@ -117,6 +124,24 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
 
     // Sincronizar al iniciar si hay conexión
     _checkAndSync();
+  }
+
+  /// Crear cuentas por defecto para nuevo usuario
+  Future<void> _createDefaultAccounts() async {
+    try {
+      // Cuenta para registrar préstamos/deudas
+      await createAccount(
+        name: 'Préstamos',
+        type: AccountType.payable,
+        currency: 'COP',
+        balance: 0.0,
+        color: '#ef4444', // Rojo (indica deuda)
+        icon: 'attach_money',
+        bankName: null,
+      );
+    } catch (e) {
+      // No hacer nada si falla, el usuario puede crear sus cuentas manualmente
+    }
   }
 
   Future<void> _checkAndSync() async {
@@ -183,8 +208,20 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
   }
 
   /// Eliminar cuenta (soft delete)
+  /// Solo permite eliminar si la cuenta no tiene movimientos asociados
   Future<bool> deleteAccount(String id) async {
     try {
+      // Verificar si la cuenta tiene transacciones
+      final transactionCount = await _transactionRepository.countTransactionsByAccount(id);
+
+      if (transactionCount > 0) {
+        state = state.copyWith(
+          errorMessage: 'No se puede eliminar una cuenta con movimientos. '
+              'Esta cuenta tiene $transactionCount movimiento${transactionCount == 1 ? '' : 's'}.',
+        );
+        return false;
+      }
+
       await _repository.deleteAccount(id);
       _trySyncInBackground();
       return true;
@@ -260,10 +297,11 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
 final accountsProvider =
     StateNotifierProvider<AccountsNotifier, AccountsState>((ref) {
   final repository = ref.watch(accountRepositoryProvider);
+  final transactionRepository = TransactionRepository();
   final authState = ref.watch(authProvider);
   final userId = authState.user?.id;
 
-  return AccountsNotifier(repository, userId);
+  return AccountsNotifier(repository, transactionRepository, userId);
 });
 
 /// Provider del balance total

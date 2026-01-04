@@ -289,7 +289,7 @@ class AccountDetailSheet extends ConsumerWidget {
         title: const Text('Eliminar cuenta'),
         content: Text(
           'Estas seguro de eliminar "${account.name}"?\n\n'
-          'Las transacciones asociadas no se eliminaran.',
+          'Solo se pueden eliminar cuentas sin movimientos asociados.',
         ),
         actions: [
           TextButton(
@@ -302,13 +302,28 @@ class AccountDetailSheet extends ConsumerWidget {
               final success = await ref
                   .read(accountsProvider.notifier)
                   .deleteAccount(account.id);
-              if (success && context.mounted) {
+
+              if (!context.mounted) return;
+
+              if (success) {
                 Navigator.pop(context); // Cerrar sheet
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Cuenta eliminada'),
                     backgroundColor: AppColors.success,
                     behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } else {
+                // Mostrar error
+                final errorMessage = ref.read(accountsProvider).errorMessage ??
+                    'No se pudo eliminar la cuenta';
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(errorMessage),
+                    backgroundColor: AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 4),
                   ),
                 );
               }
