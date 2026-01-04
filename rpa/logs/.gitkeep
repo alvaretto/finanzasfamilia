@@ -1,0 +1,5 @@
+# Logs directory
+# Contains execution logs and error screenshots
+*.log
+*.png
+!.gitkeep
