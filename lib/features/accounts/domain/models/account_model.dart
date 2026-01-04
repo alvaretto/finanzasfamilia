@@ -1,7 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'account_model.freezed.dart';
 part 'account_model.g.dart';
+
+const _uuid = Uuid();
 
 /// Tipos de cuenta disponibles
 enum AccountType {
@@ -122,7 +125,7 @@ class AccountModel with _$AccountModel {
     double creditLimit = 0.0,
   }) {
     return AccountModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _uuid.v4(),
       userId: userId,
       familyId: familyId,
       name: name,

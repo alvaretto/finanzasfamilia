@@ -1,7 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'transaction_model.freezed.dart';
 part 'transaction_model.g.dart';
+
+const _uuid = Uuid();
 
 /// Tipos de transaccion
 enum TransactionType {
@@ -134,7 +137,7 @@ class TransactionModel with _$TransactionModel {
     String? recurringId,
   }) {
     return TransactionModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _uuid.v4(),
       userId: userId,
       accountId: accountId,
       categoryId: categoryId,

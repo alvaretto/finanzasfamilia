@@ -1,7 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'goal_model.freezed.dart';
 part 'goal_model.g.dart';
+
+const _uuid = Uuid();
 
 /// Modelo de meta de ahorro
 @freezed
@@ -38,7 +41,7 @@ class GoalModel with _$GoalModel {
     String? familyId,
   }) {
     return GoalModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _uuid.v4(),
       userId: userId,
       familyId: familyId,
       name: name,

@@ -1,10 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/network/supabase_client.dart';
 import '../../../accounts/data/repositories/account_repository.dart';
 import '../../domain/models/transaction_model.dart';
+
+const _uuid = Uuid();
 
 /// Repositorio de transacciones con soporte offline-first
 class TransactionRepository {
@@ -265,7 +268,7 @@ class TransactionRepository {
     String? icon,
     String? color,
   }) async {
-    final uuid = DateTime.now().millisecondsSinceEpoch.toString();
+    final uuid = _uuid.v4();
 
     final id = await _db.into(_db.categories).insert(
       CategoriesCompanion.insert(

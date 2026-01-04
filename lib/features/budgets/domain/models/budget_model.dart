@@ -1,7 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'budget_model.freezed.dart';
 part 'budget_model.g.dart';
+
+const _uuid = Uuid();
 
 /// Periodo del presupuesto
 enum BudgetPeriod {
@@ -74,7 +77,7 @@ class BudgetModel with _$BudgetModel {
     DateTime start = startDate ?? DateTime(now.year, now.month, 1);
 
     return BudgetModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _uuid.v4(),
       userId: userId,
       familyId: familyId,
       categoryId: categoryId,
