@@ -1,28 +1,43 @@
 ---
 name: testing
-description: Estrategias de testing para Finanzas Familiares. Incluye tests unitarios, de widgets, integracion, E2E, y tests de produccion. Usar para crear, ejecutar, o mejorar tests.
+description: Estrategias de testing para Finanzas Familiares. Incluye tests unitarios, widgets, integracion, AI Chat, seguridad, performance, PWA/offline, Android y produccion. Usar para crear, ejecutar, o mejorar tests.
 ---
 
 # Testing
 
-Skill de testing para Finanzas Familiares.
+Skill de testing completo para Finanzas Familiares (300+ tests).
 
 ## Estructura de Tests
 
 ```
 test/
-├── unit/                 # Tests de logica pura
+├── unit/                 # Tests de logica pura (29)
 │   ├── models/           # Tests de modelos
 │   └── providers/        # Tests de providers
-├── widget/               # Tests de UI
+├── widget/               # Tests de UI (28)
 │   └── features/         # Por feature
-├── integration/          # Tests de flujos
+├── integration/          # Tests de flujos (28)
 │   └── flows/
-├── e2e/                  # Tests end-to-end
-│   └── scenarios/
-├── production/           # Tests agresivos
+├── ai_chat/              # Tests del asistente IA (41)
+│   ├── ai_chat_service_test.dart
+│   └── chat_widget_test.dart
+├── security/             # Tests de seguridad (20)
+│   └── api_security_test.dart
+├── performance/          # Tests de rendimiento (18)
+│   └── chat_performance_test.dart
+├── pwa/                  # Tests PWA/Offline (17)
+│   └── service_worker_test.dart
+├── android/              # Tests Android (12)
+│   └── android_compatibility_test.dart
+├── production/           # Tests agresivos (40+)
 │   └── production_readiness_test.dart
-└── mocks/                # Mocks compartidos
+├── e2e/                  # Tests end-to-end (81)
+│   └── scenarios/
+├── supabase/             # Tests Supabase Auth/RLS
+│   ├── auth_test.dart
+│   └── security_rls_test.dart
+└── helpers/              # Mocks y utilidades compartidas
+    └── test_helpers.dart
 ```
 
 ## Comandos Rapidos
@@ -31,39 +46,45 @@ test/
 # Todos los tests
 flutter test
 
-# Tests unitarios
+# Por categoria
 flutter test test/unit/
-
-# Tests de widget
 flutter test test/widget/
-
-# Tests de integracion
 flutter test test/integration/
-
-# Tests de produccion
+flutter test test/ai_chat/
+flutter test test/security/
+flutter test test/performance/
+flutter test test/pwa/
+flutter test test/android/
 flutter test test/production/
 
 # Con coverage
 flutter test --coverage
+genhtml coverage/lcov.info -o coverage/html
 ```
 
 ## Estado Actual
 
-| Tipo | Tests | Estado |
-|------|-------|--------|
-| Unit | 29 | Pasando |
-| Widget | 13 | Pasando |
-| Integration | 8 | Pasando |
-| Production | 16 | Pasando |
-| E2E | 81 | Requieren Supabase |
-| **Total** | **172** | **Pasando** |
+| Categoria | Tests | Descripcion |
+|-----------|-------|-------------|
+| Unit | 29 | Modelos, repositorios, utils |
+| Widget | 28 | Componentes UI, forms |
+| Integration | 28 | Flujos completos |
+| AI Chat | 41 | Servicio Gemini, mensajes, contexto |
+| Security | 20 | Validacion, RLS, API |
+| Performance | 18 | Tiempos, memoria, stress |
+| PWA/Offline | 17 | Sync, cache, offline-first |
+| Android | 12 | Pantallas, orientacion, temas |
+| Production | 40+ | Edge cases, valores extremos |
+| E2E | 81 | Requieren Supabase activo |
+| **Total** | **300+** | **Pasando (excepto E2E)** |
 
 ## Documentacion Detallada
 
-- [UNIT_TESTS.md](UNIT_TESTS.md) - Tests unitarios
-- [WIDGET_TESTS.md](WIDGET_TESTS.md) - Tests de widgets
-- [E2E_TESTS.md](E2E_TESTS.md) - Tests end-to-end
-- [PRODUCTION_TESTS.md](PRODUCTION_TESTS.md) - Tests agresivos
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - Estrategia completa
+- [PWA_OFFLINE_TESTS.md](PWA_OFFLINE_TESTS.md) - Tests offline-first
+- [SUPABASE_AUTH_TESTS.md](SUPABASE_AUTH_TESTS.md) - Tests de autenticacion
+- [SECURITY_RLS_TESTS.md](SECURITY_RLS_TESTS.md) - Tests de seguridad RLS
+- [PRODUCTION_TESTS.md](PRODUCTION_TESTS.md) - Tests agresivos de produccion
 
 ## Ejemplo Rapido: Test Unitario
 

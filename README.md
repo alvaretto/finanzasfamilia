@@ -1,19 +1,18 @@
 # Finanzas Familiares AS
 
-Una aplicacion de finanzas personales y familiares multiplataforma, offline-first, desarrollada con Flutter y Supabase.
+App de finanzas personales y familiares multiplataforma con soporte offline-first, sincronizacion en la nube y asistente IA integrado.
 
 ## Caracteristicas Principales
 
-- **Multiplataforma**: Android, iOS, Linux, Windows, macOS, Web
+- **Multi-cuenta**: Gestiona efectivo, bancos, tarjetas de credito, inversiones
+- **Transacciones**: Registra ingresos, gastos y transferencias con categorias
+- **Presupuestos Inteligentes**: Define limites por categoria con alertas
+- **Metas de Ahorro**: Seguimiento visual de objetivos financieros
+- **Reportes**: Graficos interactivos (barras, pie, lineas)
+- **Gestion Familiar**: Comparte finanzas con miembros del hogar
+- **Asistente IA (Fina)**: Chat inteligente para consultas financieras
 - **Offline-First**: Funciona sin conexion, sincroniza automaticamente
-- **Gestion Familiar**: Comparte finanzas con tu familia con control de permisos
-- **Presupuestos Inteligentes**: Define limites y recibe alertas
-- **Metas de Ahorro**: Visualiza tu progreso hacia objetivos financieros
-- **Analytics**: Graficos, reportes y insights sobre tus habitos
-
-## Capturas de Pantalla
-
-*Proximamente*
+- **Multiplataforma**: Android, Linux Desktop (proximamente iOS, Windows, Web)
 
 ## Requisitos del Sistema
 
@@ -27,35 +26,38 @@ Una aplicacion de finanzas personales y familiares multiplataforma, offline-firs
 - **Android**: 7.0+ (API 24)
 - **Linux**: Ubuntu 20.04+ / Manjaro / Fedora
 
-## Instalacion
-
-### Desde Codigo Fuente
+## Instalacion Rapida
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/tuusuario/finanzas-familiares-as.git
-cd finanzas-familiares-as
+git clone https://github.com/alvaretto/finanzasfamilia.git
+cd finanzasfamilia
 
 # Instalar dependencias
 flutter pub get
 
 # Generar codigo (freezed, drift, riverpod)
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build -d
 
-# Ejecutar en modo debug
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# Ejecutar
 flutter run
 ```
 
-### Configurar Variables de Entorno
+## Configuracion
 
-Crea un archivo `.env` en la raiz:
+Crea un archivo `.env` en la raiz del proyecto:
 
 ```env
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_ANON_KEY=tu-anon-key
+GEMINI_API_KEY=tu-gemini-api-key
 ```
 
-### Build para Produccion
+## Build para Produccion
 
 ```bash
 # Android APK
@@ -68,85 +70,125 @@ flutter build appbundle --release
 flutter build linux --release
 ```
 
-## Estructura del Proyecto
+## Arquitectura
 
 ```
 lib/
-├── core/               # Infraestructura compartida
-│   ├── database/       # Drift (SQLite local)
-│   ├── network/        # Supabase client
-│   └── theme/          # Design system
-├── features/           # Modulos de funcionalidad
-│   ├── auth/           # Autenticacion
-│   ├── accounts/       # Cuentas bancarias
-│   ├── transactions/   # Ingresos/gastos
-│   ├── budgets/        # Presupuestos
-│   ├── goals/          # Metas de ahorro
-│   ├── reports/        # Graficos y analytics
-│   ├── family/         # Gestion familiar
-│   └── settings/       # Configuracion
-└── shared/             # Componentes compartidos
+├── core/                  # Infraestructura base
+│   ├── database/          # Drift tables y DAOs
+│   ├── network/           # Supabase client, sync service
+│   ├── router/            # go_router navigation
+│   ├── theme/             # Design system
+│   └── utils/             # Helpers, extensions
+├── features/              # Modulos por funcionalidad
+│   ├── auth/              # Login, registro, Google Sign-In
+│   ├── accounts/          # Cuentas bancarias y efectivo
+│   ├── transactions/      # Ingresos, gastos, transferencias
+│   ├── budgets/           # Presupuestos por categoria
+│   ├── goals/             # Metas de ahorro
+│   ├── reports/           # Graficos y analytics
+│   ├── ai_chat/           # Asistente IA (Fina)
+│   ├── family/            # Gestion familiar
+│   ├── recurring/         # Transacciones recurrentes
+│   └── settings/          # Configuracion
+├── shared/                # Widgets y providers compartidos
+└── main.dart              # Entry point
 ```
 
 ## Stack Tecnologico
 
 | Componente | Tecnologia |
-|------------|-----------|
+|------------|------------|
 | Framework | Flutter 3.24+ |
-| State Management | Riverpod 3.0 |
+| State Management | Riverpod 2.6 |
 | Database Local | Drift + SQLite |
 | Backend | Supabase |
 | Navegacion | go_router |
 | Modelos | freezed |
-| Graficos | fl_chart |
-| Auth Local | local_auth (biometria) |
+| Charts | fl_chart |
+| AI | Google Gemini |
+| Auth | Google Sign-In nativo |
 
-## Desarrollo
-
-### Comandos Utiles
+## Testing
 
 ```bash
-# Generar codigo
-dart run build_runner watch
-
-# Tests
+# Todos los tests
 flutter test
 
-# Tests con coverage
+# Tests por categoria
+flutter test test/unit/
+flutter test test/widget/
+flutter test test/integration/
+flutter test test/ai_chat/
+flutter test test/security/
+flutter test test/performance/
+flutter test test/pwa/
+flutter test test/android/
+
+# Con coverage
 flutter test --coverage
+```
+
+### Categorias de Tests (300+)
+
+| Categoria | Descripcion |
+|-----------|-------------|
+| Unit | Logica de negocio, modelos |
+| Widget | Componentes UI |
+| Integration | Flujos completos |
+| AI Chat | Servicio Gemini, mensajes |
+| Security | Validacion, RLS, API |
+| Performance | Tiempos, memoria |
+| PWA | Offline-first, sync |
+| Android | Compatibilidad, temas |
+| Production | Casos extremos, stress |
+
+## Seguridad
+
+- **Offline-first**: Datos almacenados localmente con SQLite
+- **Encriptacion**: flutter_secure_storage para credenciales
+- **Row Level Security**: Aislamiento de datos por usuario en Supabase
+- **JWT Auth**: Autenticacion segura con refresh tokens
+- **Google Sign-In**: Login nativo sin navegador externo
+- **Validacion de entrada**: SQL injection, XSS prevenidos
+
+## Comandos Utiles
+
+```bash
+# Watch mode para generacion de codigo
+dart run build_runner watch
 
 # Analisis estatico
 flutter analyze
 
 # Formatear codigo
 dart format lib/ test/
+
+# Ver dependencias desactualizadas
+flutter pub outdated
 ```
 
-### Convenciones
+## Convenciones de Codigo
 
-- **Archivos**: snake_case
-- **Clases**: PascalCase
-- **Variables**: camelCase
-- **Arquitectura**: Feature-first + Repository pattern
-
-## Roadmap
-
-- [x] Fase 0: Setup inicial
-- [ ] Fase 1: Core MVP (Auth, Cuentas, Transacciones)
-- [ ] Fase 2: Presupuestos y Metas
-- [ ] Fase 3: Gestion Familiar
-- [ ] Fase 4: Analytics Avanzados
-- [ ] Fase 5: Lanzamiento
-
-Ver [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md) para detalles completos.
+- **Archivos**: snake_case (`transaction_repository.dart`)
+- **Clases**: PascalCase (`TransactionRepository`)
+- **Variables**: camelCase (`getMonthlyBalance`)
+- **Arquitectura**: Feature-first + Repository pattern + Offline-first
 
 ## Contribuir
 
 1. Fork el repositorio
 2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Add: nueva funcionalidad'`)
+3. Commit tus cambios (`git commit -m 'feat: descripcion'`)
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Abre un Pull Request
+
+## Documentacion Adicional
+
+- [CHANGELOG.md](CHANGELOG.md) - Historial de versiones
+- [CLAUDE.md](CLAUDE.md) - Guia para desarrollo con Claude
+- [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md) - Tutorial paso a paso
+- [docs/USER_MANUAL.md](docs/USER_MANUAL.md) - Manual de usuario
 
 ## Licencia
 
@@ -154,6 +196,10 @@ MIT License - ver [LICENSE](LICENSE) para detalles.
 
 ## Contacto
 
-- **Autor**: [Tu nombre]
-- **Email**: [tu@email.com]
-- **GitHub**: [github.com/tuusuario](https://github.com/tuusuario)
+- **Autor**: Alvaro
+- **GitHub**: [@alvaretto](https://github.com/alvaretto)
+
+---
+
+**Version**: 1.8.0
+**Ultima actualizacion**: 2026-01-03

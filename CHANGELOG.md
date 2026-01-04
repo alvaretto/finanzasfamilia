@@ -2,6 +2,48 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.8.0] - 2026-01-03
+
+### Documentacion Completa
+
+- **README.md**: Reescrito completamente con arquitectura, stack tecnologico, comandos
+- **docs/WALKTHROUGH.md**: Guia paso a paso para desarrolladores
+- **docs/USER_MANUAL.md**: Manual de usuario completo en espanol
+- **docs/CLAUDE_WORKFLOW.md**: Diagramas Mermaid del flujo de trabajo .claude
+
+### Tests Especializados (6 nuevos archivos)
+
+- `test/ai_chat/ai_chat_service_test.dart` - 26 tests servicio IA
+- `test/ai_chat/chat_widget_test.dart` - 15 tests widgets chat
+- `test/security/api_security_test.dart` - 20 tests seguridad API
+- `test/pwa/service_worker_test.dart` - 17 tests PWA/offline
+- `test/integration/chat_flow_test.dart` - 20 tests flujos chat
+- `test/performance/chat_performance_test.dart` - 18 tests rendimiento
+
+### .claude Progressive Disclosure Actualizado
+
+- **Skills**: 4 skills especializados actualizados
+  - sync-management: Offline-first, conflictos, estrategias
+  - financial-analysis: Calculos, categorias
+  - flutter-architecture: Providers, widgets, patrones
+  - testing: Suite completa 300+ tests
+- **Commands**: 9 comandos automatizados
+- **Hooks**: 6 hooks de productividad
+
+### Fixes de Tests
+
+- Corregido `$` sin escape en strings (`$100` -> `\$100`)
+- Agregado parametro requerido `currency: 'MXN'` a AccountModel
+- Agregado `categoryId` y `BudgetPeriod.monthly` a BudgetModel
+- Cambiado test de emojis para usar `runes.length`
+- Reemplazado `syncWithServer` (no existe) por `watchAccounts`
+
+### Metricas
+
+- **300+ tests** en 10 categorias
+- Documentacion completa en espanol
+- Diagramas Mermaid: 8 diagramas de flujo
+
 ## [1.7.0] - 2026-01-03
 
 ### Testing Integral PWA + Supabase + Android
