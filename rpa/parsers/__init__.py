@@ -1,5 +1,5 @@
-"""Parsers package for transaction data processing."""
+"""Parsers package for transaction normalization."""
 
-from .transaction_parser import TransactionParser, merge_transactions
+from .transaction_parser import TransactionParser
 
-__all__ = ["TransactionParser", "merge_transactions"]
+__all__ = ["TransactionParser"]
