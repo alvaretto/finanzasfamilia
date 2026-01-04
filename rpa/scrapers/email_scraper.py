@@ -1,16 +1,6 @@
 """
-Email scraper for payment notifications.
-Extracts transaction data from bank notification emails.
-
-Supports:
-- Gmail (IMAP)
-- Outlook (IMAP)
-
-Parses notifications from:
-- Davivienda
-- Bancolombia
-- Nequi
-- Other Colombian banks
+Email scraper for extracting transaction notifications from Gmail/Outlook.
+Parses payment confirmation emails from banks and payment processors.
 """
 
 import email
@@ -28,14 +18,35 @@ from .base_scraper import Transaction
 
 class EmailScraper:
     """
-    Scraper for bank notification emails.
+    Scraper for bank transaction notifications via email.
     
-    Connects via IMAP to read emails and extract transaction data
-    from payment notifications.
+    Supported email providers:
+    - Gmail (requires App Password)
+    - Outlook/Hotmail
+    
+    Parses emails from:
+    - Bancolombia
+    - Davivienda
+    - Nequi
+    - Payment processors (PSE, PayU, etc.)
     """
     
-    # Email subjects that indicate payment notifications
-    NOTIFICATION_SUBJECTS = [
+    # Email senders to look for
+    BANK_SENDERS = [
+        "notificaciones@bancolombia.com.co",
+        "alertas@bancolombia.com.co",
+        "notificaciones@davivienda.com",
+        "alertas@davivienda.com",
+        "notificaciones@nequi.com",
+        "nequi@bancolombia.com.co",
+        "daviplata@davivienda.com",
+        "pse@ach.com.co",
+        "notificaciones@payu.com",
+        "no-reply@mercadopago.com",
+    ]
+    
+    # Keywords indicating transaction emails
+    TRANSACTION_KEYWORDS = [
         "compra",
         "pago",
         "transacción",
@@ -43,27 +54,18 @@ class EmailScraper:
         "transferencia",
         "débito",
         "cargo",
-        "movimiento",
-        "notificación",
-        "alerta",
+        "abono",
+        "consignación",
     ]
     
-    # Bank sender patterns
-    BANK_SENDERS = {
-        "davivienda": ["davivienda", "daviplata"],
-        "bancolombia": ["bancolombia", "nequi"],
-        "banco de bogota": ["bancodebogota"],
-        "bbva": ["bbva"],
-        "scotiabank": ["scotiabank", "colpatria"],
-    }
-    
     def __init__(self) -> None:
-        self.email_address = config.email.address
+        """Initialize email scraper."""
+        self.provider = config.email.provider
+        self.address = config.email.address
         self.password = config.email.app_password
         self.imap_server = config.email.imap_server
-        self.provider = config.email.provider
         
-        if not self.email_address or not self.password:
+        if not self.address or not self.password:
             raise ValueError("Email credentials not configured. Check .env file.")
         
         self.client: IMAPClient | None = None
@@ -83,7 +85,7 @@ class EmailScraper:
         logger.info(f"Connecting to {self.imap_server}...")
         
         self.client = IMAPClient(self.imap_server, ssl=True)
-        self.client.login(self.email_address, self.password)
+        self.client.login(self.address, self.password)
         
         logger.info("Connected successfully")
     
@@ -98,83 +100,101 @@ class EmailScraper:
     
     def fetch_transactions(self, days: int = 7) -> list[Transaction]:
         """
-        Fetch transactions from email notifications.
+        Fetch transaction notifications from email.
         
         Args:
-            days: Number of days to search back.
+            days: Number of days to look back.
             
         Returns:
             List of Transaction objects.
         """
-        logger.info(f"Searching emails from last {days} days...")
+        logger.info(f"Fetching email transactions for last {days} days...")
         
         with self:
             # Select inbox
             self.client.select_folder("INBOX")
             
-            # Calculate date range
+            # Calculate date threshold
             since_date = datetime.now() - timedelta(days=days)
             
-            # Search for bank notification emails
-            messages = self._search_bank_emails(since_date)
-            logger.info(f"Found {len(messages)} potential notification emails")
+            # Search for bank emails
+            transactions = []
             
-            # Process each email
-            for msg_id in messages:
+            for sender in self.BANK_SENDERS:
                 try:
-                    tx = self._process_email(msg_id)
-                    if tx:
-                        self.transactions.append(tx)
+                    txns = self._fetch_from_sender(sender, since_date)
+                    transactions.extend(txns)
                 except Exception as e:
-                    logger.warning(f"Error processing email {msg_id}: {e}")
-                    continue
+                    logger.warning(f"Error fetching from {sender}: {e}")
             
-            logger.info(f"Extracted {len(self.transactions)} transactions from emails")
-        
-        return self.transactions
+            # Also search by keywords in subject
+            keyword_txns = self._fetch_by_keywords(since_date)
+            
+            # Merge and deduplicate
+            all_txns = transactions + keyword_txns
+            self.transactions = self._deduplicate(all_txns)
+            
+            logger.info(f"Found {len(self.transactions)} transaction emails")
+            
+            return self.transactions
     
-    def _search_bank_emails(self, since_date: datetime) -> list[int]:
-        """
-        Search for bank notification emails.
+    def _fetch_from_sender(self, sender: str, since_date: datetime) -> list[Transaction]:
+        """Fetch and parse emails from a specific sender."""
+        transactions = []
         
-        Args:
-            since_date: Search emails after this date.
-            
-        Returns:
-            List of message IDs.
-        """
-        all_messages = set()
+        # Search criteria
+        criteria = [
+            "FROM", sender,
+            "SINCE", since_date.strftime("%d-%b-%Y"),
+        ]
         
-        # Search by subject keywords
-        for keyword in self.NOTIFICATION_SUBJECTS:
+        message_ids = self.client.search(criteria)
+        
+        if not message_ids:
+            return []
+        
+        logger.debug(f"Found {len(message_ids)} emails from {sender}")
+        
+        # Fetch messages
+        for msg_id in message_ids[:100]:  # Limit to 100 per sender
+            try:
+                txn = self._parse_email(msg_id)
+                if txn:
+                    transactions.append(txn)
+            except Exception as e:
+                logger.debug(f"Error parsing email {msg_id}: {e}")
+        
+        return transactions
+    
+    def _fetch_by_keywords(self, since_date: datetime) -> list[Transaction]:
+        """Fetch emails matching transaction keywords in subject."""
+        transactions = []
+        
+        for keyword in self.TRANSACTION_KEYWORDS:
             try:
                 criteria = [
-                    "SINCE", since_date.strftime("%d-%b-%Y"),
                     "SUBJECT", keyword,
-                ]
-                messages = self.client.search(criteria)
-                all_messages.update(messages)
-            except Exception as e:
-                logger.debug(f"Search for '{keyword}' failed: {e}")
-        
-        # Search by sender (bank domains)
-        bank_domains = ["davivienda", "bancolombia", "nequi", "daviplata"]
-        for domain in bank_domains:
-            try:
-                criteria = [
                     "SINCE", since_date.strftime("%d-%b-%Y"),
-                    "FROM", domain,
                 ]
-                messages = self.client.search(criteria)
-                all_messages.update(messages)
+                
+                message_ids = self.client.search(criteria)
+                
+                for msg_id in message_ids[:50]:  # Limit per keyword
+                    try:
+                        txn = self._parse_email(msg_id)
+                        if txn:
+                            transactions.append(txn)
+                    except Exception:
+                        continue
+                        
             except Exception as e:
-                logger.debug(f"Search for sender '{domain}' failed: {e}")
+                logger.debug(f"Error searching for '{keyword}': {e}")
         
-        return list(all_messages)
+        return transactions
     
-    def _process_email(self, msg_id: int) -> Transaction | None:
+    def _parse_email(self, msg_id: int) -> Transaction | None:
         """
-        Process a single email and extract transaction data.
+        Parse a single email into a Transaction.
         
         Args:
             msg_id: IMAP message ID.
@@ -182,8 +202,8 @@ class EmailScraper:
         Returns:
             Transaction object or None.
         """
-        # Fetch email content
-        response = self.client.fetch(msg_id, ["RFC822", "ENVELOPE"])
+        # Fetch message
+        response = self.client.fetch([msg_id], ["RFC822", "ENVELOPE"])
         
         if msg_id not in response:
             return None
@@ -194,218 +214,237 @@ class EmailScraper:
         # Parse email
         msg = email.message_from_bytes(raw_email)
         
-        # Get sender
-        sender = self._decode_header(envelope.from_[0].mailbox.decode() + "@" + envelope.from_[0].host.decode())
-        
         # Get subject
-        subject = self._decode_header(envelope.subject.decode() if envelope.subject else "")
+        subject = self._decode_header(envelope.subject)
         
         # Get date
         email_date = envelope.date
+        if email_date:
+            date_str = email_date.strftime("%Y-%m-%d")
+        else:
+            date_str = datetime.now().strftime("%Y-%m-%d")
         
         # Get body
         body = self._get_email_body(msg)
         
-        # Identify bank
-        bank = self._identify_bank(sender, subject, body)
-        
-        if not bank:
+        if not body:
             return None
         
-        # Extract transaction data based on bank
-        return self._extract_transaction(bank, subject, body, email_date)
+        # Check if it's a transaction email
+        if not self._is_transaction_email(subject, body):
+            return None
+        
+        # Extract transaction details
+        amount = self._extract_amount(body)
+        description = self._extract_description(subject, body)
+        txn_type = self._determine_type(subject, body)
+        
+        if amount == 0:
+            return None
+        
+        # Make expenses negative
+        if txn_type == "expense" and amount > 0:
+            amount = -amount
+        
+        # Generate ID from email
+        txn_id = f"EMAIL_{date_str.replace('-', '')}_{msg_id}"
+        
+        return Transaction(
+            id=txn_id,
+            date=date_str,
+            description=description,
+            amount=amount,
+            type=txn_type,
+            raw_data={
+                "subject": subject,
+                "email_id": msg_id,
+            },
+        )
     
-    def _decode_header(self, header: str) -> str:
-        """Decode email header."""
-        if not header:
+    def _decode_header(self, header) -> str:
+        """Decode email header to string."""
+        if header is None:
             return ""
         
+        if isinstance(header, bytes):
+            header = header.decode("utf-8", errors="ignore")
+        
         try:
-            decoded_parts = decode_header(header)
+            decoded_parts = decode_header(str(header))
             result = ""
             for part, encoding in decoded_parts:
                 if isinstance(part, bytes):
-                    result += part.decode(encoding or "utf-8", errors="replace")
+                    result += part.decode(encoding or "utf-8", errors="ignore")
                 else:
-                    result += part
+                    result += str(part)
             return result
         except Exception:
             return str(header)
     
-    def _get_email_body(self, msg: email.message.Message) -> str:
-        """Extract plain text body from email."""
+    def _get_email_body(self, msg) -> str:
+        """Extract text body from email message."""
         body = ""
         
         if msg.is_multipart():
             for part in msg.walk():
                 content_type = part.get_content_type()
-                if content_type == "text/plain":
-                    payload = part.get_payload(decode=True)
-                    if payload:
+                content_disposition = str(part.get("Content-Disposition"))
+                
+                if content_type == "text/plain" and "attachment" not in content_disposition:
+                    try:
+                        payload = part.get_payload(decode=True)
                         charset = part.get_content_charset() or "utf-8"
-                        body += payload.decode(charset, errors="replace")
+                        body += payload.decode(charset, errors="ignore")
+                    except Exception:
+                        continue
+                        
                 elif content_type == "text/html" and not body:
-                    # Fallback to HTML if no plain text
-                    payload = part.get_payload(decode=True)
-                    if payload:
+                    try:
+                        payload = part.get_payload(decode=True)
                         charset = part.get_content_charset() or "utf-8"
-                        html = payload.decode(charset, errors="replace")
-                        # Basic HTML to text
-                        body = re.sub(r"<[^>]+>", " ", html)
+                        html = payload.decode(charset, errors="ignore")
+                        # Strip HTML tags
+                        body = re.sub(r'<[^>]+>', ' ', html)
+                        body = re.sub(r'\s+', ' ', body)
+                    except Exception:
+                        continue
         else:
-            payload = msg.get_payload(decode=True)
-            if payload:
+            try:
+                payload = msg.get_payload(decode=True)
                 charset = msg.get_content_charset() or "utf-8"
-                body = payload.decode(charset, errors="replace")
+                body = payload.decode(charset, errors="ignore")
+            except Exception:
+                pass
         
-        return body
+        return body.strip()
     
-    def _identify_bank(self, sender: str, subject: str, body: str) -> str | None:
-        """Identify which bank sent the notification."""
-        text = f"{sender} {subject} {body}".lower()
+    def _is_transaction_email(self, subject: str, body: str) -> bool:
+        """Check if email is about a financial transaction."""
+        text = f"{subject} {body}".lower()
         
-        for bank, patterns in self.BANK_SENDERS.items():
-            for pattern in patterns:
-                if pattern in text:
-                    return bank
+        # Must contain at least one transaction keyword
+        has_keyword = any(kw in text for kw in self.TRANSACTION_KEYWORDS)
         
-        return None
+        # Must contain currency indicator
+        has_currency = "$" in text or "cop" in text or "pesos" in text
+        
+        # Must have a number that looks like an amount
+        has_amount = bool(re.search(r'\$?\s*[\d.,]{3,}', text))
+        
+        return has_keyword and (has_currency or has_amount)
     
-    def _extract_transaction(
-        self,
-        bank: str,
-        subject: str,
-        body: str,
-        email_date: datetime
-    ) -> Transaction | None:
-        """
-        Extract transaction data from email content.
-        
-        Different banks have different email formats.
-        """
-        text = f"{subject}\n{body}"
-        
-        # Extract amount
-        amount = self._extract_amount(text)
-        if not amount:
-            return None
-        
-        # Extract description
-        description = self._extract_description(text, bank)
-        
-        # Determine transaction type
-        expense_keywords = ["compra", "pago", "débito", "cargo", "retiro"]
-        income_keywords = ["abono", "crédito", "transferencia recibida", "consignación"]
-        
-        text_lower = text.lower()
-        
-        if any(kw in text_lower for kw in expense_keywords):
-            tx_type = "expense"
-            amount = -abs(amount)
-        elif any(kw in text_lower for kw in income_keywords):
-            tx_type = "income"
-            amount = abs(amount)
-        else:
-            tx_type = "expense"  # Default to expense for card notifications
-            amount = -abs(amount)
-        
-        # Generate ID
-        date_str = email_date.strftime("%Y-%m-%d") if email_date else datetime.now().strftime("%Y-%m-%d")
-        tx_id = f"EMAIL_{bank.upper()}_{date_str}_{abs(hash(description)) % 10000}"
-        
-        return Transaction(
-            id=tx_id,
-            date=date_str,
-            description=description,
-            amount=amount,
-            type=tx_type,
-            raw_data={
-                "bank": bank,
-                "subject": subject,
-                "body_preview": body[:500],
-            },
-        )
-    
-    def _extract_amount(self, text: str) -> float | None:
-        """Extract monetary amount from text."""
-        # Patterns for Colombian currency
+    def _extract_amount(self, body: str) -> float:
+        """Extract transaction amount from email body."""
+        # Common patterns in Colombian bank emails
         patterns = [
-            r"\$\s*([\d.,]+)",  # $1.234.567 or $1,234.567
-            r"([\d.,]+)\s*(?:pesos|COP)",  # 1234567 pesos
-            r"(?:valor|monto|total)[\s:]*\$?\s*([\d.,]+)",
-            r"por\s*\$?\s*([\d.,]+)",
+            r'valor[:\s]+\$?\s*([\d.,]+)',
+            r'monto[:\s]+\$?\s*([\d.,]+)',
+            r'total[:\s]+\$?\s*([\d.,]+)',
+            r'por\s+\$?\s*([\d.,]+)',
+            r'\$\s*([\d.,]+)',
+            r'([\d.,]+)\s*(?:pesos|cop)',
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
+            match = re.search(pattern, body.lower())
             if match:
-                amount_str = match.group(1)
                 try:
+                    amount_str = match.group(1)
                     # Parse Colombian format
-                    # Remove thousands separators (dots) and convert decimal comma
-                    if "," in amount_str and "." in amount_str:
-                        # Format: 1.234.567,89
-                        if amount_str.rfind(",") > amount_str.rfind("."):
-                            amount_str = amount_str.replace(".", "").replace(",", ".")
-                        else:
-                            amount_str = amount_str.replace(",", "")
-                    elif "." in amount_str:
-                        # Could be 1.234.567 (thousands) or 1234.56 (decimal)
-                        parts = amount_str.split(".")
-                        if len(parts[-1]) == 3 or len(parts) > 2:
-                            # Thousands separator
-                            amount_str = amount_str.replace(".", "")
-                    elif "," in amount_str:
-                        # Decimal separator
-                        amount_str = amount_str.replace(",", ".")
-                    
-                    return float(amount_str)
+                    return self._parse_amount(amount_str)
                 except ValueError:
                     continue
         
-        return None
+        return 0.0
     
-    def _extract_description(self, text: str, bank: str) -> str:
-        """Extract transaction description/merchant from text."""
-        # Patterns for merchant/establishment
+    def _parse_amount(self, amount_str: str) -> float:
+        """Parse Colombian currency format."""
+        # Remove non-numeric except . and ,
+        cleaned = re.sub(r'[^\d.,]', '', amount_str)
+        
+        if not cleaned:
+            return 0.0
+        
+        # Colombian format: dots for thousands, comma for decimals
+        if ',' in cleaned and '.' in cleaned:
+            # Has both - dots are thousands
+            cleaned = cleaned.replace('.', '').replace(',', '.')
+        elif ',' in cleaned:
+            # Only comma - could be decimal or thousands
+            parts = cleaned.split(',')
+            if len(parts[-1]) == 2:  # Likely decimal
+                cleaned = cleaned.replace(',', '.')
+            else:  # Likely thousands
+                cleaned = cleaned.replace(',', '')
+        else:
+            # Only dots - likely thousands separators
+            cleaned = cleaned.replace('.', '')
+        
+        return float(cleaned)
+    
+    def _extract_description(self, subject: str, body: str) -> str:
+        """Extract transaction description."""
+        # Try to find merchant/establishment name
         patterns = [
-            r"(?:en|comercio|establecimiento)[\s:]+([A-Za-z0-9\s]+?)(?:\.|,|\n|$)",
-            r"(?:compra en|pago a|transferencia a)[\s:]+([A-Za-z0-9\s]+?)(?:\.|,|\n|$)",
-            r"(?:referencia|concepto)[\s:]+([A-Za-z0-9\s]+?)(?:\.|,|\n|$)",
+            r'en\s+([A-Z][A-Za-z0-9\s]+?)(?:\.|,|\s+por)',
+            r'establecimiento[:\s]+([^\n,]+)',
+            r'comercio[:\s]+([^\n,]+)',
+            r'(?:compra|pago)\s+(?:en\s+)?([A-Z][A-Za-z0-9\s]+)',
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
+            match = re.search(pattern, body, re.IGNORECASE)
             if match:
                 desc = match.group(1).strip()
-                if len(desc) > 3:  # Avoid very short matches
-                    return desc[:100]  # Limit length
+                if len(desc) > 3:
+                    return desc[:100]
         
-        # Fallback: use part of subject or first line
-        lines = text.split("\n")
-        for line in lines[:5]:
-            line = line.strip()
-            if len(line) > 10 and not line.startswith(("http", "www")):
-                return line[:100]
+        # Fall back to cleaned subject
+        subject_clean = re.sub(r'\$[\d.,]+', '', subject)
+        subject_clean = re.sub(r'\s+', ' ', subject_clean).strip()
         
-        return f"Notificación {bank}"
+        return subject_clean[:100] if subject_clean else "Transacción por email"
     
-    def export_json(self) -> None:
-        """Export transactions to JSON file."""
-        import json
-        from pathlib import Path
+    def _determine_type(self, subject: str, body: str) -> str:
+        """Determine if transaction is income or expense."""
+        text = f"{subject} {body}".lower()
         
-        output_path = config.settings.output_dir / "email_transactions.json"
+        expense_keywords = [
+            "compra", "pago", "retiro", "débito", "cargo",
+            "transferencia enviada", "gasto",
+        ]
         
-        data = {
-            "source": "email",
-            "provider": self.provider,
-            "extracted_at": datetime.now().isoformat(),
-            "transaction_count": len(self.transactions),
-            "transactions": [t.to_dict() for t in self.transactions],
-        }
+        income_keywords = [
+            "abono", "consignación", "transferencia recibida",
+            "depósito", "ingreso", "recibido",
+        ]
         
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        expense_count = sum(1 for kw in expense_keywords if kw in text)
+        income_count = sum(1 for kw in income_keywords if kw in text)
         
-        logger.info(f"Exported to: {output_path}")
+        return "income" if income_count > expense_count else "expense"
+    
+    def _deduplicate(self, transactions: list[Transaction]) -> list[Transaction]:
+        """Remove duplicate transactions based on date + amount + description."""
+        seen = set()
+        unique = []
+        
+        for txn in transactions:
+            key = (txn.date, txn.amount, txn.description[:30])
+            if key not in seen:
+                seen.add(key)
+                unique.append(txn)
+        
+        return unique
+    
+    def run(self, days: int = 7) -> list[Transaction]:
+        """
+        Main execution flow.
+        
+        Args:
+            days: Number of days to fetch.
+            
+        Returns:
+            List of Transaction objects.
+        """
+        return self.fetch_transactions(days)
