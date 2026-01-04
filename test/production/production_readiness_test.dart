@@ -262,4 +262,330 @@ void main() {
       expect(creditCard.availableBalance, 15000);
     });
   });
+
+  // ============================================
+  // TESTS AGRESIVOS DE PRODUCCIÓN V2
+  // ============================================
+
+  group('Production Aggressive - Extreme Values', () {
+    test('AccountModel soporta balances astronomicos sin overflow', () {
+      // Riqueza de un millonario
+      final millionaire = AccountModel.create(
+        userId: 'test', name: 'Fortuna',
+        type: AccountType.investment, currency: 'USD',
+        balance: 1000000000000.00, // 1 trillon
+      );
+      expect(millionaire.balance, 1000000000000.00);
+      expect(millionaire.type.isAsset, true);
+
+      // Deuda masiva
+      final massiveDebt = AccountModel.create(
+        userId: 'test', name: 'Deuda Nacional',
+        type: AccountType.loan, currency: 'MXN',
+        balance: -9999999999999.99,
+      );
+      expect(massiveDebt.balance, -9999999999999.99);
+      expect(massiveDebt.type.isLiability, true);
+    });
+
+    test('TransactionModel maneja montos minimos (centavos)', () {
+      final centavo = TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 0.01, type: TransactionType.expense,
+      );
+      expect(centavo.amount, 0.01);
+      expect(centavo.signedAmount, -0.01);
+    });
+
+    test('BudgetModel con presupuesto de centavos', () {
+      final microBudget = BudgetModel(
+        id: '1', userId: 'test', categoryId: 1,
+        amount: 0.01, period: BudgetPeriod.weekly,
+        startDate: DateTime.now(), spent: 0.005,
+      );
+      expect(microBudget.percentSpent, closeTo(50, 1));
+    });
+
+    test('GoalModel con meta de un centavo', () {
+      final microGoal = GoalModel.create(
+        userId: 'test', name: 'Micro Meta',
+        targetAmount: 0.01, currentAmount: 0.01,
+      );
+      expect(microGoal.isCompleted, true);
+      expect(microGoal.percentComplete, 100);
+    });
+  });
+
+  group('Production Aggressive - String Edge Cases', () {
+    test('Strings vacios no causan crash', () {
+      final account = AccountModel.create(
+        userId: '', name: '', type: AccountType.bank, currency: '',
+      );
+      expect(account.userId, '');
+      expect(account.name, '');
+    });
+
+    test('Strings muy largos son manejados', () {
+      final longString = 'A' * 10000; // 10,000 caracteres
+      final tx = TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 100, type: TransactionType.expense,
+        description: longString,
+        notes: longString,
+      );
+      expect(tx.description!.length, 10000);
+      expect(tx.notes!.length, 10000);
+    });
+
+    test('Caracteres unicode especiales son preservados', () {
+      final unicodeTx = TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 100, type: TransactionType.expense,
+        description: '中文 العربية 日本語 한국어 🇲🇽🇺🇸🇪🇺',
+        notes: '∑∏∫∂√∞≠≈',
+      );
+      expect(unicodeTx.description, contains('中文'));
+      expect(unicodeTx.notes, contains('∑'));
+    });
+
+    test('Newlines y tabs en strings', () {
+      final multiline = TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 100, type: TransactionType.expense,
+        description: 'Linea 1\nLinea 2\tTabulado',
+        notes: '\n\n\t\t',
+      );
+      expect(multiline.description, contains('\n'));
+      expect(multiline.notes, contains('\t'));
+    });
+  });
+
+  group('Production Aggressive - Date Edge Cases', () {
+    test('Transaccion en fecha muy antigua', () {
+      final ancient = TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 100, type: TransactionType.expense,
+        date: DateTime(1900, 1, 1),
+      );
+      expect(ancient.date.year, 1900);
+    });
+
+    test('Transaccion en fecha futura lejana', () {
+      final future = TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 100, type: TransactionType.expense,
+        date: DateTime(2099, 12, 31, 23, 59, 59),
+      );
+      expect(future.date.year, 2099);
+    });
+
+    test('Meta con fecha limite pasada', () {
+      final pastGoal = GoalModel.create(
+        userId: 'test', name: 'Meta Pasada',
+        targetAmount: 1000, currentAmount: 500,
+        targetDate: DateTime(2020, 1, 1),
+      );
+      expect(pastGoal.targetDate!.isBefore(DateTime.now()), true);
+      expect(pastGoal.isCompleted, false);
+    });
+
+    test('Presupuesto en año bisiesto febrero 29', () {
+      final leapYear = BudgetModel.create(
+        userId: 'test', categoryId: 1,
+        amount: 1000, period: BudgetPeriod.monthly,
+        startDate: DateTime(2024, 2, 29), // 2024 es bisiesto
+      );
+      expect(leapYear.startDate.day, 29);
+      expect(leapYear.startDate.month, 2);
+    });
+  });
+
+  group('Production Aggressive - Stress Tests', () {
+    test('Crear 10,000 transacciones', () {
+      final stopwatch = Stopwatch()..start();
+      final transactions = List.generate(10000, (i) => TransactionModel.create(
+        userId: 'stress-test',
+        accountId: 'acc-${i % 100}',
+        amount: (i % 1000) * 1.5 + 0.01,
+        type: TransactionType.values[i % 3],
+        description: 'Stress test transaction $i',
+        categoryId: i % 20,
+      ));
+      stopwatch.stop();
+
+      expect(transactions.length, 10000);
+      expect(stopwatch.elapsedMilliseconds, lessThan(5000)); // < 5 segundos
+    });
+
+    test('Filtrar 10,000 transacciones con filtros complejos', () {
+      final transactions = List.generate(10000, (i) => TransactionModel.create(
+        userId: 'stress-test',
+        accountId: 'acc-${i % 10}',
+        amount: i.toDouble(),
+        type: TransactionType.values[i % 3],
+        description: 'Transaction $i with keyword-${i % 50}',
+      ));
+
+      const filters = TransactionFilters(
+        searchQuery: 'keyword-25',
+        type: TransactionType.expense,
+        minAmount: 1000,
+        maxAmount: 9000,
+      );
+
+      final stopwatch = Stopwatch()..start();
+      final result = filters.apply(transactions);
+      stopwatch.stop();
+
+      expect(result.isNotEmpty, true);
+      expect(stopwatch.elapsedMilliseconds, lessThan(500)); // < 500ms
+    });
+
+    test('Calcular patrimonio con 1000 cuentas', () {
+      final accounts = List.generate(1000, (i) => AccountModel.create(
+        userId: 'stress',
+        name: 'Account $i',
+        type: AccountType.values[i % AccountType.values.length],
+        currency: 'MXN',
+        balance: (i % 2 == 0 ? 1 : -1) * i * 100.0,
+      ));
+
+      final stopwatch = Stopwatch()..start();
+      final assets = accounts.where((a) => a.type.isAsset).fold(0.0, (sum, a) => sum + a.balance);
+      final liabilities = accounts.where((a) => a.type.isLiability).fold(0.0, (sum, a) => sum + a.balance.abs());
+      stopwatch.stop();
+
+      expect(assets, isNotNull);
+      expect(liabilities, isNotNull);
+      expect(stopwatch.elapsedMilliseconds, lessThan(100)); // < 100ms
+    });
+  });
+
+  group('Production Aggressive - Division by Zero Prevention', () {
+    test('BudgetModel con amount 0 y spent > 0', () {
+      final zeroBudget = BudgetModel(
+        id: '1', userId: 'test', categoryId: 1,
+        amount: 0, period: BudgetPeriod.monthly,
+        startDate: DateTime.now(), spent: 100,
+      );
+      expect(zeroBudget.percentSpent, 0); // No debe ser infinito
+      expect(zeroBudget.remaining, -100);
+      expect(zeroBudget.isOverBudget, true); // spent > amount
+    });
+
+    test('GoalModel con targetAmount 0 y currentAmount > 0', () {
+      final zeroTarget = GoalModel.create(
+        userId: 'test', name: 'Zero Target',
+        targetAmount: 0, currentAmount: 1000,
+      );
+      expect(zeroTarget.percentComplete, 0); // No debe ser infinito (division por cero protegida)
+      expect(zeroTarget.isCompleted, true); // currentAmount >= targetAmount (1000 >= 0)
+    });
+
+    test('AccountModel credit con creditLimit 0', () {
+      const zeroCreditLimit = AccountModel(
+        id: '1', userId: 'test', name: 'Zero Credit',
+        type: AccountType.credit, currency: 'MXN',
+        balance: -1000, creditLimit: 0,
+      );
+      expect(zeroCreditLimit.availableBalance, -1000);
+    });
+  });
+
+  group('Production Aggressive - Concurrent Modifications', () {
+    test('Copiar y modificar modelos no afecta originales', () {
+      final original = AccountModel.create(
+        userId: 'test', name: 'Original',
+        type: AccountType.bank, currency: 'MXN', balance: 1000,
+      );
+
+      final copy = AccountModel(
+        id: original.id, userId: original.userId,
+        name: 'Modified', type: original.type,
+        currency: original.currency, balance: 2000,
+      );
+
+      expect(original.name, 'Original');
+      expect(original.balance, 1000);
+      expect(copy.name, 'Modified');
+      expect(copy.balance, 2000);
+    });
+
+    test('Lista de transacciones es inmutable despues de filtrar', () {
+      final transactions = List.generate(100, (i) => TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: i.toDouble(), type: TransactionType.expense,
+      ));
+
+      const filters = TransactionFilters(minAmount: 50);
+      final filtered = filters.apply(transactions);
+
+      expect(filtered.length, lessThan(transactions.length));
+      expect(transactions.length, 100); // Original no modificado
+    });
+  });
+
+  group('Production Aggressive - All AccountType scenarios', () {
+    test('Todos los tipos de cuenta clasifican correctamente', () {
+      // Activos
+      expect(AccountType.bank.isAsset, true);
+      expect(AccountType.cash.isAsset, true);
+      expect(AccountType.savings.isAsset, true);
+      expect(AccountType.investment.isAsset, true);
+
+      // Pasivos
+      expect(AccountType.credit.isLiability, true);
+      expect(AccountType.loan.isLiability, true);
+      expect(AccountType.payable.isLiability, true);
+
+      // Caso especial: receivable es dinero que nos deben, es un ACTIVO
+      expect(AccountType.receivable.isAsset, true);
+      expect(AccountType.receivable.isLiability, false);
+    });
+
+    test('availableBalance correcto para cada tipo', () {
+      // Cuenta normal - availableBalance = balance
+      const bank = AccountModel(
+        id: '1', userId: 'test', name: 'Bank',
+        type: AccountType.bank, currency: 'MXN', balance: 5000,
+      );
+      expect(bank.availableBalance, 5000);
+
+      // Credito - availableBalance = creditLimit + balance (balance es negativo)
+      const credit = AccountModel(
+        id: '2', userId: 'test', name: 'Credit',
+        type: AccountType.credit, currency: 'MXN',
+        balance: -3000, creditLimit: 10000,
+      );
+      expect(credit.availableBalance, 7000);
+
+      // Credito sin limite - availableBalance = balance
+      const creditNoLimit = AccountModel(
+        id: '3', userId: 'test', name: 'Credit No Limit',
+        type: AccountType.credit, currency: 'MXN', balance: -1000,
+      );
+      expect(creditNoLimit.availableBalance, -1000);
+    });
+  });
+
+  group('Production Aggressive - Financial Calculations Precision', () {
+    test('Suma de transacciones mantiene precision decimal', () {
+      final transactions = List.generate(1000, (i) => TransactionModel.create(
+        userId: 'test', accountId: 'acc',
+        amount: 0.01, type: TransactionType.income,
+      ));
+
+      final total = transactions.fold(0.0, (sum, t) => sum + t.amount);
+      expect(total, closeTo(10.0, 0.01)); // 1000 * 0.01 = 10.00
+    });
+
+    test('Calculo de porcentaje es preciso', () {
+      final budget = BudgetModel(
+        id: '1', userId: 'test', categoryId: 1,
+        amount: 333.33, period: BudgetPeriod.monthly,
+        startDate: DateTime.now(), spent: 111.11,
+      );
+      expect(budget.percentSpent, closeTo(33.33, 0.1));
+    });
+  });
 }

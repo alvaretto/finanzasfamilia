@@ -187,6 +187,46 @@ test('Calculo de patrimonio neto es correcto', () {
 });
 ```
 
+## Tests Agresivos v2 (2026-01-03)
+
+### 7. Stress Tests Extremos
+```dart
+test('Crear 10,000 transacciones en <5 segundos', () {
+  final stopwatch = Stopwatch()..start();
+  final transactions = List.generate(10000, (i) => TransactionModel.create(
+    userId: 'stress-test',
+    accountId: 'acc-${i % 100}',
+    amount: (i % 1000) * 1.5 + 0.01,
+    type: TransactionType.values[i % 3],
+    description: 'Stress test $i',
+    categoryId: i % 20,
+  ));
+  stopwatch.stop();
+  expect(transactions.length, 10000);
+  expect(stopwatch.elapsedMilliseconds, lessThan(5000));
+});
+```
+
+### 8. Inmutabilidad
+```dart
+test('Lista filtrada no afecta original', () {
+  final original = [...transactions];
+  final filtered = filters.apply(transactions);
+  filtered.clear();
+  expect(transactions.length, original.length);
+});
+```
+
+### 9. Precision Decimal
+```dart
+test('Precision de decimales en sumas', () {
+  final tx1 = TransactionModel.create(amount: 0.1, ...);
+  final tx2 = TransactionModel.create(amount: 0.2, ...);
+  final sum = tx1.amount + tx2.amount;
+  expect((sum * 100).round() / 100, 0.3);
+});
+```
+
 ## Ejecutar Tests de Produccion
 
 ```bash
@@ -195,6 +235,9 @@ flutter test test/production/
 
 # Con verbose output
 flutter test test/production/ --reporter expanded
+
+# Suite completa pre-release
+/pre-release
 ```
 
 ## Agregar Nuevos Tests

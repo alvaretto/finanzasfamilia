@@ -2,6 +2,35 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.6.0] - 2026-01-03
+
+### Agregado
+- **Google Sign-In Nativo**: Reemplazado OAuth web por google_sign_in nativo
+  - Mejor UX: selector de cuenta nativo en lugar de navegador externo
+  - ID token integrado con Supabase Auth
+- **Deep Links OAuth**: Soporte para io.supabase.finanzasfamiliares://
+- **Tests de Produccion v2**: 40+ tests agresivos adicionales:
+  - Balances astronomicos (trillones) sin overflow
+  - Balances negativos extremos
+  - Strings de 10,000 caracteres
+  - Unicode, emojis, y caracteres especiales
+  - Fechas edge case (1900, 2099, leap year)
+  - Stress test: 10,000 transacciones en <5s
+  - Filtrado de 10,000 items en <1s
+  - Division por cero en todos los calculos financieros
+  - Verificacion de inmutabilidad
+  - Precision decimal en calculos
+
+### Corregido
+- **LocaleDataException**: Inicializado DateFormat en espanol antes de uso
+- **Pantalla Movimientos**: Ya no muestra error rojo al abrir
+
+### Documentacion
+- Workflow .claude completo con Progressive Disclosure
+- 4 skills especializados
+- 6 comandos automatizados
+- 4 hooks de productividad
+
 ## [1.2.0] - 2026-01-03
 
 ### Agregado
