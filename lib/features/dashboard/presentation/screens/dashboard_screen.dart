@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../shared/utils/motivational_messages.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -40,6 +41,10 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               // Saludo
               _buildGreeting(context, ref),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Mensaje motivacional
+              _buildMotivationalMessage(context),
               const SizedBox(height: AppSpacing.lg),
 
               // Balance total
@@ -105,6 +110,51 @@ class DashboardScreen extends ConsumerWidget {
               ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMotivationalMessage(BuildContext context) {
+    // Por ahora mostrar tip del día
+    // TODO: Calcular métricas reales cuando estén disponibles
+    final message = MotivationalMessages.getTipOfTheDay(DateTime.now());
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.secondary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: AppColors.secondary.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Icon(
+              Icons.lightbulb_outline,
+              color: AppColors.secondary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
