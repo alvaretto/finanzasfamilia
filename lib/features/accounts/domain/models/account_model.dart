@@ -37,9 +37,9 @@ extension AccountTypeExtension on AccountType {
       case AccountType.loan:
         return 'Prestamo';
       case AccountType.receivable:
-        return 'Cuenta por Cobrar';
+        return 'Me Deben';
       case AccountType.payable:
-        return 'Cuenta por Pagar';
+        return 'Debo Pagar';
     }
   }
 
@@ -167,10 +167,9 @@ class AccountModel with _$AccountModel {
 
   /// Convierte a Map para Supabase
   Map<String, dynamic> toSupabaseMap() {
-    return {
+    final map = {
       'id': id,
       'user_id': userId,
-      'family_id': familyId,
       'name': name,
       'type': type.name,
       'currency': currency,
@@ -183,6 +182,13 @@ class AccountModel with _$AccountModel {
       'is_active': isActive,
       'include_in_total': includeInTotal,
     };
+
+    // Solo incluir family_id si no es null (evita trigger de RLS)
+    if (familyId != null) {
+      map['family_id'] = familyId;
+    }
+
+    return map;
   }
 
   /// Crear desde respuesta de Supabase

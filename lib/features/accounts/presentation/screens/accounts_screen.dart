@@ -40,7 +40,7 @@ class AccountsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cuentas'),
+        title: const Text('Mis Cuentas'),
         actions: [
           // Indicador de sincronizacion
           if (accountsState.isSyncing)
@@ -120,7 +120,7 @@ class AccountsScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Patrimonio Neto',
+                  'Mis Ahorros Netos',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -156,7 +156,7 @@ class AccountsScreen extends ConsumerWidget {
               children: [
                 _buildBalanceSummaryChip(
                   context,
-                  label: 'Activos',
+                  label: 'Lo que Tengo',
                   amount: state.balanceByType.entries
                       .where((e) => e.key != AccountType.credit)
                       .fold(0.0, (sum, e) => sum + e.value),
@@ -165,7 +165,7 @@ class AccountsScreen extends ConsumerWidget {
                 ),
                 _buildBalanceSummaryChip(
                   context,
-                  label: 'Deudas',
+                  label: 'Lo que Debo',
                   amount: state.balanceByType[AccountType.credit] ?? 0.0,
                   format: format,
                   color: AppColors.expense,

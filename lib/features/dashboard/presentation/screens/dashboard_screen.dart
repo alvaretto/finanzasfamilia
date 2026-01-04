@@ -137,7 +137,7 @@ class DashboardScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Balance Total',
+                'Mi Dinero',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
@@ -162,7 +162,7 @@ class DashboardScreen extends ConsumerWidget {
               _buildBalanceIndicator(
                 context,
                 icon: Icons.arrow_upward,
-                label: 'Ingresos',
+                label: 'Recibí',
                 value: '\$45,200',
                 color: AppColors.income,
               ),
@@ -170,7 +170,7 @@ class DashboardScreen extends ConsumerWidget {
               _buildBalanceIndicator(
                 context,
                 icon: Icons.arrow_downward,
-                label: 'Gastos',
+                label: 'Gasté',
                 value: '\$32,150',
                 color: AppColors.expense,
               ),

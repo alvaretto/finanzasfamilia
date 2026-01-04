@@ -69,8 +69,8 @@ void main() {
       expect(AccountType.investment.displayName, 'Inversiones');
       expect(AccountType.wallet.displayName, 'Billetera Digital');
       expect(AccountType.loan.displayName, 'Prestamo');
-      expect(AccountType.receivable.displayName, 'Cuenta por Cobrar');
-      expect(AccountType.payable.displayName, 'Cuenta por Pagar');
+      expect(AccountType.receivable.displayName, 'Me Deben');
+      expect(AccountType.payable.displayName, 'Debo Pagar');
     });
 
     test('icon devuelve icono correcto', () {
