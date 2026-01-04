@@ -71,7 +71,7 @@
 
 ## 2. Principios Financieros Fundamentales
 
-### 2.1 Los 6 Principios (Adaptados de Normas Contables)
+### 2.1 Los 5 Principios (Adaptados de Normas Contables)
 
 Aunque no estás obligado a seguir normas contables, estos principios te ayudarán a llevar mejor control de tu dinero:
 
@@ -180,45 +180,7 @@ Mejor:
     💡 Consejo: Considera reducir salidas"
 ```
 
-#### Principio 4: **Solo Info Importante** (Relevancia)
-
-**En palabras simples:**
-> Registra lo que te ayuda a tomar decisiones, ignora lo irrelevante.
-
-**¿Por qué importa?**
-
-- No pierdes tiempo
-- Te enfocas en lo importante
-- La app no se vuelve una carga
-
-**Ejemplos prácticos:**
-
-**QUÉ registrar:**
-```
-✅ SÍ registrar:
-
-- Compra de supermercado: $150,000
-- Pago de arriendo: $1,200,000
-- Salida a comer: $80,000
-- Pago de tarjeta: $500,000
-
-❌ NO necesitas registrar:
-
-- Cada chicle de $1,000
-- Cada propina de $2,000
-- Cada parqueadero de $3,000
-```
-
-**Umbral recomendado:**
-```
-Registra si:
-
-- Es > $10,000 COP, O
-- Es un gasto recurrente, O
-- Es importante para tu presupuesto
-```
-
-#### Principio 5: **Información Confiable** (Fiabilidad)
+#### Principio 4: **Información Confiable** (Fiabilidad)
 
 **En palabras simples:**
 > Los números deben ser correctos para que confíes en ellos.
@@ -270,7 +232,7 @@ void validarTransaccion(Transaccion t) {
 }
 ```
 
-#### Principio 6: **Compara en el Tiempo** (Comparabilidad)
+#### Principio 5: **Compara en el Tiempo** (Comparabilidad)
 
 **En palabras simples:**
 > Usa el mismo método siempre para poder comparar mes a mes.
