@@ -17,7 +17,7 @@ class AiChatService {
     }
 
     _model = GenerativeModel(
-      model: 'gemini-1.5-pro-latest',
+      model: 'gemini-2.0-flash-001',
       apiKey: apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.7,
