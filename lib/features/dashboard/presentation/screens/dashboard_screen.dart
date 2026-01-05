@@ -11,6 +11,9 @@ import '../../../../shared/widgets/budget_503020_widget.dart';
 import '../../../../shared/services/budget_503020_service.dart';
 import '../../../../shared/widgets/financial_health_widget.dart';
 import '../../../../shared/services/financial_health_service.dart';
+import '../../../../shared/widgets/ant_expense_widget.dart';
+import '../../../../shared/services/ant_expense_service.dart';
+import '../../../../shared/utils/ant_expense_analysis.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 
@@ -68,6 +71,9 @@ class DashboardScreen extends ConsumerWidget {
               // 🏥 Salud Financiera
               _buildFinancialHealthWidget(context, ref),
               const SizedBox(height: AppSpacing.lg),
+
+              // 🐜 Gastos Hormiga (solo si hay gastos significativos)
+              _buildAntExpenseWidget(context, ref),
 
               // Grafico de gastos por categoría
               _buildExpenseChart(context),
@@ -536,6 +542,25 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAntExpenseWidget(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final analysis = AntExpenseService.analyzeCurrentMonth(
+      transactionsState.transactions,
+    );
+
+    // Solo mostrar si hay gastos hormiga significativos
+    if (analysis.impact == AntExpenseImpact.none) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        AntExpenseWidget(analysis: analysis),
+        const SizedBox(height: AppSpacing.lg),
+      ],
     );
   }
 
