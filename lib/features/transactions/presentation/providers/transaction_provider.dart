@@ -2,7 +2,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
+import '../../../../shared/services/budget_alert_service.dart';
+import '../../../accounts/data/repositories/account_repository.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../budgets/data/repositories/budget_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
 import '../../domain/models/transaction_model.dart';
 
@@ -88,13 +91,19 @@ class TransactionsState {
 /// Notifier de transacciones
 class TransactionsNotifier extends StateNotifier<TransactionsState> {
   final TransactionRepository _repository;
+  final BudgetRepository _budgetRepository;
+  final AccountRepository _accountRepository;
   final String? _userId;
   StreamSubscription<List<TransactionModel>>? _transactionsSubscription;
   StreamSubscription<List<CategoryModel>>? _categoriesSubscription;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
-  TransactionsNotifier(this._repository, this._userId)
-      : super(const TransactionsState(isLoading: true)) {
+  TransactionsNotifier(
+    this._repository,
+    this._budgetRepository,
+    this._accountRepository,
+    this._userId,
+  ) : super(const TransactionsState(isLoading: true)) {
     if (_userId != null) {
       _init();
     } else {
@@ -206,11 +215,52 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
       }
 
       await _repository.createTransaction(transaction);
+
+      // Verificar alertas automáticas después de crear la transacción
+      await _checkAlerts(transaction);
+
       _trySyncInBackground();
       return true;
     } catch (e) {
       state = state.copyWith(errorMessage: 'Error al crear transaccion: $e');
       return false;
+    }
+  }
+
+  /// Verificar alertas automáticas de presupuesto, gastos grandes y saldo bajo
+  Future<void> _checkAlerts(TransactionModel transaction) async {
+    try {
+      final userId = _userId;
+      if (userId == null) return;
+
+      // Obtener cuenta actualizada
+      final account = await _accountRepository.getAccountById(transaction.accountId);
+      if (account == null) return;
+
+      // Obtener presupuestos activos del mes actual
+      final now = DateTime.now();
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final endOfMonth = DateTime(now.year, now.month + 1, 0);
+
+      // Obtener presupuestos del repositorio (usar watchBudgetsWithSpent que ya calcula spent)
+      final allBudgets = await _budgetRepository.watchBudgetsWithSpent(userId).first;
+
+      // Filtrar presupuestos activos en el periodo actual
+      final activeBudgets = allBudgets.where((b) {
+        return b.startDate.isBefore(endOfMonth) &&
+            (b.endDate == null || b.endDate!.isAfter(startOfMonth));
+      }).toList();
+
+      // Verificar alertas
+      await BudgetAlertService.checkAlertsAfterTransaction(
+        transaction: transaction,
+        budgets: activeBudgets,
+        account: account,
+        sendNotifications: true,
+      );
+    } catch (e) {
+      // No fallar si las alertas no funcionan, solo log
+      // print('Error checking alerts: $e');
     }
   }
 
@@ -357,8 +407,15 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
 final transactionsProvider =
     StateNotifierProvider<TransactionsNotifier, TransactionsState>((ref) {
   final repository = ref.watch(transactionRepositoryProvider);
+  final budgetRepository = BudgetRepository();
+  final accountRepository = AccountRepository();
   final authState = ref.watch(authProvider);
-  return TransactionsNotifier(repository, authState.user?.id);
+  return TransactionsNotifier(
+    repository,
+    budgetRepository,
+    accountRepository,
+    authState.user?.id,
+  );
 });
 
 /// Provider de categorias
