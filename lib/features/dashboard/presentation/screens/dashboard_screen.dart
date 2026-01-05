@@ -16,6 +16,8 @@ import '../../../../shared/services/ant_expense_service.dart';
 import '../../../../shared/utils/ant_expense_analysis.dart';
 import '../../../../shared/widgets/fina_tip_widget.dart';
 import '../../../../shared/services/contextual_tips_service.dart';
+import '../../../../shared/widgets/month_comparison_widget.dart';
+import '../../../../shared/utils/month_comparison.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../../budgets/presentation/providers/budget_provider.dart';
@@ -78,6 +80,9 @@ class DashboardScreen extends ConsumerWidget {
               // 🏥 Salud Financiera
               _buildFinancialHealthWidget(context, ref),
               const SizedBox(height: AppSpacing.lg),
+
+              // 📊 Comparación Mensual
+              _buildMonthComparisonWidget(context, ref),
 
               // 🐜 Gastos Hormiga (solo si hay gastos significativos)
               _buildAntExpenseWidget(context, ref),
@@ -232,6 +237,26 @@ class DashboardScreen extends ConsumerWidget {
     }
 
     return FinancialHealthWidget(health: health);
+  }
+
+  Widget _buildMonthComparisonWidget(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final transactions = transactionsState.transactions;
+
+    // Calcular comparación mensual
+    final comparison = MonthComparison.fromTransactions(transactions);
+
+    // No mostrar si no hay datos del mes anterior
+    if (comparison.previousTransactionCount == 0) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        MonthComparisonWidget(comparison: comparison),
+        const SizedBox(height: AppSpacing.lg),
+      ],
+    );
   }
 
   Widget _buildFinaTip(BuildContext context, WidgetRef ref) {
