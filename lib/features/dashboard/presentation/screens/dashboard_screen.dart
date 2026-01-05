@@ -18,6 +18,8 @@ import '../../../../shared/widgets/fina_tip_widget.dart';
 import '../../../../shared/services/contextual_tips_service.dart';
 import '../../../../shared/widgets/month_comparison_widget.dart';
 import '../../../../shared/utils/month_comparison.dart';
+import '../../../../shared/widgets/upcoming_payments_widget.dart';
+import '../../../../shared/utils/upcoming_payments.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../../budgets/presentation/providers/budget_provider.dart';
@@ -72,6 +74,9 @@ class DashboardScreen extends ConsumerWidget {
               // 📊 Este Mes (ingresos, gastos, disponible)
               _buildQuickStats(context, ref),
               const SizedBox(height: AppSpacing.lg),
+
+              // 📅 Próximos Pagos
+              _buildUpcomingPaymentsWidget(context, ref),
 
               // 📊 Widget Regla 50/30/20
               _build503020Widget(context, ref),
@@ -237,6 +242,26 @@ class DashboardScreen extends ConsumerWidget {
     }
 
     return FinancialHealthWidget(health: health);
+  }
+
+  Widget _buildUpcomingPaymentsWidget(BuildContext context, WidgetRef ref) {
+    final budgetsState = ref.watch(budgetsProvider);
+    final budgets = budgetsState.budgets;
+
+    // Obtener próximos pagos desde presupuestos
+    final upcomingPayments = UpcomingPaymentsService.getUpcomingFromBudgets(budgets);
+
+    // No mostrar si no hay pagos próximos
+    if (upcomingPayments.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        UpcomingPaymentsWidget(payments: upcomingPayments),
+        const SizedBox(height: AppSpacing.lg),
+      ],
+    );
   }
 
   Widget _buildMonthComparisonWidget(BuildContext context, WidgetRef ref) {
