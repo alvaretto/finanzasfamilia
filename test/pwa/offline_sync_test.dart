@@ -19,14 +19,14 @@ void main() {
   late AccountRepository accountRepo;
   late TransactionRepository txRepo;
 
-  setUpAll(() {
-    setupFullTestEnvironment();
+  setUpAll(() async {
+    await setupFullTestEnvironment();
   });
 
   setUp(() {
     testDb = createTestDatabase();
     accountRepo = AccountRepository(database: testDb);
-    txRepo = TransactionRepository(database: testDb);
+    txRepo = TransactionRepository(database: testDb, accountRepository: accountRepo);
   });
 
   tearDown(() async {
@@ -236,7 +236,7 @@ void main() {
           id: const Uuid().v4(),
           userId: userId,
           accountId: accountId,
-          amount: 10.0 * i,
+          amount: 10.0 * (i + 1), // +1 para evitar monto 0
           type: i % 2 == 0 ? TransactionType.expense : TransactionType.income,
           description: 'Batch tx $i',
           date: DateTime.now(),

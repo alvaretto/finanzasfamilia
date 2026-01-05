@@ -19,16 +19,16 @@ void main() {
   late AccountRepository accountRepo;
   late TransactionRepository txRepo;
 
-  setUpAll(() {
+  setUpAll(() async {
     // Inicializar bindings y Supabase en modo test
-    setupFullTestEnvironment();
+    await setupFullTestEnvironment();
   });
 
   setUp(() {
     // Crear nueva base de datos in-memory para cada test
     testDb = createTestDatabase();
     accountRepo = AccountRepository(database: testDb);
-    txRepo = TransactionRepository(database: testDb);
+    txRepo = TransactionRepository(database: testDb, accountRepository: accountRepo);
   });
 
   tearDown(() async {
@@ -104,7 +104,7 @@ void main() {
           id: const Uuid().v4(),
           userId: userId,
           accountId: accountId,
-          amount: 100.0 * i,
+          amount: 100.0 * (i + 1), // +1 para evitar monto 0
           type: TransactionType.expense,
           description: 'Offline tx $i',
           date: DateTime.now(),
@@ -162,7 +162,7 @@ void main() {
           id: const Uuid().v4(),
           userId: userId,
           accountId: accountId,
-          amount: i * 10.0,
+          amount: (i + 1) * 10.0, // +1 para evitar monto 0
           type: TransactionType.expense,
           description: 'Queue item $i',
           date: DateTime.now(),

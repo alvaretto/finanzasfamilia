@@ -1,7 +1,10 @@
 // test/helpers/test_helpers.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:drift/native.dart';
+import 'package:finanzas_familiares/core/database/app_database.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
@@ -440,8 +443,14 @@ bool verificarCompatibilidad(String featureA, String featureB) {
 
 /// Setup completo del ambiente de testing
 Future<void> setupFullTestEnvironment() async {
+  // Asegurar que el binding de Flutter está inicializado para Drift/SQLite
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   // Inicializar localización para DateFormat (español)
   await initializeDateFormatting('es', null);
+
+  // Resetear el singleton de AppDatabase para evitar que use path_provider
+  AppDatabase.resetInstance();
 
   // Habilitar modo test de Supabase para evitar llamadas reales
   SupabaseClientProvider.enableTestMode();
@@ -455,6 +464,9 @@ Future<void> setupFullTestEnvironment() async {
 
 /// Alias para setupFullTestEnvironment (usado en E2E tests)
 Future<void> setupTestEnvironment() async {
+  // Asegurar que el binding de Flutter está inicializado
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   // Inicializar localización para DateFormat (español)
   await initializeDateFormatting('es', null);
 
@@ -477,9 +489,8 @@ Future<void> tearDownTestEnvironment() async {
   SupabaseClientProvider.reset();
 }
 
-/// Crear database de prueba
-dynamic createTestDatabase() {
-  // Retorna una instancia mock o in-memory de la DB
-  // En tests reales, esto deberia crear AppDatabase.inMemory()
-  return null; // Placeholder
+/// Crear database de prueba con SQLite in-memory
+AppDatabase createTestDatabase() {
+  // Crear una base de datos in-memory para tests aislados
+  return AppDatabase(NativeDatabase.memory());
 }
