@@ -16,12 +16,14 @@ class AiSettingsModel {
   final String? apiKey;
   final String? selectedModel;
   final bool useCustomProvider;
+  final bool isLoading; // Indica si está cargando desde storage
 
   const AiSettingsModel({
     this.provider = AiProvider.gemini,
     this.apiKey,
     this.selectedModel,
     this.useCustomProvider = false,
+    this.isLoading = true, // Por defecto está cargando
   });
 
   AiSettingsModel copyWith({
@@ -29,12 +31,14 @@ class AiSettingsModel {
     String? apiKey,
     String? selectedModel,
     bool? useCustomProvider,
+    bool? isLoading,
   }) {
     return AiSettingsModel(
       provider: provider ?? this.provider,
       apiKey: apiKey ?? this.apiKey,
       selectedModel: selectedModel ?? this.selectedModel,
       useCustomProvider: useCustomProvider ?? this.useCustomProvider,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 
