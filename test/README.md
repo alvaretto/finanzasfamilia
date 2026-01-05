@@ -10,6 +10,7 @@
 | Tests pasando | 580 |
 | Tests saltados | 21 (requieren Supabase real) |
 | Tests fallando | 0 |
+| Tests de regresión | Variable (generados automáticamente) |
 
 ---
 
@@ -32,6 +33,10 @@ test/
 ├── production/       # Tests de readiness para producción
 ├── providers/        # Tests de Riverpod providers
 ├── pwa/              # Tests específicos de PWA/Offline
+├── regression/       # Tests de regresión (generados del error-tracker)
+│   ├── unit/         # Tests unitarios de regresión
+│   ├── widget/       # Tests de widget de regresión
+│   └── integration/  # Tests de integración de regresión
 ├── router/           # Tests de navegación (go_router)
 ├── security/         # Tests de seguridad (XSS, SQLi, etc.)
 ├── services/         # Tests de servicios
@@ -190,6 +195,41 @@ flutter test test/android/
 - Font scaling: 0.85x a 1.3x
 - Temas: Light y Dark
 
+### 11. Regression Tests (`test/regression/`) 🆕
+
+Tests generados automáticamente del sistema de error-tracker.
+
+```bash
+flutter test test/regression/
+```
+
+**Estructura:**
+```
+test/regression/
+├── unit/              # Tests unitarios de regresión
+│   └── {feature}/
+├── widget/            # Tests de widget de regresión  
+│   └── {feature}/
+└── integration/       # Tests de integración de regresión
+    └── {feature}/
+```
+
+**Generación de tests:**
+```bash
+# Generar test de regresión para un error documentado
+python .error-tracker/scripts/generate_test.py ERR-XXXX
+
+# El test se genera en la ubicación correspondiente según el tipo
+# test/regression/{tipo}/{feature}/err_xxxx_regression_test.dart
+```
+
+**Propósito:**
+- Prevenir reintroducción de bugs corregidos
+- Documentar casos de uso que causaron errores
+- Verificar que las soluciones aplicadas siguen funcionando
+
+Ver [ERROR_TRACKER_GUIDE.md](../docs/ERROR_TRACKER_GUIDE.md) para más detalles.
+
 ---
 
 ## 🚀 Comandos Rápidos
@@ -220,6 +260,9 @@ flutter test test/supabase/
 
 # Performance
 flutter test test/performance/
+
+# Regresión
+flutter test test/regression/
 ```
 
 ### Tests con coverage
@@ -288,6 +331,7 @@ tearDownAll(() {
 ### Nomenclatura de archivos
 - `*_test.dart` - Archivo de test estándar
 - `*_e2e_test.dart` - Test End-to-End
+- `err_xxxx_regression_test.dart` - Test de regresión generado
 - `mock_*.dart` - Mock objects
 
 ### Estructura de tests
@@ -303,6 +347,26 @@ group('Categoría: Subcategoría', () {
     // Assert
   });
 });
+```
+
+### Estructura de tests de regresión
+
+```dart
+/// Test de regresión para ERR-XXXX: Título del error
+/// 
+/// Causa raíz: Descripción de la causa
+/// Archivo original: path/to/file.dart
+void main() {
+  group('ERR-XXXX Regression', () {
+    test('should not exhibit the original error behavior', () {
+      // Test que verifica que el error no ocurre
+    });
+    
+    test('should handle edge cases correctly', () {
+      // Test que verifica anti-patrones no usados
+    });
+  });
+}
 ```
 
 ### Nombres de tests
@@ -362,13 +426,41 @@ Error accessing Supabase auth: Exception: Test mode: Use mock providers...
 
 ---
 
+## 🔄 Workflow de Error Tracking + Tests
+
+Cuando corriges un error, sigue este workflow:
+
+```bash
+# 1. Buscar errores similares
+python .error-tracker/scripts/search_errors.py "descripción"
+
+# 2. Implementar solución
+# ...
+
+# 3. Documentar el error
+python .error-tracker/scripts/add_error.py
+
+# 4. Generar test de regresión
+python .error-tracker/scripts/generate_test.py ERR-XXXX
+
+# 5. Completar el test generado (tiene TODOs)
+code test/regression/{tipo}/{feature}/err_xxxx_regression_test.dart
+
+# 6. Ejecutar para verificar
+flutter test test/regression/
+```
+
+Ver [ERROR_TRACKER_GUIDE.md](../docs/ERROR_TRACKER_GUIDE.md) para documentación completa.
+
+---
+
 ## 📈 Historial de Métricas
 
-| Fecha | Pasando | Saltados | Fallando |
-|-------|---------|----------|----------|
-| 2026-01-05 | 580 | 21 | 0 |
-| 2026-01-04 | 573 | 21 | 7 |
-| 2026-01-03 | 500+ | 21 | 0 |
+| Fecha | Pasando | Saltados | Fallando | Regresión |
+|-------|---------|----------|----------|----------|
+| 2026-01-05 | 580 | 21 | 0 | 0 (nuevo) |
+| 2026-01-04 | 573 | 21 | 7 | - |
+| 2026-01-03 | 500+ | 21 | 0 | - |
 
 ---
 
@@ -379,3 +471,4 @@ Error accessing Supabase auth: Exception: Test mode: Use mock providers...
 - [Widget Testing](https://docs.flutter.dev/cookbook/testing/widget/introduction)
 - [CLAUDE.md](../CLAUDE.md) - Documentación principal del proyecto
 - [Testing Strategy](../.claude/skills/testing/TESTING_STRATEGY.md) - Estrategia detallada
+- [Error Tracker Guide](../docs/ERROR_TRACKER_GUIDE.md) - Sistema de error tracking

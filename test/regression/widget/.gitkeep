@@ -1,0 +1,7 @@
+# Tests de regresión de widgets
+# Generados automáticamente por: python .error-tracker/scripts/generate_test.py ERR-XXXX --type widget
+# 
+# Estructura esperada:
+#   test/regression/widget/{feature}/err_xxxx_regression_test.dart
+#
+# Ver: docs/ERROR_TRACKER_GUIDE.md

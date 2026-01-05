@@ -1,0 +1,7 @@
+# Tests de regresión de integración
+# Generados automáticamente por: python .error-tracker/scripts/generate_test.py ERR-XXXX --type integration
+# 
+# Estructura esperada:
+#   test/regression/integration/{feature}/err_xxxx_regression_test.dart
+#
+# Ver: docs/ERROR_TRACKER_GUIDE.md
