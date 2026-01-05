@@ -277,6 +277,7 @@ class TransactionRepository {
     required String type,
     String? icon,
     String? color,
+    int? parentId,
   }) async {
     final uuid = _uuid.v4();
 
@@ -288,6 +289,7 @@ class TransactionRepository {
         type: type,
         icon: Value(icon),
         color: Value(color),
+        parentId: Value(parentId),
         isSystem: const Value(false),
         synced: const Value(false),
       ),
@@ -302,6 +304,7 @@ class TransactionRepository {
         'type': type,
         'icon': icon,
         'color': color,
+        'parent_id': parentId,
         'is_system': false,
       }).select().single();
 
@@ -326,12 +329,14 @@ class TransactionRepository {
     required String name,
     String? icon,
     String? color,
+    int? parentId,
   }) async {
     await (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(
       CategoriesCompanion(
         name: Value(name),
         icon: Value(icon),
         color: Value(color),
+        parentId: Value(parentId),
         synced: const Value(false),
       ),
     );
@@ -345,6 +350,7 @@ class TransactionRepository {
         'name': name,
         'icon': icon,
         'color': color,
+        'parent_id': parentId,
       }).eq('id', cat.uuid);
 
       await (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(

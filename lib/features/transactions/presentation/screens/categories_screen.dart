@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/utils/category_hierarchy.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
@@ -76,10 +77,14 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
 
   void _showAddCategory(BuildContext context) {
     final type = _tabController.index == 0 ? 'expense' : 'income';
+    final categories = ref.watch(categoriesProvider);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _CategoryFormSheet(type: type),
+      builder: (_) => _CategoryFormSheet(
+        type: type,
+        allCategories: categories,
+      ),
     );
   }
 }
@@ -114,14 +119,270 @@ class _CategoryList extends ConsumerWidget {
       );
     }
 
+    // Construir árbol jerárquico
+    final tree = CategoryHierarchyUtils.buildTree(categories, type);
+    final flatItems = CategoryHierarchyUtils.flattenTree(tree);
+
     return ListView.builder(
       padding: const EdgeInsets.all(AppSpacing.md),
-      itemCount: categories.length,
+      itemCount: flatItems.length,
       itemBuilder: (context, index) {
-        final category = categories[index];
-        return _CategoryTile(category: category);
+        final item = flatItems[index];
+        return _CategoryHierarchyTile(
+          item: item,
+          allCategories: categories,
+        );
       },
     );
+  }
+}
+
+class _CategoryHierarchyTile extends ConsumerWidget {
+  final FlatCategoryItem item;
+  final List<CategoryModel> allCategories;
+
+  const _CategoryHierarchyTile({
+    required this.item,
+    required this.allCategories,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final category = item.category;
+    final color = _parseColor(category.color) ?? AppColors.primary;
+    final level = item.level;
+
+    return Padding(
+      padding: EdgeInsets.only(left: item.indentation, bottom: AppSpacing.xs),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: level == 0 ? 1 : 0,
+        color: level == 0
+            ? null
+            : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        child: ListTile(
+          dense: level > 0,
+          leading: CircleAvatar(
+            radius: level == 0 ? 20 : 16,
+            backgroundColor: color.withValues(alpha: 0.1),
+            child: Icon(
+              _getIcon(category.icon),
+              color: color,
+              size: level == 0 ? 20 : 16,
+            ),
+          ),
+          title: Row(
+            children: [
+              if (level > 0) ...[
+                Text(
+                  level == 1 ? '└─' : '  └─',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              Expanded(
+                child: Text(
+                  category.name,
+                  style: level == 0
+                      ? Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          )
+                      : null,
+                ),
+              ),
+            ],
+          ),
+          subtitle: _buildSubtitle(context),
+          trailing: category.isSystem
+              ? const Icon(Icons.lock, size: 16, color: Colors.grey)
+              : PopupMenuButton<String>(
+                  onSelected: (value) => _handleAction(context, ref, value),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, size: 20),
+                          SizedBox(width: AppSpacing.sm),
+                          Text('Editar'),
+                        ],
+                      ),
+                    ),
+                    if (item.hasChildren)
+                      const PopupMenuItem(
+                        value: 'add_sub',
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_circle_outline, size: 20),
+                            SizedBox(width: AppSpacing.sm),
+                            Text('Agregar Subcategoría'),
+                          ],
+                        ),
+                      ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, size: 20, color: AppColors.error),
+                          SizedBox(width: AppSpacing.sm),
+                          Text('Eliminar', style: TextStyle(color: AppColors.error)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget? _buildSubtitle(BuildContext context) {
+    final category = item.category;
+    final parts = <String>[];
+
+    if (category.isSystem) {
+      parts.add('Sistema');
+    }
+
+    if (item.hasChildren) {
+      final childCount = CategoryHierarchyUtils.getSubcategories(
+        allCategories,
+        category.id,
+      ).length;
+      parts.add('$childCount subcategoría${childCount != 1 ? 's' : ''}');
+    }
+
+    if (parts.isEmpty) return null;
+
+    return Text(
+      parts.join(' • '),
+      style: TextStyle(
+        fontSize: 12,
+        color: Theme.of(context).colorScheme.outline,
+      ),
+    );
+  }
+
+  void _handleAction(BuildContext context, WidgetRef ref, String action) {
+    final category = item.category;
+
+    if (action == 'edit') {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => _CategoryFormSheet(
+          type: category.type,
+          category: category,
+          allCategories: allCategories,
+        ),
+      );
+    } else if (action == 'add_sub') {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => _CategoryFormSheet(
+          type: category.type,
+          parentId: category.id,
+          allCategories: allCategories,
+        ),
+      );
+    } else if (action == 'delete') {
+      _confirmDelete(context, ref);
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final category = item.category;
+
+    // Check if has children
+    if (item.hasChildren) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se puede eliminar: tiene subcategorías'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Check usage
+    final repository = ref.read(transactionRepositoryProvider);
+    final usageCount = await repository.getCategoryUsageCount(category.id);
+
+    if (!context.mounted) return;
+
+    if (usageCount > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se puede eliminar: $usageCount transacciones usan esta categoría'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar categoría'),
+        content: Text('¿Eliminar "${category.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      final success = await repository.deleteCategory(category.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? 'Categoría eliminada' : 'Error al eliminar'),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  IconData _getIcon(String? iconName) {
+    const icons = {
+      'restaurant': Icons.restaurant,
+      'directions_car': Icons.directions_car,
+      'home': Icons.home,
+      'shopping_cart': Icons.shopping_cart,
+      'local_hospital': Icons.local_hospital,
+      'school': Icons.school,
+      'flight': Icons.flight,
+      'movie': Icons.movie,
+      'fitness_center': Icons.fitness_center,
+      'pets': Icons.pets,
+      'work': Icons.work,
+      'attach_money': Icons.attach_money,
+      'account_balance': Icons.account_balance,
+      'card_giftcard': Icons.card_giftcard,
+      'savings': Icons.savings,
+    };
+    return icons[iconName] ?? Icons.category;
+  }
+
+  Color? _parseColor(String? hex) {
+    if (hex == null) return null;
+    try {
+      return Color(int.parse(hex.replaceFirst('#', 'FF'), radix: 16));
+    } catch (_) {
+      return null;
+    }
   }
 }
 
@@ -284,10 +545,14 @@ class _CategoryTile extends ConsumerWidget {
 class _CategoryFormSheet extends ConsumerStatefulWidget {
   final String type;
   final CategoryModel? category;
+  final int? parentId;
+  final List<CategoryModel> allCategories;
 
   const _CategoryFormSheet({
     required this.type,
     this.category,
+    this.parentId,
+    this.allCategories = const [],
   });
 
   @override
@@ -299,6 +564,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
   final _nameController = TextEditingController();
   String _selectedIcon = 'category';
   Color _selectedColor = AppColors.primary;
+  int? _selectedParentId;
   bool _isLoading = false;
 
   bool get isEditing => widget.category != null;
@@ -341,6 +607,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
     if (widget.category != null) {
       _nameController.text = widget.category!.name;
       _selectedIcon = widget.category!.icon ?? 'category';
+      _selectedParentId = widget.category!.parentId;
       if (widget.category!.color != null) {
         try {
           _selectedColor = Color(
@@ -348,6 +615,8 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
           );
         } catch (_) {}
       }
+    } else if (widget.parentId != null) {
+      _selectedParentId = widget.parentId;
     }
   }
 
@@ -372,6 +641,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
           name: _nameController.text.trim(),
           icon: _selectedIcon,
           color: colorHex,
+          parentId: _selectedParentId,
         );
       } else {
         final userId = ref.read(authProvider).user!.id;
@@ -381,6 +651,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
           type: widget.type,
           icon: _selectedIcon,
           color: colorHex,
+          parentId: _selectedParentId,
         );
       }
 
@@ -468,6 +739,10 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                   return null;
                 },
               ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Parent category selector
+              _buildParentSelector(context),
               const SizedBox(height: AppSpacing.lg),
 
               // Icon selector
@@ -558,6 +833,98 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildParentSelector(BuildContext context) {
+    // Obtener categorías válidas como padre
+    final validParents = widget.allCategories
+        .where((c) =>
+            c.type == widget.type &&
+            (widget.category == null || c.id != widget.category!.id) &&
+            (widget.category == null ||
+                CategoryHierarchyUtils.isValidParent(
+                  widget.allCategories,
+                  widget.category!,
+                  c.id,
+                )))
+        .toList();
+
+    // Filtrar solo categorías de nivel 0 y 1 (no nivel 2)
+    final level0And1 = validParents.where((c) {
+      final level = CategoryHierarchyUtils.getCategoryLevel(widget.allCategories, c);
+      return level <= 1;
+    }).toList();
+
+    if (level0And1.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final selectedParent = _selectedParentId != null
+        ? widget.allCategories.firstWhere(
+            (c) => c.id == _selectedParentId,
+            orElse: () => widget.allCategories.first,
+          )
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Categoría Padre (Opcional)',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DropdownButtonFormField<int?>(
+          value: _selectedParentId,
+          decoration: const InputDecoration(
+            hintText: 'Ninguna (categoría principal)',
+            prefixIcon: Icon(Icons.folder_open),
+          ),
+          items: [
+            const DropdownMenuItem<int?>(
+              value: null,
+              child: Text('Ninguna (categoría principal)'),
+            ),
+            ...level0And1.map((category) {
+              final path = CategoryHierarchyUtils.getCategoryPath(
+                widget.allCategories,
+                category,
+              );
+              final level = CategoryHierarchyUtils.getCategoryLevel(
+                widget.allCategories,
+                category,
+              );
+              return DropdownMenuItem<int?>(
+                value: category.id,
+                child: Row(
+                  children: [
+                    if (level > 0)
+                      const Padding(
+                        padding: EdgeInsets.only(right: AppSpacing.xs),
+                        child: Text('  └─ ',
+                            style: TextStyle(color: Colors.grey)),
+                      ),
+                    Expanded(child: Text(path)),
+                  ],
+                ),
+              );
+            }),
+          ],
+          onChanged: (value) {
+            setState(() => _selectedParentId = value);
+          },
+        ),
+        if (_selectedParentId != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Nivel: ${CategoryHierarchyUtils.getCategoryLevel(widget.allCategories, selectedParent!) + 2}/3',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+          ),
+        ],
+      ],
     );
   }
 
