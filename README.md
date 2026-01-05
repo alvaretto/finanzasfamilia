@@ -21,6 +21,7 @@ App de finanzas personales y familiares multiplataforma con soporte offline-firs
 - Dart SDK 3.5+
 - Android Studio / VS Code
 - Git
+- Python 3.8+ (para scripts de error tracking)
 
 ### Para Uso
 - **Android**: 7.0+ (API 24)
@@ -124,6 +125,7 @@ flutter test test/security/
 flutter test test/performance/
 flutter test test/pwa/
 flutter test test/android/
+flutter test test/regression/  # Tests de regresion generados
 
 # Con coverage
 flutter test --coverage
@@ -144,6 +146,38 @@ flutter test --coverage
 | Supabase | Auth, realtime, RLS | 40+ |
 | Android | Compatibilidad, temas | 25+ |
 | Production | Casos extremos, stress | 45+ |
+| Regression | Generados de errores corregidos | Variable |
+
+## Error Tracking System
+
+Sistema de documentacion acumulativa de errores para evitar regresiones:
+
+```
+.error-tracker/
+├── errors/              # JSONs individuales por error
+├── scripts/             # Scripts Python de gestion
+├── patterns.json        # Patrones de deteccion
+├── anti-patterns.json   # Soluciones que NO funcionan
+└── index.md             # Indice auto-generado
+```
+
+### Uso Basico
+
+```bash
+# Buscar errores similares antes de corregir
+python .error-tracker/scripts/search_errors.py "mensaje de error"
+
+# Documentar error corregido
+python .error-tracker/scripts/add_error.py
+
+# Generar test de regresion
+python .error-tracker/scripts/generate_test.py ERR-0001
+
+# Marcar solucion fallida
+python .error-tracker/scripts/mark_failed.py ERR-0001
+```
+
+Ver [docs/ERROR_TRACKER_GUIDE.md](docs/ERROR_TRACKER_GUIDE.md) para documentacion completa.
 
 ## Seguridad
 
@@ -181,9 +215,11 @@ flutter pub outdated
 
 1. Fork el repositorio
 2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'feat: descripcion'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+3. **Busca errores similares** antes de implementar fixes
+4. Commit tus cambios (`git commit -m 'feat: descripcion'`)
+5. **Documenta errores corregidos** con el sistema de error tracking
+6. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+7. Abre un Pull Request
 
 ## Documentacion Adicional
 
@@ -192,6 +228,7 @@ flutter pub outdated
 - [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md) - Tutorial paso a paso
 - [docs/USER_MANUAL.md](docs/USER_MANUAL.md) - Manual de usuario
 - [docs/CLAUDE_WORKFLOW.md](docs/CLAUDE_WORKFLOW.md) - Diagramas de workflow
+- [docs/ERROR_TRACKER_GUIDE.md](docs/ERROR_TRACKER_GUIDE.md) - Sistema de errores
 
 ## Claude Code Integration
 
@@ -200,7 +237,7 @@ Este proyecto incluye configuracion completa para Claude Code:
 ```
 .claude/
 ├── commands/     # 11 comandos disponibles (/build-apk, /run-tests, etc.)
-├── skills/       # 4 dominios de conocimiento
+├── skills/       # 6 dominios de conocimiento (incluyendo error-tracker)
 ├── hooks/        # 4 automatizaciones
 └── README.md     # Documentacion Progressive Disclosure
 ```
@@ -218,7 +255,7 @@ MIT License - ver [LICENSE](LICENSE) para detalles.
 
 ---
 
-**Version**: 1.9.2
+**Version**: 1.9.3
 **Moneda por defecto**: COP (Peso Colombiano)
-**Tests**: 500+ en 11 categorias
-**Ultima actualizacion**: 2026-01-04
+**Tests**: 500+ en 12 categorias
+**Ultima actualizacion**: 2026-01-05

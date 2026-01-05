@@ -19,6 +19,7 @@ flowchart TB
             S3[flutter-architecture]
             S4[testing]
             S5[data-testing]
+            S6[error-tracker]
         end
 
         subgraph Commands["Commands Layer"]
@@ -38,6 +39,13 @@ flowchart TB
             H5[pre-commit]
             H6[pre-build]
         end
+    end
+
+    subgraph ErrorTracking[".error-tracker System"]
+        ET1[errors/*.json]
+        ET2[patterns.json]
+        ET3[anti-patterns.json]
+        ET4[index.md]
     end
 
     subgraph App["Finanzas Familiares App"]
@@ -77,6 +85,7 @@ flowchart TB
         T7[PWA Tests]
         T8[Android Tests]
         T9[Production Tests]
+        T10[Regression Tests]
     end
 
     subgraph Output["Build Output"]
@@ -90,6 +99,10 @@ flowchart TB
 
     %% CLAUDE.md references skills
     CM --> Skills
+
+    %% Error tracker integration
+    S6 --> ErrorTracking
+    ErrorTracking --> T10
 
     %% Commands trigger actions
     C1 --> APK
@@ -120,6 +133,164 @@ flowchart TB
 
     %% Sync flow
     DB <-->|Offline-First| SB
+```
+
+## Flujo de Error Tracking
+
+```mermaid
+flowchart TB
+    subgraph Trigger["Disparador"]
+        ERR[Error Detectado]
+        FIX[Bug Corregido]
+        FAIL[Solucion Fallo]
+    end
+
+    subgraph Search["Busqueda Previa"]
+        S1[search_errors.py]
+        S2[detect_recurrence.py]
+    end
+
+    subgraph Document["Documentacion"]
+        D1[add_error.py]
+        D2[Crear ERR-XXXX.json]
+        D3[Actualizar patterns.json]
+        D4[Regenerar index.md]
+    end
+
+    subgraph TestGen["Generacion Tests"]
+        T1[generate_test.py]
+        T2[test/regression/unit/]
+        T3[test/regression/widget/]
+        T4[test/regression/integration/]
+    end
+
+    subgraph FailedSolution["Solucion Fallida"]
+        F1[mark_failed.py]
+        F2[Mover a anti_patterns]
+        F3[Actualizar anti-patterns.json]
+        F4[Estado: reopened]
+    end
+
+    %% Flujo principal
+    ERR --> S1
+    ERR --> S2
+    S1 --> |Similar encontrado| D1
+    S2 --> |Recurrente| D1
+    S1 --> |Nuevo| D1
+
+    FIX --> D1
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+
+    D2 --> T1
+    T1 --> T2
+    T1 --> T3
+    T1 --> T4
+
+    FAIL --> F1
+    F1 --> F2
+    F2 --> F3
+    F3 --> F4
+    F4 --> |Nueva solucion| D1
+```
+
+## Ciclo de Vida del Error
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open: Error detectado
+    
+    Open --> Investigating: Buscando solucion
+    Investigating --> Resolved: Solucion aplicada
+    
+    Resolved --> Reopened: Solucion fallo
+    Reopened --> Investigating: Nueva investigacion
+    
+    Resolved --> [*]: Test de regresion pasa
+    
+    note right of Reopened
+        Solucion anterior
+        movida a anti-patterns
+    end note
+    
+    note right of Resolved
+        Test de regresion
+        generado automaticamente
+    end note
+```
+
+## Workflow de Correccion de Errores
+
+```mermaid
+sequenceDiagram
+    participant D as Desarrollador
+    participant S as search_errors.py
+    participant A as add_error.py
+    participant G as generate_test.py
+    participant T as flutter test
+    participant M as mark_failed.py
+
+    D->>S: Buscar "RLS recursion"
+    S-->>D: ERR-0023 similar (85%)
+    
+    Note over D: Revisa anti-patrones
+    
+    D->>D: Implementa solucion
+    D->>A: Documentar error
+    A-->>D: ERR-0024.json creado
+    
+    D->>G: Generar test ERR-0024
+    G-->>D: err_0024_regression_test.dart
+    
+    D->>T: flutter test regression/
+    
+    alt Test pasa
+        T-->>D: OK - Commit
+    else Test falla
+        T-->>D: Error persiste
+        D->>M: mark_failed ERR-0024
+        M-->>D: Movido a anti-patterns
+        Note over D: Volver a intentar
+    end
+```
+
+## Estructura del Error Tracker
+
+```mermaid
+flowchart LR
+    subgraph ErrorTracker[".error-tracker/"]
+        subgraph Errors["errors/"]
+            E1[ERR-0001.json]
+            E2[ERR-0002.json]
+            E3[ERR-XXXX.json]
+        end
+        
+        subgraph Scripts["scripts/"]
+            SC1[add_error.py]
+            SC2[search_errors.py]
+            SC3[detect_recurrence.py]
+            SC4[mark_failed.py]
+            SC5[generate_test.py]
+            SC6[rebuild_index.py]
+        end
+        
+        P[patterns.json]
+        AP[anti-patterns.json]
+        I[index.md]
+    end
+    
+    subgraph Tests["test/regression/"]
+        TU[unit/]
+        TW[widget/]
+        TI[integration/]
+    end
+    
+    SC5 --> Tests
+    Errors --> SC2
+    Errors --> SC3
+    SC1 --> Errors
+    SC4 --> AP
 ```
 
 ## Flujo de Sincronizacion Offline-First
@@ -245,6 +416,7 @@ flowchart TB
         S3[flutter-architecture/]
         S4[testing/]
         S5[data-testing/]
+        S6[error-tracker/]
     end
 
     subgraph Level4["Nivel 4: Detalles"]
@@ -252,6 +424,7 @@ flowchart TB
         D2[OFFLINE_FIRST.md]
         D3[CONFLICT_RESOLUTION.md]
         D4[TESTING_STRATEGY.md]
+        D5[ERROR_TRACKER_GUIDE.md]
     end
 
     L1 --> L2
@@ -261,13 +434,14 @@ flowchart TB
     S1 --> D2
     S1 --> D3
     S4 --> D4
+    S6 --> D5
 ```
 
 ## Arquitectura de Testing
 
 ```mermaid
 flowchart TB
-    subgraph TestSuite["Suite de Tests (300+)"]
+    subgraph TestSuite["Suite de Tests (500+)"]
         subgraph Unit["Unit Tests"]
             U1[Models]
             U2[Repositories]
@@ -293,6 +467,11 @@ flowchart TB
             SP5[Android Compat]
             SP6[Production]
         end
+
+        subgraph Regression["Regression Tests"]
+            RG1[Auto-generated]
+            RG2[From error-tracker]
+        end
     end
 
     subgraph Commands["Test Commands"]
@@ -302,11 +481,16 @@ flowchart TB
         C4[/pre-release]
     end
 
+    subgraph ErrorTracker["Error Tracker"]
+        ET[generate_test.py]
+    end
+
     C1 --> TestSuite
     C2 --> Unit
     C2 --> Widget
     C3 --> Specialized
     C4 --> TestSuite
+    ET --> Regression
 ```
 
 ## Flujo de Estado con Riverpod
@@ -375,10 +559,11 @@ flowchart TD
 
     TEST_CRIT --> CRIT_OK{Pasaron?}
     CRIT_OK --> |Si| TEST_ALL["6. Tests Completos"]
-    CRIT_OK --> |No| FIX["Corregir"]
+    CRIT_OK --> |No| FIX["Corregir + Error Track"]
     FIX --> TEST_CRIT
 
-    TEST_ALL --> BUILD["7. flutter build apk --release"]
+    TEST_ALL --> REG["6.5 Tests Regresion"]
+    REG --> BUILD["7. flutter build apk --release"]
     BUILD --> COPY["8. cp APK ~/Descargas/"]
     COPY --> GIT_ADD["9. git add -A"]
     GIT_ADD --> GIT_COMMIT["10. git commit -m 'detallado'"]
@@ -397,6 +582,7 @@ flowchart TD
         TA1[pwa/]
         TA2[performance/]
         TA3[supabase/]
+        TA4[regression/]
     end
 
     TEST_CRIT --> TC1
@@ -405,6 +591,7 @@ flowchart TD
     TEST_ALL --> TA1
     TEST_ALL --> TA2
     TEST_ALL --> TA3
+    REG --> TA4
 ```
 
 ## Mapa de Dependencias de Skills
@@ -439,6 +626,12 @@ mindmap
             RPA Python CLI
             Test Data Patterns
             Import/Export
+        error-tracker
+            Error Documentation
+            Anti-Patterns Registry
+            Recurrence Detection
+            Regression Test Generation
+            Solution History
 ```
 
 ## Ciclo de Vida de Release
@@ -447,10 +640,14 @@ mindmap
 stateDiagram-v2
     [*] --> Development: Nuevo feature/fix
 
+    Development --> ErrorSearch: Buscar errores similares
+    ErrorSearch --> Development: Revisar anti-patrones
+    
     Development --> Testing: Codigo listo
     Testing --> Development: Tests fallan
-    Testing --> Build: Tests pasan
-
+    Testing --> ErrorDoc: Tests pasan
+    
+    ErrorDoc --> Build: Documentar error si aplica
     Build --> Documentation: APK generado
     Documentation --> Git: Docs actualizados
     Git --> Deploy: Push exitoso
@@ -474,8 +671,8 @@ stateDiagram-v2
 
 ---
 
-**Version**: 2.1.0
-**Ultima actualizacion**: 2026-01-04
+**Version**: 2.2.0
+**Ultima actualizacion**: 2026-01-05
 **Tests**: 500+
-**Skills**: 5 dominios
+**Skills**: 6 dominios
 **Commands**: 11

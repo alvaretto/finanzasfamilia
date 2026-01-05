@@ -13,7 +13,7 @@ flutter pub get && flutter run
 # Build Android
 flutter build apk --release
 
-# Tests (suite completa 350+)
+# Tests (suite completa 500+)
 flutter test
 
 # Tests rapidos (solo unit/widget)
@@ -63,6 +63,7 @@ Suite completa de tests para PWA Flutter + Supabase:
 | Performance | `test/performance/` | Rendimiento y memory |
 | Android | `test/android/` | Compatibilidad dispositivos |
 | Production | `test/production/` | Robustez extrema |
+| Regression | `test/regression/` | Tests generados de errores corregidos |
 
 Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles.
 
@@ -74,6 +75,37 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 | `financial-analysis` | Calculos financieros, ratios |
 | `flutter-architecture` | Patrones Flutter + Riverpod |
 | `testing` | Tests PWA, auth, RLS, performance |
+| `data-testing` | Generacion de datos de prueba |
+| `error-tracker` | **Documentacion de errores y anti-patrones** |
+
+## Error Tracker (Nuevo)
+
+Sistema de documentacion acumulativa de errores con generacion automatica de tests de regresion.
+
+### Workflow al Corregir Errores
+
+```bash
+# 1. Buscar errores similares ANTES de implementar
+python .error-tracker/scripts/search_errors.py "descripcion del error"
+
+# 2. Documentar error y solucion
+python .error-tracker/scripts/add_error.py
+
+# 3. Generar test de regresion
+python .error-tracker/scripts/generate_test.py ERR-XXXX
+```
+
+### Cuando una Solucion Falla
+
+```bash
+# Marcar como fallida (mueve a anti-patterns)
+python .error-tracker/scripts/mark_failed.py ERR-XXXX
+
+# Detectar errores recurrentes
+python .error-tracker/scripts/detect_recurrence.py "mensaje de error"
+```
+
+Ver [Error Tracker Guide](docs/ERROR_TRACKER_GUIDE.md) para documentacion completa.
 
 ## Comandos
 
@@ -101,6 +133,7 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 2. **Sync Silencioso**: Syncs automaticos usan `showError: false`
 3. **Test Mode**: Usar `SupabaseClientProvider.enableTestMode()` en tests
 4. **RLS**: Filtrar siempre por userId en queries
+5. **Error Tracking**: Documentar cada error corregido para evitar regresiones
 
 ## Documentacion
 
@@ -114,6 +147,11 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 - [Sync Management](.claude/skills/sync-management/SKILL.md)
 - [Sync Testing Guide](docs/SYNC_TESTING_GUIDE.md)
 
+### Error Tracking
+- [Error Tracker Skill](.claude/skills/error-tracker/SKILL.md)
+- [Error Tracker Guide](docs/ERROR_TRACKER_GUIDE.md)
+- [Schema de Errores](.claude/skills/error-tracker/references/schema.md)
+
 ### Supabase
 - [Supabase MCP Setup](docs/SUPABASE_MCP_SETUP.md) - Acceso permanente de Claude
 - [Sync Testing Guide](docs/SYNC_TESTING_GUIDE.md) - Pruebas de sincronizacion
@@ -124,12 +162,12 @@ Ver [Testing Strategy](.claude/skills/testing/TESTING_STRATEGY.md) para detalles
 
 ## Estado del Proyecto
 
-- **Version**: 1.9.2
-- **Tests**: 500+ (11 categorias)
+- **Version**: 1.9.3
+- **Tests**: 500+ (12 categorias)
 - **Coverage**: Unit/Widget/Integration/PWA 100%
 - **Moneda**: COP (Peso Colombiano) por defecto
 - **Locales**: es_CO, es_MX, en_US, pt_BR soportados
-- **Ultima actualizacion**: 2026-01-04
+- **Ultima actualizacion**: 2026-01-05
 
 ## Workflow Automatizado
 
