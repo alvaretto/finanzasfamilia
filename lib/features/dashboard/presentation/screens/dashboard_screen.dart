@@ -14,8 +14,12 @@ import '../../../../shared/services/financial_health_service.dart';
 import '../../../../shared/widgets/ant_expense_widget.dart';
 import '../../../../shared/services/ant_expense_service.dart';
 import '../../../../shared/utils/ant_expense_analysis.dart';
+import '../../../../shared/widgets/fina_tip_widget.dart';
+import '../../../../shared/services/contextual_tips_service.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
+import '../../../budgets/presentation/providers/budget_provider.dart';
+import '../../../goals/presentation/providers/goal_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -55,6 +59,9 @@ class DashboardScreen extends ConsumerWidget {
               // Mensaje motivacional
               _buildMotivationalMessage(context),
               const SizedBox(height: AppSpacing.lg),
+
+              // 💡 Consejo contextual de Fina
+              _buildFinaTip(context, ref),
 
               // 💰 Tus Cuentas (balance total con desglose)
               _buildBalanceCard(context, ref),
@@ -225,6 +232,54 @@ class DashboardScreen extends ConsumerWidget {
     }
 
     return FinancialHealthWidget(health: health);
+  }
+
+  Widget _buildFinaTip(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final accountsState = ref.watch(accountsProvider);
+    final budgetsState = ref.watch(budgetsProvider);
+    final goalsState = ref.watch(goalsProvider);
+
+    // Obtener datos necesarios
+    final transactions = transactionsState.transactions;
+    final accounts = accountsState.accounts;
+    final budgets = budgetsState.budgets;
+    final goals = goalsState.activeGoals;
+    final monthlyIncome = transactionsState.totalIncome;
+    final monthlyExpenses = transactionsState.totalExpenses;
+
+    // Calcular salud financiera
+    final health = FinancialHealthService.calculate(
+      accounts: accounts,
+      transactions: transactions,
+      monthlyIncome: monthlyIncome,
+      monthlyExpenses: monthlyExpenses,
+    );
+
+    // Calcular análisis de gastos hormiga
+    final antExpenseAnalysis = AntExpenseService.analyzeCurrentMonth(transactions);
+
+    // Obtener consejo contextual
+    final tip = ContextualTipsService.getContextualTip(
+      recentTransactions: transactions,
+      budgets: budgets,
+      goals: goals,
+      financialHealth: health,
+      antExpenseAnalysis: antExpenseAnalysis,
+      isFirstTime: transactions.isEmpty && accounts.isEmpty,
+    );
+
+    // Si no hay consejo, no mostrar nada
+    if (tip == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        FinaTipCompact(tip: tip),
+        const SizedBox(height: AppSpacing.lg),
+      ],
+    );
   }
 
   Widget _buildBalanceCard(BuildContext context, WidgetRef ref) {
