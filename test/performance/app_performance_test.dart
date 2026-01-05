@@ -51,7 +51,7 @@ void main() {
     test('Crear cuenta completa en < 100ms', () async {
       final stopwatch = Stopwatch()..start();
 
-      await accountRepo.createAccount(AccountModel(
+      await accountRepo!.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: 'perf-test',
         name: 'Performance Account',
@@ -71,7 +71,7 @@ void main() {
     test('Leer cuenta por ID en < 50ms', () async {
       final id = const Uuid().v4();
 
-      await accountRepo.createAccount(AccountModel(
+      await accountRepo!.createAccount(AccountModel(
         id: id,
         userId: 'read-perf-test',
         name: 'Read Performance',
@@ -81,7 +81,7 @@ void main() {
       ));
 
       final stopwatch = Stopwatch()..start();
-      await accountRepo.getAccountById(id);
+      await accountRepo!.getAccountById(id);
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(50),
@@ -96,7 +96,7 @@ void main() {
 
       // Crear algunas transacciones primero
       for (int i = 0; i < 20; i++) {
-        await txRepo.createTransaction(TransactionModel(
+        await txRepo!.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -108,7 +108,7 @@ void main() {
       }
 
       final stopwatch = Stopwatch()..start();
-      await txRepo.watchTransactions(userId).first;
+      await txRepo!.watchTransactions(userId).first;
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(200),
@@ -126,7 +126,7 @@ void main() {
       final stopwatch = Stopwatch()..start();
 
       for (int i = 0; i < 100; i++) {
-        await txRepo.createTransaction(TransactionModel(
+        await txRepo!.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -151,7 +151,7 @@ void main() {
       final stopwatch = Stopwatch()..start();
 
       final futures = List.generate(100, (i) {
-        return txRepo.createTransaction(TransactionModel(
+        return txRepo!.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -180,7 +180,7 @@ void main() {
       // Crear transacciones en diferentes fechas
       final now = DateTime.now();
       for (int i = 0; i < 50; i++) {
-        await txRepo.createTransaction(TransactionModel(
+        await txRepo!.createTransaction(TransactionModel(
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
@@ -192,7 +192,7 @@ void main() {
       }
 
       final stopwatch = Stopwatch()..start();
-      await txRepo.watchTransactions(userId).first;
+      await txRepo!.watchTransactions(userId).first;
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(100),
@@ -207,7 +207,7 @@ void main() {
 
       // Crear varias cuentas
       for (int i = 0; i < 10; i++) {
-        await accountRepo.createAccount(AccountModel(
+        await accountRepo!.createAccount(AccountModel(
           id: const Uuid().v4(),
           userId: userId,
           name: 'Account $i',
@@ -218,7 +218,7 @@ void main() {
       }
 
       final stopwatch = Stopwatch()..start();
-      await accountRepo.getTotalBalance(userId);
+      await accountRepo!.getTotalBalance(userId);
       stopwatch.stop();
 
       expect(stopwatch.elapsedMilliseconds, lessThan(50),
@@ -244,11 +244,11 @@ void main() {
           description: 'Memory test $i',
           date: DateTime.now(),
         );
-        await txRepo.createTransaction(tx);
+        await txRepo!.createTransaction(tx);
 
         // Cada 100, leer para simular uso real
         if (i % 100 == 0) {
-          await txRepo.watchTransactions(userId).first;
+          await txRepo!.watchTransactions(userId).first;
         }
       }
 
@@ -262,7 +262,7 @@ void main() {
     test('Multiples subscriptions a streams funcionan', () async {
       final userId = 'stream-${DateTime.now().millisecondsSinceEpoch}';
 
-      await accountRepo.createAccount(AccountModel(
+      await accountRepo!.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: userId,
         name: 'Stream Test',
@@ -273,13 +273,13 @@ void main() {
 
       // Crear y cancelar multiples subscriptions
       for (int i = 0; i < 50; i++) {
-        final subscription = accountRepo.watchAccounts(userId).listen((_) {});
+        final subscription = accountRepo!.watchAccounts(userId).listen((_) {});
         await Future.delayed(const Duration(milliseconds: 10));
         await subscription.cancel();
       }
 
       // Verificar que aun funciona
-      final accounts = await accountRepo.watchAccounts(userId).first;
+      final accounts = await accountRepo!.watchAccounts(userId).first;
       expect(accounts.isNotEmpty, true);
     });
   });
@@ -297,7 +297,7 @@ void main() {
       await Future.wait([
         // Crear cuentas
         for (int i = 0; i < 10; i++)
-          accountRepo.createAccount(AccountModel(
+          accountRepo!.createAccount(AccountModel(
             id: const Uuid().v4(),
             userId: userId,
             name: 'Concurrent $i',
@@ -307,7 +307,7 @@ void main() {
           )),
         // Crear transacciones
         for (int i = 0; i < 20; i++)
-          txRepo.createTransaction(TransactionModel(
+          txRepo!.createTransaction(TransactionModel(
             id: const Uuid().v4(),
             userId: userId,
             accountId: 'acc-1',
@@ -317,9 +317,9 @@ void main() {
             date: DateTime.now(),
           )),
         // Leer datos
-        accountRepo.watchAccounts(userId).first,
-        txRepo.watchTransactions(userId).first,
-        accountRepo.getTotalBalance(userId),
+        accountRepo!.watchAccounts(userId).first,
+        txRepo!.watchTransactions(userId).first,
+        accountRepo!.getTotalBalance(userId),
       ]);
 
       stopwatch.stop();

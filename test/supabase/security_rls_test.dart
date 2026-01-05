@@ -61,7 +61,7 @@ void main() {
       final user1Id = 'user-1-${DateTime.now().millisecondsSinceEpoch}';
       final user2Id = 'user-2-${DateTime.now().millisecondsSinceEpoch}';
 
-      await accountRepo.createAccount(AccountModel(
+      await accountRepo!.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: user1Id,
         name: 'Cuenta User 1',
@@ -70,7 +70,7 @@ void main() {
         balance: 1000.0,
       ));
 
-      await accountRepo.createAccount(AccountModel(
+      await accountRepo!.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: user2Id,
         name: 'Cuenta User 2',
@@ -80,7 +80,7 @@ void main() {
       ));
 
       // User 1 solo debe ver sus cuentas
-      final user1Accounts = await accountRepo.watchAccounts(user1Id).first;
+      final user1Accounts = await accountRepo!.watchAccounts(user1Id).first;
       expect(user1Accounts.every((a) => a.userId == user1Id), true);
       expect(user1Accounts.any((a) => a.userId == user2Id), false);
     });
@@ -89,7 +89,7 @@ void main() {
       final user1Id = 'tx-user-1-${DateTime.now().millisecondsSinceEpoch}';
       final user2Id = 'tx-user-2-${DateTime.now().millisecondsSinceEpoch}';
 
-      await txRepo.createTransaction(TransactionModel(
+      await txRepo!.createTransaction(TransactionModel(
         id: const Uuid().v4(),
         userId: user1Id,
         accountId: 'acc-1',
@@ -99,7 +99,7 @@ void main() {
         date: DateTime.now(),
       ));
 
-      await txRepo.createTransaction(TransactionModel(
+      await txRepo!.createTransaction(TransactionModel(
         id: const Uuid().v4(),
         userId: user2Id,
         accountId: 'acc-2',
@@ -109,7 +109,7 @@ void main() {
         date: DateTime.now(),
       ));
 
-      final user1Txs = await txRepo.watchTransactions(user1Id).first;
+      final user1Txs = await txRepo!.watchTransactions(user1Id).first;
       expect(user1Txs.every((t) => t.userId == user1Id), true);
     });
 
@@ -119,7 +119,7 @@ void main() {
     test('Presupuestos se filtran por userId', () async {
       final userId = 'budget-user-${DateTime.now().millisecondsSinceEpoch}';
 
-      await budgetRepo.createBudget(BudgetModel(
+      await budgetRepo!.createBudget(BudgetModel(
         id: const Uuid().v4(),
         userId: userId,
         categoryId: 'cat-1',
@@ -128,7 +128,7 @@ void main() {
         startDate: DateTime.now(),
       ));
 
-      final budgets = await budgetRepo.watchBudgets(userId).first;
+      final budgets = await budgetRepo!.watchBudgets(userId).first;
       expect(budgets.every((b) => b.userId == userId), true);
     });
 
@@ -138,7 +138,7 @@ void main() {
     test('Metas se filtran por userId', () async {
       final userId = 'goal-user-${DateTime.now().millisecondsSinceEpoch}';
 
-      await goalRepo.createGoal(GoalModel(
+      await goalRepo!.createGoal(GoalModel(
         id: const Uuid().v4(),
         userId: userId,
         name: 'Meta Test',
@@ -146,7 +146,7 @@ void main() {
         currentAmount: 0.0,
       ));
 
-      final goals = await goalRepo.watchGoals(userId).first;
+      final goals = await goalRepo!.watchGoals(userId).first;
       expect(goals.every((g) => g.userId == userId), true);
     });
   });
@@ -166,7 +166,7 @@ void main() {
       );
 
       // Debe fallar o crear con userId vacio (validar en UI/repo)
-      final created = await accountRepo.createAccount(account);
+      final created = await accountRepo!.createAccount(account);
       expect(created.userId, isEmpty);
     });
 
@@ -183,7 +183,7 @@ void main() {
         balance: -5000.0, // Deuda
       );
 
-      final created = await accountRepo.createAccount(account);
+      final created = await accountRepo!.createAccount(account);
       expect(created.balance, -5000.0);
     });
 
@@ -201,7 +201,7 @@ void main() {
         date: DateTime.now(),
       );
 
-      final created = await txRepo.createTransaction(tx);
+      final created = await txRepo!.createTransaction(tx);
       expect(created.amount, 0.0);
     });
   });
@@ -215,7 +215,7 @@ void main() {
 
       // La funcion sync requiere userId explicito
       await expectLater(
-        accountRepo.syncWithSupabase(userId),
+        accountRepo!.syncWithSupabase(userId),
         completes,
       );
     });
@@ -226,7 +226,7 @@ void main() {
     test('getUnsyncedAccounts retorna datos correctos', () async {
       final userId = 'unsynced-security-${DateTime.now().millisecondsSinceEpoch}';
 
-      await accountRepo.createAccount(AccountModel(
+      await accountRepo!.createAccount(AccountModel(
         id: const Uuid().v4(),
         userId: userId,
         name: 'Unsynced Account',
@@ -235,7 +235,7 @@ void main() {
         balance: 100.0,
       ));
 
-      final unsynced = await accountRepo.getUnsyncedAccounts();
+      final unsynced = await accountRepo!.getUnsyncedAccounts();
       // Debe retornar al menos la cuenta creada
       expect(unsynced.isNotEmpty, true);
     });
@@ -264,7 +264,7 @@ void main() {
           balance: 100.0,
         );
 
-        final created = await accountRepo.createAccount(account);
+        final created = await accountRepo!.createAccount(account);
         expect(created.name, name, reason: 'Nombre debe preservarse: $name');
       }
     });
@@ -291,7 +291,7 @@ void main() {
           date: DateTime.now(),
         );
 
-        final created = await txRepo.createTransaction(tx);
+        final created = await txRepo!.createTransaction(tx);
         expect(created.description, desc,
             reason: 'Descripcion debe preservarse como texto plano');
       }

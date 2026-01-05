@@ -1,5 +1,60 @@
 // test/helpers/test_helpers.dart
 
+import 'package:flutter/material.dart';
+import 'package:finanzas_familiares/core/network/supabase_client.dart';
+
+/// Widget de prueba que simula el MainScaffold de la app
+/// Usado en tests E2E y de widget
+class TestMainScaffold extends StatelessWidget {
+  final Widget child;
+  final int currentIndex;
+  final ValueChanged<int>? onNavigationTap;
+  final VoidCallback? onFabPressed;
+
+  const TestMainScaffold({
+    super.key,
+    required this.child,
+    this.currentIndex = 0,
+    this.onNavigationTap,
+    this.onFabPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: child,
+      floatingActionButton: FloatingActionButton(
+        onPressed: onFabPressed ?? () {},
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        type: BottomNavigationBarType.fixed,
+        onTap: onNavigationTap,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Cuentas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.swap_horiz),
+            label: 'Movimientos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Reportes',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Helpers genericos para tests
 class TestHelpers {
   /// Genera datos de prueba segun el tipo especificado
@@ -232,8 +287,19 @@ bool verificarCompatibilidad(String featureA, String featureB) {
 
 /// Setup completo del ambiente de testing
 Future<void> setupFullTestEnvironment() async {
-  // Placeholder - configurar ambiente de test
-  // Puede incluir: inicializar mocks, limpiar DB, etc.
+  // Habilitar modo test de Supabase para evitar llamadas reales
+  SupabaseClientProvider.enableTestMode();
+}
+
+/// Alias para setupFullTestEnvironment (usado en E2E tests)
+Future<void> setupTestEnvironment() async {
+  await setupFullTestEnvironment();
+}
+
+/// Teardown del ambiente de testing
+Future<void> tearDownTestEnvironment() async {
+  // Resetear el provider de Supabase
+  SupabaseClientProvider.reset();
 }
 
 /// Crear database de prueba
