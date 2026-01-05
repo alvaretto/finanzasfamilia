@@ -101,26 +101,29 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       }
 
                       if (filteredTransactions.isEmpty && filters.hasActiveFilters) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 64,
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                              const Text('Sin resultados'),
-                              const SizedBox(height: AppSpacing.sm),
-                              TextButton(
-                                onPressed: () {
-                                  ref.read(transactionFiltersProvider.notifier).state =
-                                      const TransactionFilters();
-                                },
-                                child: const Text('Limpiar filtros'),
-                              ),
-                            ],
+                        return SingleChildScrollView(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 64,
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                const Text('Sin resultados'),
+                                const SizedBox(height: AppSpacing.sm),
+                                TextButton(
+                                  onPressed: () {
+                                    ref.read(transactionFiltersProvider.notifier).state =
+                                        const TransactionFilters();
+                                  },
+                                  child: const Text('Limpiar filtros'),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       }
@@ -290,42 +293,45 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 80,
-              color: AppColors.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Sin transacciones',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'No hay transacciones en este periodo.\nAgrega tu primera transaccion.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            ElevatedButton.icon(
-              onPressed: () => _showAddTransaction(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar Transaccion'),
-            ),
-          ],
+    return SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 80,
+                color: AppColors.primary.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Sin transacciones',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'No hay transacciones en este periodo.\nAgrega tu primera transaccion.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              ElevatedButton.icon(
+                onPressed: () => _showAddTransaction(context),
+                icon: const Icon(Icons.add),
+                label: const Text('Agregar Transaccion'),
+              ),
+            ],
+          ),
         ),
       ),
     );
