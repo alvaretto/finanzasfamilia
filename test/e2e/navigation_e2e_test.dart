@@ -17,6 +17,7 @@ import 'package:finanzas_familiares/features/reports/presentation/screens/report
 import 'package:finanzas_familiares/features/settings/presentation/screens/settings_screen.dart';
 import 'package:finanzas_familiares/features/auth/presentation/screens/login_screen.dart';
 import '../helpers/test_helpers.dart';
+import '../mocks/mock_providers.dart';
 
 void main() {
   setUpAll(() => setupTestEnvironment());
@@ -28,6 +29,7 @@ void main() {
     testWidgets('BottomNavigationBar debe mostrar todos los items', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -56,6 +58,7 @@ void main() {
     testWidgets('Íconos de navegación deben estar presentes', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -80,6 +83,7 @@ void main() {
     testWidgets('FAB central debe estar presente', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -103,6 +107,7 @@ void main() {
     testWidgets('Taps en items de navegación deben funcionar', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -136,6 +141,7 @@ void main() {
     testWidgets('Navegación cíclica debe funcionar sin errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -170,6 +176,7 @@ void main() {
     testWidgets('DashboardScreen debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -188,6 +195,7 @@ void main() {
     testWidgets('AccountsScreen debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -207,6 +215,7 @@ void main() {
     testWidgets('TransactionsScreen debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TransactionsScreen(),
@@ -225,6 +234,7 @@ void main() {
     testWidgets('ReportsScreen debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const ReportsScreen(),
@@ -243,6 +253,7 @@ void main() {
     testWidgets('SettingsScreen debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const SettingsScreen(),
@@ -261,6 +272,7 @@ void main() {
     testWidgets('LoginScreen debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -281,6 +293,7 @@ void main() {
     testWidgets('Swipe debe funcionar si hay PageView', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -308,6 +321,7 @@ void main() {
     testWidgets('Doble tap en navegación no causa problemas', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -334,6 +348,7 @@ void main() {
     testWidgets('Taps muy rápidos en diferentes items', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -364,6 +379,7 @@ void main() {
     testWidgets('FAB debe funcionar desde cualquier tab', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -402,6 +418,7 @@ void main() {
     testWidgets('Abrir FAB, cambiar tab, no causa errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(

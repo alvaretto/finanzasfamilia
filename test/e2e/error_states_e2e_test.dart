@@ -14,6 +14,7 @@ import 'package:finanzas_familiares/features/accounts/presentation/screens/accou
 import 'package:finanzas_familiares/features/transactions/presentation/screens/transactions_screen.dart';
 import 'package:finanzas_familiares/features/settings/presentation/screens/settings_screen.dart';
 import '../helpers/test_helpers.dart';
+import '../mocks/mock_providers.dart';
 
 void main() {
   setUpAll(() => setupTestEnvironment());
@@ -25,6 +26,7 @@ void main() {
     testWidgets('Dashboard debe manejar estado sin datos', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -44,6 +46,7 @@ void main() {
     testWidgets('AccountsScreen debe manejar lista vacía', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -63,6 +66,7 @@ void main() {
     testWidgets('TransactionsScreen debe manejar lista vacía', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TransactionsScreen(),
@@ -84,6 +88,7 @@ void main() {
     testWidgets('100 taps rápidos en FAB no causan crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -111,6 +116,7 @@ void main() {
     testWidgets('50 cambios de tab rápidos no causan crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -140,6 +146,7 @@ void main() {
     testWidgets('Scroll muy rápido no causa crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -168,6 +175,7 @@ void main() {
     testWidgets('Abrir/cerrar modal 50 veces no causa memory leak', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -204,6 +212,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -232,6 +241,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -259,6 +269,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -286,6 +297,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -312,6 +324,7 @@ void main() {
     testWidgets('Cambio de orientación no causa crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -349,6 +362,7 @@ void main() {
     testWidgets('App funciona con tema oscuro', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.dark(),
             home: const TestMainScaffold(
@@ -415,6 +429,7 @@ void main() {
     testWidgets('Long press en navegación no causa problemas', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -442,6 +457,7 @@ void main() {
     testWidgets('Múltiples gestos simultáneos no causan crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -472,6 +488,7 @@ void main() {
     testWidgets('Drag muy rápido no causa problemas', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -508,6 +525,7 @@ void main() {
     testWidgets('Elementos tienen semantic labels', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -532,6 +550,7 @@ void main() {
     testWidgets('Tab navigation funciona', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const SettingsScreen(),
@@ -576,6 +595,7 @@ void main() {
     testWidgets('Flujo completo 20 veces sin memory leak', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(

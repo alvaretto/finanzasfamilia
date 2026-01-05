@@ -12,6 +12,7 @@ import 'package:finanzas_familiares/features/transactions/presentation/widgets/a
 import 'package:finanzas_familiares/features/accounts/domain/models/account_model.dart';
 import 'package:finanzas_familiares/shared/widgets/main_scaffold.dart';
 import '../helpers/test_helpers.dart';
+import '../mocks/mock_providers.dart';
 
 void main() {
   setUpAll(() => setupTestEnvironment());
@@ -23,6 +24,7 @@ void main() {
     testWidgets('FAB debe abrir selector de tipo de transacción', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -59,6 +61,7 @@ void main() {
     testWidgets('Seleccionar GASTO debe abrir formulario de gasto', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -99,6 +102,7 @@ void main() {
     testWidgets('Seleccionar INGRESO debe abrir formulario de ingreso', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -130,6 +134,7 @@ void main() {
     testWidgets('Seleccionar TRANSFERENCIA debe abrir formulario de transferencia', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -161,6 +166,7 @@ void main() {
     testWidgets('Botón X debe cerrar el formulario', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -196,6 +202,7 @@ void main() {
     testWidgets('SegmentedButton debe cambiar tipo de transacción', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -244,6 +251,7 @@ void main() {
     testWidgets('Campo de monto debe aceptar solo números válidos', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -289,6 +297,7 @@ void main() {
     testWidgets('Formulario debe validar campos requeridos', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -330,6 +339,7 @@ void main() {
     testWidgets('Selector de fecha debe abrir DatePicker', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             localizationsDelegates: const [
@@ -382,6 +392,7 @@ void main() {
     testWidgets('Múltiples aperturas/cierres deben funcionar sin errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -424,6 +435,7 @@ void main() {
     testWidgets('Formulario debe hacer scroll correctamente', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -469,6 +481,7 @@ void main() {
     testWidgets('AddTransactionSheet se construye con tipo expense', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const Scaffold(
@@ -490,6 +503,7 @@ void main() {
     testWidgets('AddTransactionSheet se construye con tipo income', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const Scaffold(
@@ -511,6 +525,7 @@ void main() {
     testWidgets('AddTransactionSheet se construye con tipo transfer', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const Scaffold(
@@ -532,6 +547,7 @@ void main() {
     testWidgets('Campo de notas debe ser opcional', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const Scaffold(

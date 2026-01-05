@@ -14,6 +14,7 @@ import 'package:finanzas_familiares/features/transactions/presentation/widgets/a
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:finanzas_familiares/features/accounts/presentation/widgets/add_account_sheet.dart';
 import '../helpers/test_helpers.dart';
+import '../mocks/mock_providers.dart';
 
 void main() {
   setUpAll(() => setupTestEnvironment());
@@ -25,6 +26,7 @@ void main() {
     testWidgets('Login form debe tener email y password', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -45,6 +47,7 @@ void main() {
     testWidgets('Campo de email debe aceptar input', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -70,6 +73,7 @@ void main() {
     testWidgets('Campo de password debe existir', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -91,6 +95,7 @@ void main() {
     testWidgets('Botón de login debe existir', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -116,6 +121,7 @@ void main() {
     testWidgets('Debe validar email vacío', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -143,6 +149,7 @@ void main() {
     testWidgets('Link a registro debe existir', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -169,6 +176,7 @@ void main() {
     testWidgets('Register form debe renderizarse', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const RegisterScreen(),
@@ -187,6 +195,7 @@ void main() {
     testWidgets('Register debe tener campos de nombre, email, password', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const RegisterScreen(),
@@ -206,6 +215,7 @@ void main() {
     testWidgets('Debe tener múltiples campos de password', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const RegisterScreen(),
@@ -229,6 +239,7 @@ void main() {
     testWidgets('Campo de monto debe aceptar decimales', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -270,6 +281,7 @@ void main() {
     testWidgets('Campo de monto maneja valores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -311,6 +323,7 @@ void main() {
     testWidgets('Campo de monto debe manejar valores grandes', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -352,6 +365,7 @@ void main() {
     testWidgets('Campo de descripción debe manejar texto largo', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -395,6 +409,7 @@ void main() {
     testWidgets('Descripción debe aceptar caracteres especiales', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -438,6 +453,7 @@ void main() {
     testWidgets('Nombre de cuenta debe aceptar caracteres especiales', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -477,6 +493,7 @@ void main() {
     testWidgets('Balance inicial acepta valores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -519,6 +536,7 @@ void main() {
     testWidgets('Cerrar teclado debe mantener valores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -567,6 +585,7 @@ void main() {
     testWidgets('Navegación entre campos con tab', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -596,6 +615,7 @@ void main() {
     testWidgets('Doble tap en submit no causa errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),
@@ -627,6 +647,7 @@ void main() {
     testWidgets('Submit durante loading no causa errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const LoginScreen(),

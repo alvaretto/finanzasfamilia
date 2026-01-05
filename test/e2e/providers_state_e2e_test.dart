@@ -17,6 +17,7 @@ import 'package:finanzas_familiares/features/accounts/presentation/widgets/add_a
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import '../helpers/test_helpers.dart';
+import '../mocks/mock_providers.dart';
 
 void main() {
   setUpAll(() => setupTestEnvironment());
@@ -28,6 +29,7 @@ void main() {
     testWidgets('ProviderScope debe inicializarse sin errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -46,6 +48,7 @@ void main() {
     testWidgets('App funciona con ProviderScope único', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -91,6 +94,7 @@ void main() {
     testWidgets('Estado debe persistir al navegar', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -122,6 +126,7 @@ void main() {
     testWidgets('Formulario abierto mantiene estado', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -156,6 +161,7 @@ void main() {
     testWidgets('DashboardScreen debe usar providers', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -175,6 +181,7 @@ void main() {
     testWidgets('AccountsScreen debe usar providers', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -194,6 +201,7 @@ void main() {
     testWidgets('TransactionsScreen debe usar providers', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TransactionsScreen(),
@@ -212,6 +220,7 @@ void main() {
     testWidgets('ReportsScreen debe usar providers', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const ReportsScreen(),
@@ -230,6 +239,7 @@ void main() {
     testWidgets('SettingsScreen debe usar providers', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const SettingsScreen(),
@@ -250,6 +260,7 @@ void main() {
     testWidgets('App maneja estados de carga', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -272,6 +283,7 @@ void main() {
     testWidgets('App maneja estados de error', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -293,6 +305,7 @@ void main() {
     testWidgets('Botón sync en cuentas no causa crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -316,6 +329,7 @@ void main() {
     testWidgets('Pull to refresh no causa crash', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TransactionsScreen(),
@@ -343,6 +357,7 @@ void main() {
     testWidgets('Estados de pantallas son independientes', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -376,6 +391,7 @@ void main() {
     testWidgets('Formularios tienen estados independientes', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -421,6 +437,7 @@ void main() {
     testWidgets('Seleccionar Gasto abre AddTransactionSheet', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -450,6 +467,7 @@ void main() {
     testWidgets('Seleccionar Ingreso abre AddTransactionSheet', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -479,6 +497,7 @@ void main() {
     testWidgets('Seleccionar Transferencia abre AddTransactionSheet', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -552,6 +571,7 @@ void main() {
     testWidgets('Navegación no causa dispose errors', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -588,6 +608,7 @@ void main() {
       // Primer pump
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -599,6 +620,7 @@ void main() {
       // Simular hot reload con nuevo widget
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const DashboardScreen(),
@@ -618,6 +640,7 @@ void main() {
     testWidgets('Selección de tipo en cuenta persiste', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -659,6 +682,7 @@ void main() {
     testWidgets('Texto en campo persiste', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -711,6 +735,7 @@ void main() {
     testWidgets('Theme light se aplica', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const TestMainScaffold(
@@ -733,6 +758,7 @@ void main() {
     testWidgets('Theme dark se aplica', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.dark(),
             home: const TestMainScaffold(

@@ -11,6 +11,7 @@ import 'package:finanzas_familiares/features/accounts/presentation/screens/accou
 import 'package:finanzas_familiares/features/accounts/presentation/widgets/add_account_sheet.dart';
 import 'package:finanzas_familiares/features/accounts/domain/models/account_model.dart';
 import '../helpers/test_helpers.dart';
+import '../mocks/mock_providers.dart';
 
 void main() {
   setUpAll(() => setupTestEnvironment());
@@ -22,6 +23,7 @@ void main() {
     testWidgets('AccountsScreen debe renderizarse sin errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -46,6 +48,7 @@ void main() {
     testWidgets('Estado vacío muestra mensaje y botón de agregar', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -68,6 +71,7 @@ void main() {
     testWidgets('Botón + en AppBar debe abrir formulario de cuenta', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -92,6 +96,7 @@ void main() {
     testWidgets('Botón Agregar Cuenta en estado vacío abre formulario', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -116,6 +121,7 @@ void main() {
     testWidgets('Botón de sincronización debe ser interactivo', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -143,6 +149,7 @@ void main() {
     testWidgets('AddAccountSheet debe renderizarse con todos los campos', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -182,6 +189,7 @@ void main() {
     testWidgets('Selector de tipo debe mostrar todos los tipos de cuenta', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -218,6 +226,7 @@ void main() {
     testWidgets('Campo de nombre debe aceptar texto', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -258,6 +267,7 @@ void main() {
     testWidgets('Debe validar que el nombre es requerido', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -303,6 +313,7 @@ void main() {
     testWidgets('Botón X debe cerrar el formulario', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -344,6 +355,7 @@ void main() {
     testWidgets('Debe poder seleccionar diferentes tipos de cuenta', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -385,6 +397,7 @@ void main() {
     testWidgets('Debe tener campo de balance inicial', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -420,6 +433,7 @@ void main() {
     testWidgets('Formulario debe hacer scroll', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: Scaffold(
@@ -462,6 +476,7 @@ void main() {
     testWidgets('Múltiples aperturas rápidas del formulario', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
@@ -498,6 +513,7 @@ void main() {
     testWidgets('Taps rápidos en sync no causan errores', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
+          overrides: testProviderOverrides,
           child: MaterialApp(
             theme: AppTheme.light(),
             home: const AccountsScreen(),
