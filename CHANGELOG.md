@@ -2,6 +2,90 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.9.5] - 2026-01-04
+
+### Configuración Completamente Funcional
+
+Todas las funcionalidades marcadas como "Próximamente" en Configuración han sido implementadas.
+
+#### Cambiar Contraseña (`lib/features/settings/presentation/screens/change_password_screen.dart`)
+- Formulario con validación robusta (mínimo 8 caracteres)
+- Verificación de mayúsculas, minúsculas y números
+- Confirmación de contraseña con validación de coincidencia
+- Integración con AuthRepository de Supabase
+- Manejo de errores y estados de carga
+- Cierre automático de sesión tras cambio exitoso
+
+#### Respaldo y Restauración
+- **BackupService** (`lib/core/services/backup_service.dart`):
+  - Exportación completa a JSON (cuentas, transacciones, presupuestos, metas, recurrentes)
+  - Importación con validación de estructura
+  - Estadísticas del respaldo (contadores por tipo)
+  - Versioning para compatibilidad futura
+- **BackupScreen** (`lib/features/settings/presentation/screens/backup_screen.dart`):
+  - Botón de crear respaldo con share integrado
+  - Selección de archivo con FilePicker para restaurar
+  - Preview de estadísticas antes de restaurar
+  - Diálogo de confirmación con warning de sobrescritura
+  - Estados de carga durante operaciones
+  - SnackBars de éxito/error
+
+#### Soporte Completo
+- **Centro de Ayuda** (`lib/features/settings/presentation/screens/help_screen.dart`):
+  - 7 secciones temáticas con iconos
+  - 20+ preguntas frecuentes (FAQs)
+  - Accordion pattern (expandir/colapsar)
+  - Secciones: Primeros Pasos, Presupuestos y Metas, Analítica y Reportes, Seguridad y Privacidad, Respaldos y Datos, Mi Familia, Contacto
+  - Navegación a FeedbackScreen desde sección de Contacto
+
+- **Enviar Comentarios** (`lib/features/settings/presentation/screens/feedback_screen.dart`):
+  - 4 tipos de comentarios: Sugerencia (💡), Reportar Error (🐛), Pregunta (❓), Otro (💬)
+  - Formulario con validación (asunto mín. 5 chars, mensaje mín. 10 chars)
+  - Metadata automática (email, versión, plataforma)
+  - Envío vía mailto con email pre-formateado
+  - Estados de carga y confirmación
+  - Limpieza del formulario tras envío exitoso
+
+#### Documentación de Testing Agregada
+- `docs/TESTING_CAMBIAR_CONTRASENA.md` - 10 casos de prueba, 6 flujos de usuario
+- `docs/TESTING_DATOS.md` - Categorías, Recurrentes, Sincronización, Exportar, Respaldo, Datos de Prueba
+- `docs/TESTING_RESPALDO.md` - 10 casos de prueba, 5 flujos de usuario
+- `docs/TESTING_SOPORTE.md` - 10 casos de prueba, 5 flujos de usuario
+
+#### Dependencias Agregadas
+- `file_picker: ^8.1.6` - Selección de archivos para importar respaldos
+- `url_launcher: ^6.3.1` - Abrir aplicaciones externas (mailto)
+
+#### Archivos Modificados
+- `lib/features/settings/presentation/screens/settings_screen.dart` - Navegación actualizada a pantallas reales
+- `pubspec.yaml` - Versión 1.9.5, nuevas dependencias
+- `pubspec.lock` - Actualizado con nuevas dependencias
+
+#### Warnings No Críticos
+- `RadioListTile` deprecado en Flutter 3.32+ (feedback_screen.dart)
+- Mismo pattern usado en export_screen.dart, funciona correctamente
+- Se puede refactorizar en versiones futuras
+
+#### Estado de Configuración
+- ✅ **Mi Perfil** - Edición funcional (implementada previamente)
+- ✅ **Mi Familia** - Crear/unir familia, gestión de miembros (implementada previamente)
+- ✅ **Notificaciones** - Configuración completa (implementada previamente)
+- ✅ **Cambiar Contraseña** - NUEVO, completamente funcional
+- ✅ **Respaldo** - NUEVO, exportar/restaurar completo
+- ✅ **Ayuda** - NUEVO, 20+ FAQs en 7 secciones
+- ✅ **Enviar Comentarios** - NUEVO, 4 tipos de feedback
+- ✅ **Acerca de** - showAboutDialog (implementado previamente)
+
+### Métricas
+- **4 pantallas nuevas** creadas (change_password, backup, help, feedback)
+- **1 servicio nuevo** (BackupService)
+- **4 documentos de testing** agregados
+- **0 funciones pendientes** en Configuración
+- **2 dependencias** agregadas
+- **17 commits** en esta sesión
+
+---
+
 ## [1.9.4] - 2026-01-04
 
 ### Fix Crítico de Sincronización Supabase
