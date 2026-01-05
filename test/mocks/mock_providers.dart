@@ -123,3 +123,14 @@ List<Override> get testProviderOverrides => [
       expenseCategoriesProvider.overrideWith((ref) => mockExpenseCategories),
       incomeCategoriesProvider.overrideWith((ref) => mockIncomeCategories),
     ];
+
+/// Lista de overrides para tests de estado vacío
+/// Usa listas vacías para simular un usuario sin datos
+List<Override> get emptyStateProviderOverrides => [
+      // Override de cuentas activas vacío
+      activeAccountsProvider.overrideWith((ref) => <AccountModel>[]),
+
+      // Override de categorias (mantener para que funcione UI)
+      expenseCategoriesProvider.overrideWith((ref) => mockExpenseCategories),
+      incomeCategoriesProvider.overrideWith((ref) => mockIncomeCategories),
+    ];

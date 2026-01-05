@@ -410,10 +410,11 @@ void main() {
 
       void rollbackUpdate(String txId) {
         final pending = (state['pending'] as List);
-        final tx = pending.firstWhere((p) => p['id'] == txId, orElse: () => null);
-        if (tx != null) {
+        final index = pending.indexWhere((p) => p['id'] == txId);
+        if (index >= 0) {
+          final tx = pending[index];
           state['balance'] = (state['balance'] as double) - (tx['amount'] as double);
-          pending.remove(tx);
+          pending.removeAt(index);
         }
       }
 
