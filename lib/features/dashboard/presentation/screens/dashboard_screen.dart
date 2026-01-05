@@ -9,7 +9,10 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../shared/utils/motivational_messages.dart';
 import '../../../../shared/widgets/budget_503020_widget.dart';
 import '../../../../shared/services/budget_503020_service.dart';
+import '../../../../shared/widgets/financial_health_widget.dart';
+import '../../../../shared/services/financial_health_service.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
+import '../../../accounts/presentation/providers/account_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -52,6 +55,10 @@ class DashboardScreen extends ConsumerWidget {
 
               // Widget Regla 50/30/20
               _build503020Widget(context, ref),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Salud Financiera
+              _buildFinancialHealthWidget(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
               // Balance total
@@ -186,6 +193,32 @@ class DashboardScreen extends ConsumerWidget {
     }
 
     return Budget503020Widget(budget: budget);
+  }
+
+  Widget _buildFinancialHealthWidget(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final accountsState = ref.watch(accountsProvider);
+
+    // Calcular métricas
+    final monthlyIncome = transactionsState.totalIncome;
+    final monthlyExpenses = transactionsState.totalExpenses;
+    final accounts = accountsState.accounts;
+    final transactions = transactionsState.transactions;
+
+    // Calcular salud financiera
+    final health = FinancialHealthService.calculate(
+      accounts: accounts,
+      transactions: transactions,
+      monthlyIncome: monthlyIncome,
+      monthlyExpenses: monthlyExpenses,
+    );
+
+    // Si no hay datos suficientes, no mostrar el widget
+    if (monthlyIncome == 0 && accounts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return FinancialHealthWidget(health: health);
   }
 
   Widget _buildBalanceCard(BuildContext context) {
