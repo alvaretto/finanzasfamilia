@@ -23,9 +23,23 @@ class AiChatService {
         _lastApiKey != settings.apiKey;
   }
 
+  /// Esperar a que los settings estén cargados
+  Future<void> _waitForSettingsLoaded() async {
+    final notifier = _ref.read(aiSettingsProvider.notifier);
+    await notifier.initialized;
+  }
+
   /// Inicializar el proveedor según configuración
   Future<void> _ensureInitialized() async {
+    // IMPORTANTE: Esperar a que los settings estén cargados desde storage
+    await _waitForSettingsLoaded();
+    
     final settings = _ref.read(aiSettingsProvider);
+
+    // Verificar que ya no esté cargando
+    if (settings.isLoading) {
+      throw Exception('Los ajustes de IA aún se están cargando');
+    }
 
     // Solo reinicializar si cambió la configuración
     if (!_needsReinitialize(settings)) return;
@@ -115,7 +129,7 @@ class AiChatService {
     required List<BudgetModel> budgets,
     List<Map<String, String>>? history,
   }) async {
-    // SIEMPRE verificar si necesita reinicializar
+    // SIEMPRE esperar a que los settings estén cargados antes de inicializar
     await _ensureInitialized();
 
     final context = _buildFinancialContext(
