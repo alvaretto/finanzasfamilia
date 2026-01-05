@@ -5,14 +5,15 @@ library;
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
-  setUpAll(() {
-    SupabaseClientProvider.enableTestMode();
+  setUpAll(() async {
+    await setupTestEnvironment();
   });
 
-  tearDownAll(() {
-    SupabaseClientProvider.reset();
+  tearDownAll(() async {
+    await tearDownTestEnvironment();
   });
 
   group('Realtime: Subscription Management', () {

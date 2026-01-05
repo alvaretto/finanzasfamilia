@@ -5,6 +5,13 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
+import '../mocks/mock_supabase.dart';
+
+// Re-exportar mocks para uso en tests
+export '../mocks/mock_supabase.dart';
+
+/// Instancia global de MockSupabase para tests
+final mockSupabase = MockSupabase();
 
 /// TestMainScaffold que replica la funcionalidad del MainScaffold real
 /// Mantiene BottomNavigationBar para compatibilidad con tests existentes
@@ -438,6 +445,12 @@ Future<void> setupFullTestEnvironment() async {
 
   // Habilitar modo test de Supabase para evitar llamadas reales
   SupabaseClientProvider.enableTestMode();
+
+  // Configurar usuario mock por defecto
+  mockSupabase.auth.setMockUser(MockSupabaseUser(
+    id: 'test-user-123',
+    email: 'test@finanzasfamiliares.com',
+  ));
 }
 
 /// Alias para setupFullTestEnvironment (usado en E2E tests)
@@ -447,10 +460,19 @@ Future<void> setupTestEnvironment() async {
 
   // Habilitar modo test de Supabase
   SupabaseClientProvider.enableTestMode();
+
+  // Configurar usuario mock por defecto
+  mockSupabase.auth.setMockUser(MockSupabaseUser(
+    id: 'test-user-123',
+    email: 'test@finanzasfamiliares.com',
+  ));
 }
 
 /// Teardown del ambiente de testing
 Future<void> tearDownTestEnvironment() async {
+  // Resetear mocks
+  mockSupabase.reset();
+
   // Resetear el provider de Supabase
   SupabaseClientProvider.reset();
 }
