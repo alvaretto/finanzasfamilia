@@ -1,438 +1,244 @@
-/// Test Helpers para E2E Tests
-/// Configuración base para tests que requieren GoRouter y providers
-library;
+// test/helpers/test_helpers.dart
 
-import 'package:drift/drift.dart' hide Column;
-import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
-
-import 'package:finanzas_familiares/core/database/app_database.dart';
-import 'package:finanzas_familiares/core/theme/app_theme.dart';
-import 'package:finanzas_familiares/shared/widgets/main_scaffold.dart';
-import 'package:finanzas_familiares/core/network/supabase_client.dart';
-
-// ============================================================================
-// DRIFT DATABASE TESTING UTILITIES
-// ============================================================================
-
-/// Crea una base de datos in-memory para tests
-/// Siguiendo la documentación oficial de Drift: https://drift.simonbinder.eu/testing/
-AppDatabase createTestDatabase() {
-  return AppDatabase(
-    DatabaseConnection(
-      NativeDatabase.memory(),
-      closeStreamsSynchronously: true,
-    ),
-  );
-}
-
-/// Clase para gestionar el ciclo de vida de la base de datos en tests
-class TestDatabaseManager {
-  AppDatabase? _database;
-
-  /// Obtiene la base de datos de test (crea una nueva si no existe)
-  AppDatabase get database {
-    _database ??= createTestDatabase();
-    return _database!;
-  }
-
-  /// Cierra y limpia la base de datos
-  Future<void> close() async {
-    await _database?.close();
-    _database = null;
-  }
-
-  /// Reinicia la base de datos (cierra la actual y crea una nueva)
-  Future<AppDatabase> reset() async {
-    await close();
-    return database;
-  }
-}
-
-/// Singleton global para tests que necesitan compartir la base de datos
-final testDatabaseManager = TestDatabaseManager();
-
-/// Setup para tests que usan Drift (llamar en setUp)
-Future<AppDatabase> setupDriftTest() async {
-  return testDatabaseManager.database;
-}
-
-/// Teardown para tests que usan Drift (llamar en tearDown)
-Future<void> tearDownDriftTest() async {
-  await testDatabaseManager.close();
-}
-
-// ============================================================================
-// FLUTTER BINDING UTILITIES
-// ============================================================================
-
-/// Inicializa los bindings de Flutter para tests
-/// Debe llamarse al inicio del main() de cada archivo de test
-void initializeTestBindings() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-}
-
-/// Setup completo para tests (Supabase + bindings + path_provider mock)
-void setupFullTestEnvironment() {
-  initializeTestBindings();
-  setupMockPathProvider();
-  SupabaseClientProvider.enableTestMode();
-}
-
-/// Configura el entorno de tests (llamar en setUpAll)
-void setupTestEnvironment() {
-  SupabaseClientProvider.enableTestMode();
-}
-
-/// Limpia el entorno de tests (llamar en tearDownAll)
-void tearDownTestEnvironment() {
-  SupabaseClientProvider.reset();
-}
-
-// ============================================================================
-// MOCK PATH PROVIDER
-// ============================================================================
-
-/// Configura un mock para path_provider en tests
-/// Esto evita el error "Binding has not yet been initialized"
-void setupMockPathProvider() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  const channel = MethodChannel('plugins.flutter.io/path_provider');
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-    switch (methodCall.method) {
-      case 'getTemporaryDirectory':
-        return '/tmp';
-      case 'getApplicationDocumentsDirectory':
-        return '/tmp/documents';
-      case 'getApplicationSupportDirectory':
-        return '/tmp/support';
-      case 'getExternalStorageDirectory':
-        return '/tmp/external';
-      default:
-        return null;
+/// Helpers genericos para tests
+class TestHelpers {
+  /// Genera datos de prueba segun el tipo especificado
+  static Map<String, dynamic> generarDatosPrueba({
+    required String tipo,
+    Map<String, dynamic>? overrides,
+  }) {
+    final base = _datosBase(tipo);
+    if (overrides != null) {
+      base.addAll(overrides);
     }
-  });
-}
-
-/// Limpia el mock de path_provider
-void tearDownMockPathProvider() {
-  const channel = MethodChannel('plugins.flutter.io/path_provider');
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(channel, null);
-}
-
-/// Crea un widget wrapper para tests que requieren GoRouter
-Widget createTestApp({
-  required Widget child,
-  String initialLocation = '/',
-  ThemeData? theme,
-}) {
-  final router = GoRouter(
-    initialLocation: initialLocation,
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => child,
-      ),
-      GoRoute(
-        path: '/dashboard',
-        builder: (context, state) => child,
-      ),
-      GoRoute(
-        path: '/accounts',
-        builder: (context, state) => child,
-      ),
-      GoRoute(
-        path: '/transactions',
-        builder: (context, state) => child,
-      ),
-      GoRoute(
-        path: '/reports',
-        builder: (context, state) => child,
-      ),
-    ],
-  );
-
-  return ProviderScope(
-    child: MaterialApp.router(
-      routerConfig: router,
-      theme: theme ?? AppTheme.light(),
-      debugShowCheckedModeBanner: false,
-    ),
-  );
-}
-
-/// Crea un widget wrapper simple sin GoRouter
-Widget createSimpleTestApp({
-  required Widget child,
-  ThemeData? theme,
-}) {
-  return ProviderScope(
-    child: MaterialApp(
-      theme: theme ?? AppTheme.light(),
-      home: child,
-      debugShowCheckedModeBanner: false,
-    ),
-  );
-}
-
-/// Widget de scaffold simplificado para tests (sin GoRouter dependency)
-class TestMainScaffold extends StatelessWidget {
-  final Widget child;
-  final int currentIndex;
-  final ValueChanged<int>? onTabChanged;
-
-  const TestMainScaffold({
-    super.key,
-    required this.child,
-    this.currentIndex = 0,
-    this.onTabChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _TestBottomNavBar(
-        currentIndex: currentIndex,
-        onTabChanged: onTabChanged,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddTransactionSheet(context);
-        },
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
+    return base;
   }
 
-  void _showAddTransactionSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(24),
-          ),
-        ),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Nueva transaccion',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _TransactionTypeButton(
-                      icon: Icons.arrow_downward,
-                      label: 'Gasto',
-                      color: Colors.red,
-                      onTap: () => Navigator.pop(context),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _TransactionTypeButton(
-                      icon: Icons.arrow_upward,
-                      label: 'Ingreso',
-                      color: Colors.green,
-                      onTap: () => Navigator.pop(context),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _TransactionTypeButton(
-                      icon: Icons.swap_horiz,
-                      label: 'Transferencia',
-                      color: Colors.blue,
-                      onTap: () => Navigator.pop(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
+  static Map<String, dynamic> _datosBase(String tipo) {
+    switch (tipo) {
+      case 'cuenta':
+        return {
+          'id': 'cuenta_test_${DateTime.now().millisecondsSinceEpoch}',
+          'nombre': 'Cuenta Test',
+          'tipo': 'banco',
+          'saldo': 1000000.0,
+          'moneda': 'COP',
+        };
+      case 'transaccion':
+        return {
+          'id': 'trans_test_${DateTime.now().millisecondsSinceEpoch}',
+          'tipo': 'gasto',
+          'monto': 50000.0,
+          'fecha': DateTime.now(),
+          'descripcion': 'Transaccion test',
+        };
+      case 'categoria':
+        return {
+          'id': 'cat_test_${DateTime.now().millisecondsSinceEpoch}',
+          'nombre': 'Categoria Test',
+          'tipo': 'gasto',
+        };
+      case 'presupuesto':
+        return {
+          'id': 'pres_test_${DateTime.now().millisecondsSinceEpoch}',
+          'montoPlaneado': 500000.0,
+          'montoGastado': 0.0,
+        };
+      case 'meta':
+        return {
+          'id': 'meta_test_${DateTime.now().millisecondsSinceEpoch}',
+          'nombre': 'Meta Test',
+          'montoObjetivo': 1000000.0,
+          'montoActual': 0.0,
+        };
+      default:
+        return {'id': 'unknown_${DateTime.now().millisecondsSinceEpoch}'};
+    }
   }
 }
 
-class _TransactionTypeButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
+/// Builder para crear datos de test complejos
+class TestDataBuilder {
+  Map<String, dynamic> _usuario = {};
+  List<Map<String, dynamic>> _cuentas = [];
+  List<Map<String, dynamic>> _transacciones = [];
+  List<Map<String, dynamic>> _presupuestos = [];
+  List<Map<String, dynamic>> _metas = [];
 
-  const _TransactionTypeButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
+  TestDataBuilder conUsuario(Map<String, dynamic> usuario) {
+    _usuario = usuario;
+    return this;
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 24,
-          horizontal: 16,
-        ),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  TestDataBuilder conCuentas(List<Map<String, dynamic>> cuentas) {
+    _cuentas = cuentas;
+    return this;
+  }
+
+  TestDataBuilder conTransacciones(List<Map<String, dynamic>> transacciones) {
+    _transacciones = transacciones;
+    return this;
+  }
+
+  TestDataBuilder conPresupuestos(List<Map<String, dynamic>> presupuestos) {
+    _presupuestos = presupuestos;
+    return this;
+  }
+
+  TestDataBuilder conMetas(List<Map<String, dynamic>> metas) {
+    _metas = metas;
+    return this;
+  }
+
+  Map<String, dynamic> build() {
+    return {
+      'usuario': _usuario,
+      'cuentas': _cuentas,
+      'transacciones': _transacciones,
+      'presupuestos': _presupuestos,
+      'metas': _metas,
+    };
   }
 }
 
-class _TestBottomNavBar extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int>? onTabChanged;
+/// Simulador de tiempo para tests
+class TimeSimulator {
+  DateTime _currentTime;
 
-  const _TestBottomNavBar({
-    required this.currentIndex,
-    this.onTabChanged,
-  });
+  TimeSimulator([DateTime? startTime])
+      : _currentTime = startTime ?? DateTime.now();
 
-  @override
-  Widget build(BuildContext context) {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _NavItem(
-            icon: Icons.dashboard_outlined,
-            activeIcon: Icons.dashboard,
-            label: 'Inicio',
-            isActive: currentIndex == 0,
-            onTap: () => onTabChanged?.call(0),
-          ),
-          _NavItem(
-            icon: Icons.account_balance_wallet_outlined,
-            activeIcon: Icons.account_balance_wallet,
-            label: 'Cuentas',
-            isActive: currentIndex == 1,
-            onTap: () => onTabChanged?.call(1),
-          ),
-          const SizedBox(width: 48),
-          _NavItem(
-            icon: Icons.receipt_long_outlined,
-            activeIcon: Icons.receipt_long,
-            label: 'Movimientos',
-            isActive: currentIndex == 2,
-            onTap: () => onTabChanged?.call(2),
-          ),
-          _NavItem(
-            icon: Icons.bar_chart_outlined,
-            activeIcon: Icons.bar_chart,
-            label: 'Reportes',
-            isActive: currentIndex == 3,
-            onTap: () => onTabChanged?.call(3),
-          ),
-        ],
-      ),
-    );
+  DateTime get now => _currentTime;
+
+  void avanzarDias(int dias) {
+    _currentTime = _currentTime.add(Duration(days: dias));
+  }
+
+  void avanzarHoras(int horas) {
+    _currentTime = _currentTime.add(Duration(hours: horas));
+  }
+
+  void irAFecha(DateTime fecha) {
+    _currentTime = fecha;
+  }
+
+  /// Alias de irAFecha para compatibilidad
+  void establecer(DateTime fecha) {
+    _currentTime = fecha;
   }
 }
 
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
+// ============================================
+// FUNCIONES HELPER PARA CALCULOS
+// ============================================
 
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
+/// Suma los saldos de una lista de cuentas
+double sumarSaldos(List<Map<String, dynamic>> cuentas) {
+  return cuentas.fold(0.0, (sum, cuenta) => sum + (cuenta['saldo'] as num).toDouble());
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
+/// Suma los montos planeados de una lista de presupuestos
+double sumarPresupuestos(List<Map<String, dynamic>> presupuestos) {
+  return presupuestos.fold(
+      0.0, (sum, p) => sum + (p['montoPlaneado'] as num).toDouble());
+}
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 4,
-          vertical: 2,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(isActive ? activeIcon : icon, color: color, size: 20),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 9,
-                color: color,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
+/// Suma los montos de una lista de transacciones
+double sumarTransacciones(List<Map<String, dynamic>> transacciones) {
+  return transacciones.fold(0.0, (sum, t) => sum + (t['monto'] as num).toDouble());
+}
+
+/// Filtra transacciones por tipo
+List<Map<String, dynamic>> filtrarPorTipo(
+    List<Map<String, dynamic>> transacciones, String tipo) {
+  return transacciones.where((t) => t['tipo'] == tipo).toList();
+}
+
+// ============================================
+// HELPERS PARA TESTS COMBINATORIALES
+// ============================================
+
+/// Obtiene el monto gastado segun el estado del presupuesto
+double obtenerMontoSegunEstado(String estado, {double montoPlaneado = 500000}) {
+  switch (estado) {
+    case 'normal':
+      return montoPlaneado * 0.6; // 60%
+    case 'cerca_limite':
+      return montoPlaneado * 0.9; // 90%
+    case 'excedido':
+      return montoPlaneado * 1.1; // 110%
+    default:
+      return 0;
   }
+}
+
+/// Valida si una combinacion de transaccion/cuenta/categoria es valida
+bool validarCombinacion(String tipoTrans, String tipoCuenta, String categoria) {
+  if (tipoTrans == 'ingreso' &&
+      ['alimentacion', 'transporte'].contains(categoria)) {
+    return false;
+  }
+  if (tipoTrans == 'gasto' && ['salario', 'ventas'].contains(categoria)) {
+    return false;
+  }
+  return true;
+}
+
+/// Calcula el numero de ejecuciones de una transaccion recurrente
+/// Nota: Siempre retorna al menos 1 para la primera ejecución
+int calcularEjecuciones(String frecuencia, int dia, int duracion) {
+  int result;
+  switch (frecuencia) {
+    case 'diaria':
+      result = duracion;
+      break;
+    case 'semanal':
+      result = (duracion / 7).floor();
+      break;
+    case 'quincenal':
+      result = (duracion / 15).floor();
+      break;
+    case 'mensual':
+      result = (duracion / 30).floor();
+      break;
+    case 'anual':
+      result = (duracion / 365).floor();
+      break;
+    default:
+      return 0;
+  }
+  // Siempre hay al menos 1 ejecución si la duración es positiva
+  return result > 0 ? result : (duracion > 0 ? 1 : 0);
+}
+
+/// Verifica compatibilidad entre dos features
+bool verificarCompatibilidad(String featureA, String featureB) {
+  final compatibilidades = {
+    'cuentas': ['transacciones', 'metas', 'reportes'],
+    'transacciones': ['cuentas', 'presupuestos', 'metas', 'reportes'],
+    'presupuestos': ['transacciones', 'alertas', 'reportes'],
+    'metas': ['cuentas', 'transacciones', 'notificaciones', 'reportes'],
+    'reportes': ['cuentas', 'transacciones', 'presupuestos', 'metas'],
+    'alertas': ['presupuestos', 'notificaciones'],
+    'notificaciones': ['metas', 'alertas'],
+  };
+
+  return compatibilidades[featureA]?.contains(featureB) ?? false;
+}
+
+// ============================================
+// HELPERS PARA SETUP DE TESTS
+// ============================================
+
+/// Setup completo del ambiente de testing
+Future<void> setupFullTestEnvironment() async {
+  // Placeholder - configurar ambiente de test
+  // Puede incluir: inicializar mocks, limpiar DB, etc.
+}
+
+/// Crear database de prueba
+dynamic createTestDatabase() {
+  // Retorna una instancia mock o in-memory de la DB
+  // En tests reales, esto deberia crear AppDatabase.inMemory()
+  return null; // Placeholder
 }

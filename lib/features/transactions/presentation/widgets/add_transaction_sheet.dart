@@ -33,7 +33,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   late TransactionType _selectedType;
   String? _selectedAccountId;
   String? _selectedTransferAccountId;
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
@@ -390,14 +390,14 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   }
 
   Widget _buildCategorySelector(List<CategoryModel> categories) {
-    return DropdownButtonFormField<int>(
+    return DropdownButtonFormField<String>(
       value: _selectedCategoryId,
       decoration: const InputDecoration(
         labelText: 'Categoria',
         prefixIcon: Icon(Icons.category),
       ),
       items: categories.map((cat) {
-        return DropdownMenuItem(
+        return DropdownMenuItem<String>(
           value: cat.id,
           child: Row(
             children: [

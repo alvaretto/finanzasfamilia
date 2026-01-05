@@ -31,7 +31,7 @@ void main() {
           {'push': false, 'email': false},
         ];
         
-        int casosProba dos = 0;
+        int casosProbados = 0;
         
         // Generar todas las combinaciones (3 × 3 × 4 = 36 casos)
         for (var estadoPres in estadosPresupuesto) {
@@ -42,7 +42,7 @@ void main() {
                 'presupuesto': {
                   'estado': estadoPres,
                   'montoPlaneado': 500000,
-                  'montoGastado': _obtenerMontoSegunEstado(estadoPres),
+                  'montoGastado': obtenerMontoSegunEstado(estadoPres),
                 },
                 'alerta': configAlerta,
                 'notificacion': configNotif,
@@ -57,7 +57,7 @@ void main() {
               
               // Verificar comportamiento
               // TODO: Implementar verificación real
-              casosP robados++;
+              casosProbados++;
               
               // Debug: Documentar combinación
               if (debeNotificar) {
@@ -88,7 +88,7 @@ void main() {
         for (var tipoTrans in tiposTransaccion) {
           for (var tipoCuenta in tiposCuenta) {
             for (var categoria in categorias) {
-              final esValida = _validarCombinacion(
+              final esValida = validarCombinacion(
                 tipoTrans,
                 tipoCuenta,
                 categoria,
@@ -165,7 +165,7 @@ void main() {
         for (var frecuencia in frecuencias) {
           for (var dia in diasEjecucion) {
             for (var duracion in duraciones) {
-              final cantidadEjecuciones = _calcularEjecuciones(
+              final cantidadEjecuciones = calcularEjecuciones(
                 frecuencia,
                 dia,
                 duracion,
@@ -203,7 +203,7 @@ void main() {
         for (var featureA in features) {
           for (var featureB in features) {
             if (featureA != featureB) {
-              final esCompatible = _verificarCompatibilidad(
+              final esCompatible = verificarCompatibilidad(
                 featureA,
                 featureB,
               );
@@ -226,65 +226,5 @@ void main() {
         }
       });
     });
-    
-    // ============================================
-    // HELPERS
-    // ============================================
-    
-    double _obtenerMontoSegunEstado(String estado) {
-      switch (estado) {
-        case 'normal':
-          return 300000; // 60% de 500k
-        case 'cerca_limite':
-          return 450000; // 90% de 500k
-        case 'excedido':
-          return 550000; // 110% de 500k
-        default:
-          return 0;
-      }
-    }
-    
-    bool _validarCombinacion(String tipoTrans, String tipoCuenta, String categoria) {
-      // Reglas de validación
-      if (tipoTrans == 'ingreso' && ['alimentacion', 'transporte'].contains(categoria)) {
-        return false; // Categorías de gasto no válidas para ingresos
-      }
-      if (tipoTrans == 'gasto' && ['salario', 'ventas'].contains(categoria)) {
-        return false; // Categorías de ingreso no válidas para gastos
-      }
-      return true;
-    }
-    
-    int _calcularEjecuciones(String frecuencia, int dia, int duracion) {
-      switch (frecuencia) {
-        case 'diaria':
-          return duracion;
-        case 'semanal':
-          return (duracion / 7).floor();
-        case 'quincenal':
-          return (duracion / 15).floor();
-        case 'mensual':
-          return (duracion / 30).floor();
-        case 'anual':
-          return (duracion / 365).floor();
-        default:
-          return 0;
-      }
-    }
-    
-    bool _verificarCompatibilidad(String featureA, String featureB) {
-      // Matriz de compatibilidad conocida
-      final compatibilidades = {
-        'cuentas': ['transacciones', 'metas', 'reportes'],
-        'transacciones': ['cuentas', 'presupuestos', 'metas', 'reportes'],
-        'presupuestos': ['transacciones', 'alertas', 'reportes'],
-        'metas': ['cuentas', 'transacciones', 'notificaciones', 'reportes'],
-        'reportes': ['cuentas', 'transacciones', 'presupuestos', 'metas'],
-        'alertas': ['presupuestos', 'notificaciones'],
-        'notificaciones': ['metas', 'alertas'],
-      };
-      
-      return compatibilidades[featureA]?.contains(featureB) ?? false;
-    }
   });
 }

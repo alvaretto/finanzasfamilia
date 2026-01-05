@@ -239,7 +239,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                   ),
                   ...filteredCategories.map((c) {
                     return DropdownMenuItem(
-                      value: c.uuid,
+                      value: c.id,
                       child: Text(c.name),
                     );
                   }),

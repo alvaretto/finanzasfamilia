@@ -9,7 +9,7 @@ class TestFixtures {
   // USUARIOS DE PRUEBA
   // ============================================
   
-  static Map<String, dynamic> usuarioBas ico() => {
+  static Map<String, dynamic> usuarioBasico() => {
     'id': 'user_001',
     'nombre': 'María González',
     'email': 'maria@test.com',
@@ -17,7 +17,7 @@ class TestFixtures {
     'createdAt': DateTime(2025, 1, 1),
   };
   
-  static Map<String, dynamic> usuarioAltos Ingresos() => {
+  static Map<String, dynamic> usuarioAltosIngresos() => {
     'id': 'user_002',
     'nombre': 'Carlos Rodríguez',
     'email': 'carlos@test.com',
@@ -42,7 +42,7 @@ class TestFixtures {
       'id': 'cuenta_001',
       'nombre': 'Bancolombia Ahorros',
       'tipo': 'banco',
-      'saldo': 2500000,
+      'saldo': 2500000.0,
       'moneda': 'COP',
       'emoji': '🏦',
     },
@@ -50,7 +50,7 @@ class TestFixtures {
       'id': 'cuenta_002',
       'nombre': 'Efectivo',
       'tipo': 'efectivo',
-      'saldo': 200000,
+      'saldo': 200000.0,
       'moneda': 'COP',
       'emoji': '💵',
     },
@@ -58,7 +58,7 @@ class TestFixtures {
       'id': 'cuenta_003',
       'nombre': 'Nequi',
       'tipo': 'banco',
-      'saldo': 150000,
+      'saldo': 150000.0,
       'moneda': 'COP',
       'emoji': '🏦',
     },

@@ -58,7 +58,7 @@ void main() {
     test('BudgetModel previene division por cero', () {
       final budget = BudgetModel.create(
         userId: 'test',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 0,
         period: BudgetPeriod.monthly,
       );
@@ -132,7 +132,7 @@ void main() {
         searchQuery: 'test',
         type: TransactionType.expense,
         accountId: 'acc-1',
-        categoryId: 1,
+        categoryId: 'cat-1',
         minAmount: 10,
         maxAmount: 100,
       );
@@ -299,7 +299,7 @@ void main() {
 
     test('BudgetModel con presupuesto de centavos', () {
       final microBudget = BudgetModel(
-        id: '1', userId: 'test', categoryId: 1,
+        id: '1', userId: 'test', categoryId: 'cat-1',
         amount: 0.01, period: BudgetPeriod.weekly,
         startDate: DateTime.now(), spent: 0.005,
       );
@@ -391,7 +391,7 @@ void main() {
 
     test('Presupuesto en año bisiesto febrero 29', () {
       final leapYear = BudgetModel.create(
-        userId: 'test', categoryId: 1,
+        userId: 'test', categoryId: 'cat-1',
         amount: 1000, period: BudgetPeriod.monthly,
         startDate: DateTime(2024, 2, 29), // 2024 es bisiesto
       );
@@ -409,7 +409,7 @@ void main() {
         amount: (i % 1000) * 1.5 + 0.01,
         type: TransactionType.values[i % 3],
         description: 'Stress test transaction $i',
-        categoryId: i % 20,
+        categoryId: 'cat-${i % 20}',
       ));
       stopwatch.stop();
 
@@ -464,7 +464,7 @@ void main() {
   group('Production Aggressive - Division by Zero Prevention', () {
     test('BudgetModel con amount 0 y spent > 0', () {
       final zeroBudget = BudgetModel(
-        id: '1', userId: 'test', categoryId: 1,
+        id: '1', userId: 'test', categoryId: 'cat-1',
         amount: 0, period: BudgetPeriod.monthly,
         startDate: DateTime.now(), spent: 100,
       );
@@ -581,7 +581,7 @@ void main() {
 
     test('Calculo de porcentaje es preciso', () {
       final budget = BudgetModel(
-        id: '1', userId: 'test', categoryId: 1,
+        id: '1', userId: 'test', categoryId: 'cat-1',
         amount: 333.33, period: BudgetPeriod.monthly,
         startDate: DateTime.now(), spent: 111.11,
       );

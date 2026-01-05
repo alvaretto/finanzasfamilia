@@ -63,7 +63,7 @@ void main() {
       ];
       
       print('\n💳 Cuentas configuradas: ${cuentas.length}');
-      print('   Total activos: \$${_sumarSaldos(cuentas)}');
+      print('   Total activos: \$${sumarSaldos(cuentas)}');
       
       // Define presupuestos para el mes siguiente
       final presupuestos = [
@@ -94,30 +94,30 @@ void main() {
       ];
       
       print('\n📊 Presupuestos configurados: ${presupuestos.length}');
-      print('   Total presupuestado: \$${_sumarPresupuestos(presupuestos)}');
+      print('   Total presupuestado: \$${sumarPresupuestos(presupuestos)}');
       
       // Define metas de ahorro
       final metas = [
         {
           'nombre': 'Vacaciones Cartagena',
           'emoji': '🏖️',
-          'montoObjetivo': 4000000,
-          'montoActual': 800000, // Ya tiene algo ahorrado
+          'montoObjetivo': 4000000.0,
+          'montoActual': 800000.0, // Ya tiene algo ahorrado
           'fechaObjetivo': DateTime(2026, 7, 15),
         },
         {
           'nombre': 'Fondo de Emergencia',
           'emoji': '🆘',
-          'montoObjetivo': 9000000, // 3 meses de gastos
-          'montoActual': 1200000,
+          'montoObjetivo': 9000000.0, // 3 meses de gastos
+          'montoActual': 1200000.0,
           'fechaObjetivo': DateTime(2026, 12, 31),
         },
       ];
-      
+
       print('\n🎯 Metas configuradas: ${metas.length}');
       for (var meta in metas) {
-        final progreso = (meta['montoActual'] as double) / 
-                        (meta['montoObjetivo'] as double) * 100;
+        final progreso = (meta['montoActual'] as num).toDouble() /
+                        (meta['montoObjetivo'] as num).toDouble() * 100;
         print('   ${meta['emoji']} ${meta['nombre']}: ${progreso.toStringAsFixed(1)}%');
       }
       
@@ -208,18 +208,18 @@ void main() {
       tiempo.establecer(DateTime(2026, 1, 10));
       print('\n📆 Viernes 10 de enero');
       final servicios = [
-        {'desc': 'Luz', 'monto': 85000},
-        {'desc': 'Agua', 'monto': 45000},
-        {'desc': 'Internet', 'monto': 75000},
+        {'desc': 'Luz', 'monto': 85000.0},
+        {'desc': 'Agua', 'monto': 45000.0},
+        {'desc': 'Internet', 'monto': 75000.0},
       ];
-      
+
       for (var servicio in servicios) {
         print('   💡 ${servicio['desc']}: \$${servicio['monto']}');
       }
-      
+
       final totalServicios = servicios.fold<double>(
         0,
-        (sum, s) => sum + (s['monto'] as double),
+        (sum, s) => sum + (s['monto'] as num).toDouble(),
       );
       print('   📊 Total servicios: \$$totalServicios');
       print('   ⚠️ Presupuesto servicios: ${(totalServicios/350000*100).toStringAsFixed(1)}% usado');
@@ -423,20 +423,5 @@ void main() {
       print('✅ TEST COMPLETADO EXITOSAMENTE');
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     });
-    
-    // ===================================================================
-    // HELPERS
-    // ===================================================================
-    
-    double _sumarSaldos(List<Map<String, dynamic>> cuentas) {
-      return cuentas.fold(0, (sum, c) => sum + (c['saldo'] as double));
-    }
-    
-    double _sumarPresupuestos(List<Map<String, dynamic>> presupuestos) {
-      return presupuestos.fold(
-        0,
-        (sum, p) => sum + (p['montoPlaneado'] as double),
-      );
-    }
   });
 }

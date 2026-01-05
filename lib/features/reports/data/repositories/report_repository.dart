@@ -94,13 +94,13 @@ class ReportRepository {
     final results = await query.get();
 
     // Agrupar por categoría
-    final categoryAmounts = <int, _CategoryAggregation>{};
+    final categoryAmounts = <String, _CategoryAggregation>{};
     double total = 0;
 
     for (final row in results) {
       final tx = row.readTable(_db.transactions);
       final cat = row.readTableOrNull(_db.categories);
-      final catId = tx.categoryId ?? 0;
+      final catId = tx.categoryId ?? '';
 
       total += tx.amount;
 
@@ -267,7 +267,7 @@ class ReportRepository {
 }
 
 class _CategoryAggregation {
-  final int id;
+  final String id;
   final String name;
   final String? icon;
   final String? color;

@@ -545,7 +545,7 @@ class _CategoryTile extends ConsumerWidget {
 class _CategoryFormSheet extends ConsumerStatefulWidget {
   final String type;
   final CategoryModel? category;
-  final int? parentId;
+  final String? parentId;
   final List<CategoryModel> allCategories;
 
   const _CategoryFormSheet({
@@ -564,7 +564,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
   final _nameController = TextEditingController();
   String _selectedIcon = 'category';
   Color _selectedColor = AppColors.primary;
-  int? _selectedParentId;
+  String? _selectedParentId;
   bool _isLoading = false;
 
   bool get isEditing => widget.category != null;
@@ -875,14 +875,14 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: AppSpacing.sm),
-        DropdownButtonFormField<int?>(
+        DropdownButtonFormField<String?>(
           value: _selectedParentId,
           decoration: const InputDecoration(
             hintText: 'Ninguna (categoría principal)',
             prefixIcon: Icon(Icons.folder_open),
           ),
           items: [
-            const DropdownMenuItem<int?>(
+            const DropdownMenuItem<String?>(
               value: null,
               child: Text('Ninguna (categoría principal)'),
             ),
@@ -895,7 +895,7 @@ class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
                 widget.allCategories,
                 category,
               );
-              return DropdownMenuItem<int?>(
+              return DropdownMenuItem<String?>(
                 value: category.id,
                 child: Row(
                   children: [

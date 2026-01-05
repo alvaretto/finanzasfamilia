@@ -330,7 +330,7 @@ void main() {
       final budget = BudgetModel(
         id: const Uuid().v4(),
         userId: 'test',
-        categoryId: 1,
+        categoryId: 'cat-1',
         categoryName: 'Alimentacion',
         amount: 500.0,
         spent: 600.0,

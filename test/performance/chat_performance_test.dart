@@ -188,7 +188,7 @@ void main() {
       final budgets = List.generate(50, (i) => BudgetModel(
         id: const Uuid().v4(),
         userId: 'perf-test',
-        categoryId: i,
+        categoryId: 'cat-$i',
         categoryName: 'Categoria $i',
         amount: 1000.0,
         spent: (i * 20).toDouble(),
