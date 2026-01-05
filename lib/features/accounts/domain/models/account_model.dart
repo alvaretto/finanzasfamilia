@@ -82,6 +82,42 @@ extension AccountTypeExtension on AccountType {
   bool get isAsset => !isLiability;
 }
 
+/// Grupo de cuenta para organización
+enum AccountGroup {
+  personal,  // Cuentas personales
+  family,    // Cuentas familiares compartidas
+  business,  // Cuentas de negocio
+  other,     // Otras
+}
+
+extension AccountGroupExtension on AccountGroup {
+  String get displayName {
+    switch (this) {
+      case AccountGroup.personal:
+        return '👤 Personal';
+      case AccountGroup.family:
+        return '👨‍👩‍👧‍👦 Familiar';
+      case AccountGroup.business:
+        return '💼 Negocio';
+      case AccountGroup.other:
+        return '📁 Otros';
+    }
+  }
+
+  String get emoji {
+    switch (this) {
+      case AccountGroup.personal:
+        return '👤';
+      case AccountGroup.family:
+        return '👨‍👩‍👧‍👦';
+      case AccountGroup.business:
+        return '💼';
+      case AccountGroup.other:
+        return '📁';
+    }
+  }
+}
+
 /// Modelo de cuenta financiera
 @freezed
 class AccountModel with _$AccountModel {
@@ -102,6 +138,8 @@ class AccountModel with _$AccountModel {
     String? lastFourDigits,
     @Default(true) bool isActive,
     @Default(false) bool includeInTotal,
+    @Default(AccountGroup.personal) AccountGroup accountGroup,
+    @Default(false) bool isTestAccount,
     DateTime? createdAt,
     DateTime? updatedAt,
     @Default(false) bool isSynced,
@@ -123,6 +161,8 @@ class AccountModel with _$AccountModel {
     String? bankName,
     String? lastFourDigits,
     double creditLimit = 0.0,
+    AccountGroup accountGroup = AccountGroup.personal,
+    bool isTestAccount = false,
   }) {
     return AccountModel(
       id: _uuid.v4(),
@@ -139,6 +179,8 @@ class AccountModel with _$AccountModel {
       lastFourDigits: lastFourDigits,
       isActive: true,
       includeInTotal: true,
+      accountGroup: accountGroup,
+      isTestAccount: isTestAccount,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isSynced: false,
@@ -181,6 +223,8 @@ class AccountModel with _$AccountModel {
       'last_four_digits': lastFourDigits,
       'is_active': isActive,
       'include_in_total': includeInTotal,
+      'account_group': accountGroup.name,
+      'is_test_account': isTestAccount,
     };
 
     // Solo incluir family_id si no es null (evita trigger de RLS)
@@ -211,6 +255,11 @@ class AccountModel with _$AccountModel {
       lastFourDigits: json['last_four_digits'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       includeInTotal: json['include_in_total'] as bool? ?? true,
+      accountGroup: AccountGroup.values.firstWhere(
+        (e) => e.name == json['account_group'],
+        orElse: () => AccountGroup.personal,
+      ),
+      isTestAccount: json['is_test_account'] as bool? ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
