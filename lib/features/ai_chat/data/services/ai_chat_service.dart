@@ -17,7 +17,7 @@ class AiChatService {
     }
 
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-pro',
       apiKey: apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.7,
@@ -165,7 +165,8 @@ INSTRUCCIONES:
       }
 
       // Error generico con mas detalle
-      return 'Hubo un problema al procesar tu solicitud. Por favor intenta de nuevo.';
+      // Mostrar error completo para debugging (remover en producción)
+      return 'Error: ${e.toString()}';
     }
   }
 
