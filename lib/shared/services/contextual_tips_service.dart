@@ -186,6 +186,7 @@ class ContextualTipsService {
       title: 'Tu salud financiera necesita atención',
       message: mainIssue,
       actionText: 'Ver análisis',
+      actionRoute: '/reports',
     );
   }
 
@@ -197,6 +198,7 @@ class ContextualTipsService {
       message:
           'Tus finanzas están muy bien. Sigue así: ahorrando, controlando gastos y evitando deudas.',
       actionText: 'Ver detalles',
+      actionRoute: '/reports',
     );
   }
 
