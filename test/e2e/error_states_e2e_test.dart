@@ -100,9 +100,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // 100 taps muy rápidos
+      // 100 taps muy rápidos (warnIfMissed: false para silenciar warnings esperados)
       for (var i = 0; i < 100; i++) {
-        await tester.tap(find.byType(FloatingActionButton));
+        await tester.tap(find.byType(FloatingActionButton), warnIfMissed: false);
         await tester.pump(const Duration(milliseconds: 10));
       }
 

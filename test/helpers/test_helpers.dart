@@ -462,7 +462,10 @@ Future<void> setupFullTestEnvironment() async {
   ));
 }
 
-/// Alias para setupFullTestEnvironment (usado en E2E tests)
+/// Configura el entorno de tests (usado en E2E y otros tests)
+///
+/// Los mensajes "Test mode: Use mock providers..." son ESPERADOS y no son errores.
+/// Indican que Supabase está correctamente en modo test.
 Future<void> setupTestEnvironment() async {
   // Asegurar que el binding de Flutter está inicializado
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -470,7 +473,8 @@ Future<void> setupTestEnvironment() async {
   // Inicializar localización para DateFormat (español)
   await initializeDateFormatting('es', null);
 
-  // Habilitar modo test de Supabase
+  // Habilitar modo test de Supabase (deshabilita cliente real)
+  // Los warnings "Error accessing Supabase auth..." son esperados en tests
   SupabaseClientProvider.enableTestMode();
 
   // Configurar usuario mock por defecto
