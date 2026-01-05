@@ -20,6 +20,7 @@ import '../../../../shared/widgets/month_comparison_widget.dart';
 import '../../../../shared/utils/month_comparison.dart';
 import '../../../../shared/widgets/upcoming_payments_widget.dart';
 import '../../../../shared/utils/upcoming_payments.dart';
+import '../../../../shared/services/notification_aggregator_service.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../../budgets/presentation/providers/budget_provider.dart';
@@ -34,12 +35,7 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Finanzas Familiares'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Mostrar notificaciones
-            },
-          ),
+          _buildNotificationBell(context, ref),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push(AppRoutes.settings),
@@ -110,6 +106,82 @@ class DashboardScreen extends ConsumerWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
+    );
+  }
+
+  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final accountsState = ref.watch(accountsProvider);
+    final budgetsState = ref.watch(budgetsProvider);
+    final goalsState = ref.watch(goalsProvider);
+
+    // Obtener datos
+    final transactions = transactionsState.transactions;
+    final accounts = accountsState.accounts;
+    final budgets = budgetsState.budgets;
+    final goals = goalsState.activeGoals;
+
+    // Calcular análisis
+    final financialHealth = FinancialHealthService.calculate(
+      accounts: accounts,
+      transactions: transactions,
+      monthlyIncome: transactionsState.totalIncome,
+      monthlyExpenses: transactionsState.totalExpenses,
+    );
+
+    final antExpenseAnalysis =
+        AntExpenseService.analyzeCurrentMonth(transactions);
+
+    // Generar notificaciones
+    final notifications = NotificationAggregatorService.generateNotifications(
+      transactions: transactions,
+      budgets: budgets,
+      goals: goals,
+      accounts: accounts,
+      financialHealth: financialHealth,
+      antExpenseAnalysis: antExpenseAnalysis,
+    );
+
+    final unreadCount = notifications.length;
+    final hasHighPriority =
+        NotificationAggregatorService.hasHighPriority(notifications);
+
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            hasHighPriority
+                ? Icons.notifications_active
+                : Icons.notifications_outlined,
+          ),
+          onPressed: () => context.push(AppRoutes.notifications),
+        ),
+        if (unreadCount > 0)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: hasHighPriority ? AppColors.error : AppColors.warning,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: Text(
+                unreadCount > 9 ? '9+' : unreadCount.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
     );
   }
 

@@ -15,6 +15,7 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/ai_chat/presentation/screens/ai_chat_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
 /// Rutas de la aplicacion
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String family = '/family';
   static const String aiChat = '/ai-chat';
+  static const String notifications = '/notifications';
 }
 
 /// Provider del router
@@ -130,6 +132,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.aiChat,
         name: 'ai-chat',
         builder: (context, state) => const AiChatScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        name: 'notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
 
