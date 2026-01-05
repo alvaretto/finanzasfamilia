@@ -114,7 +114,7 @@ class BudgetAlertService {
       orElse: () => BudgetModel(
         id: '',
         userId: '',
-        categoryId: 0,
+        categoryId: '',
         amount: 0,
         period: BudgetPeriod.monthly,
         startDate: DateTime.now(),
@@ -197,7 +197,7 @@ class BudgetAlertService {
       orElse: () => BudgetModel(
         id: '',
         userId: '',
-        categoryId: 0,
+        categoryId: '',
         amount: 0,
         period: BudgetPeriod.monthly,
         startDate: DateTime.now(),

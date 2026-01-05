@@ -128,7 +128,7 @@ class BudgetsNotifier extends StateNotifier<BudgetsState> {
 
   /// Crear presupuesto
   Future<bool> createBudget({
-    required int categoryId,
+    required String categoryId,
     required double amount,
     required BudgetPeriod period,
     DateTime? startDate,

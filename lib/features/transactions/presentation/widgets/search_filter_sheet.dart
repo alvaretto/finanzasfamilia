@@ -11,7 +11,7 @@ class TransactionFilters {
   final String? searchQuery;
   final TransactionType? type;
   final String? accountId;
-  final int? categoryId;
+  final String? categoryId;
   final double? minAmount;
   final double? maxAmount;
 
@@ -46,7 +46,7 @@ class TransactionFilters {
     String? searchQuery,
     TransactionType? type,
     String? accountId,
-    int? categoryId,
+    String? categoryId,
     double? minAmount,
     double? maxAmount,
     bool clearSearch = false,
@@ -134,7 +134,7 @@ class _SearchFilterSheetState extends ConsumerState<SearchFilterSheet> {
 
   TransactionType? _selectedType;
   String? _selectedAccountId;
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
 
   @override
   void initState() {
@@ -314,18 +314,18 @@ class _SearchFilterSheetState extends ConsumerState<SearchFilterSheet> {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                DropdownButtonFormField<int>(
+                DropdownButtonFormField<String>(
                   value: _selectedCategoryId,
                   decoration: const InputDecoration(
                     hintText: 'Todas las categorías',
                     prefixIcon: Icon(Icons.category),
                   ),
                   items: [
-                    const DropdownMenuItem<int>(
+                    const DropdownMenuItem<String>(
                       value: null,
                       child: Text('Todas las categorías'),
                     ),
-                    ...categories.map((c) => DropdownMenuItem(
+                    ...categories.map((c) => DropdownMenuItem<String>(
                           value: c.id,
                           child: Text(c.name),
                         )),

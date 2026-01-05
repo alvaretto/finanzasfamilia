@@ -97,7 +97,7 @@ class TransactionModel with _$TransactionModel {
     required String id,
     required String userId,
     required String accountId,
-    int? categoryId,
+    String? categoryId,
     required double amount,
     required TransactionType type,
     @Default(PaymentMethod.cash) PaymentMethod paymentMethod,
@@ -128,7 +128,7 @@ class TransactionModel with _$TransactionModel {
     required double amount,
     required TransactionType type,
     PaymentMethod paymentMethod = PaymentMethod.cash,
-    int? categoryId,
+    String? categoryId,
     String? description,
     DateTime? date,
     String? notes,
@@ -241,7 +241,7 @@ class TransactionModel with _$TransactionModel {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       accountId: json['account_id'] as String,
-      categoryId: json['category_id'] as int?,
+      categoryId: json['category_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
       type: TransactionType.values.firstWhere(
         (e) => e.name == json['type'],
@@ -278,8 +278,7 @@ class CategoryModel with _$CategoryModel {
   const CategoryModel._();
 
   const factory CategoryModel({
-    required int id,
-    required String uuid,
+    required String id,
     String? userId,
     String? familyId,
     required String name,
@@ -287,7 +286,7 @@ class CategoryModel with _$CategoryModel {
     String? icon,
     String? emoji, // Emoji representativo (ej: 🍔, 🏠, 🚗)
     String? color,
-    int? parentId,
+    String? parentId,
     @Default(false) bool isSystem,
     @Default(false) bool isSynced,
     DateTime? createdAt,

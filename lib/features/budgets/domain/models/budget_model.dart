@@ -46,7 +46,7 @@ class BudgetModel with _$BudgetModel {
     required String id,
     required String userId,
     String? familyId,
-    required int categoryId,
+    required String categoryId,
     required double amount,
     required BudgetPeriod period,
     required DateTime startDate,
@@ -66,7 +66,7 @@ class BudgetModel with _$BudgetModel {
   /// Crear nuevo presupuesto
   factory BudgetModel.create({
     required String userId,
-    required int categoryId,
+    required String categoryId,
     required double amount,
     required BudgetPeriod period,
     DateTime? startDate,
@@ -122,7 +122,7 @@ class BudgetModel with _$BudgetModel {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       familyId: json['family_id'] as String?,
-      categoryId: json['category_id'] as int,
+      categoryId: json['category_id'] as String,
       amount: (json['amount'] as num).toDouble(),
       period: BudgetPeriod.values.firstWhere(
         (e) => e.name == json['period'],

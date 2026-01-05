@@ -35,7 +35,7 @@ class TransactionRepository {
     DateTime? fromDate,
     DateTime? toDate,
     String? accountId,
-    int? categoryId,
+    String? categoryId,
     TransactionType? type,
   }) {
     var query = _db.select(_db.transactions).join([
@@ -293,13 +293,13 @@ class TransactionRepository {
     required String type,
     String? icon,
     String? color,
-    int? parentId,
+    String? parentId,
   }) async {
-    final uuid = _uuid.v4();
+    final id = _uuid.v4();
 
-    final id = await _db.into(_db.categories).insert(
+    await _db.into(_db.categories).insert(
       CategoriesCompanion.insert(
-        uuid: uuid,
+        id: id,
         userId: Value(userId),
         name: name,
         type: type,
@@ -307,14 +307,15 @@ class TransactionRepository {
         color: Value(color),
         parentId: Value(parentId),
         isSystem: const Value(false),
-        synced: const Value(false),
+        isSynced: const Value(false),
       ),
     );
 
     // Sync to Supabase
     try {
       if (!_isOnline) throw Exception('Offline mode');
-      final response = await _supabase!.from('categories').insert({
+      await _supabase!.from('categories').insert({
+        'id': id,
         'user_id': userId,
         'name': name,
         'type': type,
@@ -322,14 +323,11 @@ class TransactionRepository {
         'color': color,
         'parent_id': parentId,
         'is_system': false,
-      }).select().single();
+      });
 
-      // Update local with remote UUID
+      // Mark as synced
       await (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(
-        CategoriesCompanion(
-          uuid: Value(response['id'] as String),
-          synced: const Value(true),
-        ),
+        const CategoriesCompanion(isSynced: Value(true)),
       );
     } catch (_) {
       // Will sync later
@@ -341,11 +339,11 @@ class TransactionRepository {
 
   /// Actualizar categoria
   Future<void> updateCategory({
-    required int id,
+    required String id,
     required String name,
     String? icon,
     String? color,
-    int? parentId,
+    String? parentId,
   }) async {
     await (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(
       CategoriesCompanion(
@@ -353,12 +351,9 @@ class TransactionRepository {
         icon: Value(icon),
         color: Value(color),
         parentId: Value(parentId),
-        synced: const Value(false),
+        isSynced: const Value(false),
       ),
     );
-
-    // Get UUID for sync
-    final cat = await (_db.select(_db.categories)..where((t) => t.id.equals(id))).getSingle();
 
     try {
       if (!_isOnline) throw Exception('Offline mode');
@@ -367,10 +362,10 @@ class TransactionRepository {
         'icon': icon,
         'color': color,
         'parent_id': parentId,
-      }).eq('id', cat.uuid);
+      }).eq('id', id);
 
       await (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(
-        const CategoriesCompanion(synced: Value(true)),
+        const CategoriesCompanion(isSynced: Value(true)),
       );
     } catch (_) {
       // Will sync later
@@ -378,7 +373,7 @@ class TransactionRepository {
   }
 
   /// Eliminar categoria
-  Future<bool> deleteCategory(int id) async {
+  Future<bool> deleteCategory(String id) async {
     // Check if category is in use
     final usageCount = await (_db.select(_db.transactions)
           ..where((t) => t.categoryId.equals(id)))
@@ -388,13 +383,10 @@ class TransactionRepository {
       return false; // Cannot delete, category is in use
     }
 
-    final cat = await (_db.select(_db.categories)..where((t) => t.id.equals(id))).getSingleOrNull();
-    if (cat == null) return false;
-
     await (_db.delete(_db.categories)..where((t) => t.id.equals(id))).go();
 
     try {
-      if (_isOnline) await _supabase!.from('categories').delete().eq('id', cat.uuid);
+      if (_isOnline) await _supabase!.from('categories').delete().eq('id', id);
     } catch (_) {
       // Ignore remote errors
     }
@@ -403,7 +395,7 @@ class TransactionRepository {
   }
 
   /// Verificar si categoria esta en uso
-  Future<int> getCategoryUsageCount(int id) async {
+  Future<int> getCategoryUsageCount(String id) async {
     final result = await (_db.select(_db.transactions)
           ..where((t) => t.categoryId.equals(id)))
         .get();
@@ -444,7 +436,7 @@ class TransactionRepository {
   }
 
   /// Obtener gastos por categoria
-  Future<Map<int, double>> getExpensesByCategory(
+  Future<Map<String, double>> getExpensesByCategory(
     String userId, {
     required DateTime fromDate,
     required DateTime toDate,
@@ -457,7 +449,7 @@ class TransactionRepository {
           t.date.isSmallerOrEqualValue(toDate));
 
     final results = await query.get();
-    final byCategory = <int, double>{};
+    final byCategory = <String, double>{};
 
     for (final tx in results) {
       if (tx.categoryId != null) {
@@ -593,7 +585,6 @@ class TransactionRepository {
   CategoryModel _categoryFromRow(Category row) {
     return CategoryModel(
       id: row.id,
-      uuid: row.uuid,
       userId: row.userId,
       familyId: row.familyId,
       name: row.name,
@@ -602,7 +593,7 @@ class TransactionRepository {
       color: row.color,
       parentId: row.parentId,
       isSystem: row.isSystem,
-      isSynced: row.synced,
+      isSynced: row.isSynced,
       createdAt: row.createdAt,
     );
   }

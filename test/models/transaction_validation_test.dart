@@ -12,7 +12,7 @@ void main() {
         accountId: accountId,
         amount: 1000.0,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
         date: DateTime.now(),
       );
 
@@ -26,7 +26,7 @@ void main() {
         accountId: accountId,
         amount: 0.0,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
       );
 
       expect(transaction.isValid, false);
@@ -43,7 +43,7 @@ void main() {
         accountId: accountId,
         amount: -100.0,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
       );
 
       // Como se convierte a abs(), debería ser válido si es > 0
@@ -58,7 +58,7 @@ void main() {
         accountId: accountId,
         amount: 100.0,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
         date: futureDate,
       );
 
@@ -75,7 +75,7 @@ void main() {
         accountId: accountId,
         amount: 100.0,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
         date: DateTime.now(),
       );
 
@@ -206,7 +206,7 @@ void main() {
         accountId: accountId,
         amount: 100.0,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
       );
 
       expect(() => transaction.validate(), returnsNormally);

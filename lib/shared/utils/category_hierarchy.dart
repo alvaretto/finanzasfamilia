@@ -10,7 +10,7 @@ class CategoryHierarchyUtils {
   /// Obtener subcategorías de una categoría (nivel 1)
   static List<CategoryModel> getSubcategories(
     List<CategoryModel> all,
-    int parentId,
+    String parentId,
   ) {
     return all.where((c) => c.parentId == parentId).toList();
   }
@@ -18,13 +18,13 @@ class CategoryHierarchyUtils {
   /// Obtener sub-subcategorías de una subcategoría (nivel 2)
   static List<CategoryModel> getSubSubcategories(
     List<CategoryModel> all,
-    int subcategoryId,
+    String subcategoryId,
   ) {
     return all.where((c) => c.parentId == subcategoryId).toList();
   }
 
   /// Verificar si una categoría tiene hijos
-  static bool hasChildren(List<CategoryModel> all, int categoryId) {
+  static bool hasChildren(List<CategoryModel> all, String categoryId) {
     return all.any((c) => c.parentId == categoryId);
   }
 
@@ -155,7 +155,7 @@ class CategoryHierarchyUtils {
   static bool isValidParent(
     List<CategoryModel> all,
     CategoryModel category,
-    int? newParentId,
+    String? newParentId,
   ) {
     if (newParentId == null) return true;
     if (newParentId == category.id) return false; // No puede ser su propio padre

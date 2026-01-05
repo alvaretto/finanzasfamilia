@@ -24,7 +24,7 @@ class TransactionsState {
   final DateTime? fromDate;
   final DateTime? toDate;
   final String? filterAccountId;
-  final int? filterCategoryId;
+  final String? filterCategoryId;
   final TransactionType? filterType;
 
   const TransactionsState({
@@ -49,7 +49,7 @@ class TransactionsState {
     DateTime? fromDate,
     DateTime? toDate,
     String? filterAccountId,
-    int? filterCategoryId,
+    String? filterCategoryId,
     TransactionType? filterType,
   }) {
     return TransactionsState(
@@ -183,7 +183,7 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
     required String accountId,
     required double amount,
     required TransactionType type,
-    int? categoryId,
+    String? categoryId,
     String? description,
     DateTime? date,
     String? notes,
@@ -314,7 +314,7 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
   /// Aplicar filtros
   void setFilters({
     String? accountId,
-    int? categoryId,
+    String? categoryId,
     TransactionType? type,
   }) {
     final userId = _userId;

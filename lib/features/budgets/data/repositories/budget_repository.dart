@@ -60,7 +60,7 @@ class BudgetRepository {
   }
 
   /// Obtener presupuesto por categoria
-  Future<BudgetModel?> getBudgetByCategory(String userId, int categoryId) async {
+  Future<BudgetModel?> getBudgetByCategory(String userId, String categoryId) async {
     final query = _db.select(_db.budgets).join([
       leftOuterJoin(
         _db.categories,
@@ -117,7 +117,7 @@ class BudgetRepository {
   /// Obtener gasto por categoria en periodo
   Future<double> getSpentByCategory(
     String userId,
-    int categoryId, {
+    String categoryId, {
     required DateTime fromDate,
     required DateTime toDate,
   }) async {

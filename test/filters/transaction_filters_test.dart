@@ -15,7 +15,7 @@ void main() {
         type: TransactionType.expense,
         date: DateTime.now(),
         description: 'Comida restaurante',
-        categoryId: 1,
+        categoryId: 'cat-1',
         categoryName: 'Alimentacion',
         accountName: 'Efectivo',
       ),
@@ -27,7 +27,7 @@ void main() {
         type: TransactionType.income,
         date: DateTime.now(),
         description: 'Salario mensual',
-        categoryId: 2,
+        categoryId: 'cat-2',
         categoryName: 'Salario',
         accountName: 'Banco',
       ),
@@ -39,7 +39,7 @@ void main() {
         type: TransactionType.expense,
         date: DateTime.now(),
         description: 'Gasolina',
-        categoryId: 3,
+        categoryId: 'cat-3',
         categoryName: 'Transporte',
         accountName: 'Efectivo',
       ),
@@ -90,11 +90,11 @@ void main() {
     });
 
     test('filtrar por categoria', () {
-      const filters = TransactionFilters(categoryId: 1);
+      const filters = TransactionFilters(categoryId: 'cat-1');
       final result = filters.apply(testTransactions);
 
       expect(result.length, 1);
-      expect(result.first.categoryId, 1);
+      expect(result.first.categoryId, 'cat-1');
     });
 
     test('filtrar por monto minimo', () {
@@ -182,11 +182,11 @@ void main() {
         accountId: 'acc-1',
       );
 
-      final copied = original.copyWith(categoryId: 1);
+      final copied = original.copyWith(categoryId: 'cat-1');
 
       expect(copied.type, TransactionType.expense);
       expect(copied.accountId, 'acc-1');
-      expect(copied.categoryId, 1);
+      expect(copied.categoryId, 'cat-1');
     });
 
     test('copyWith con clear elimina valores', () {

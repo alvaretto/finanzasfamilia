@@ -59,7 +59,7 @@ extension ReportPeriodExtension on ReportPeriod {
 
 /// Datos de categoría para gráfico
 class CategoryData {
-  final int categoryId;
+  final String categoryId;
   final String name;
   final String? icon;
   final String? color;

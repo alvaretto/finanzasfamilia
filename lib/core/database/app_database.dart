@@ -1,8 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:uuid/uuid.dart';
 
 part 'app_database.g.dart';
+
+const _uuid = Uuid();
 
 // ============================================================================
 // TABLES
@@ -34,8 +37,7 @@ class Accounts extends Table {
 
 /// Categorias de transacciones
 class Categories extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().unique()();
+  TextColumn get id => text()(); // UUID string
   TextColumn get userId => text().nullable()();
   TextColumn get familyId => text().nullable()();
   TextColumn get name => text().withLength(min: 1, max: 50)();
@@ -43,10 +45,13 @@ class Categories extends Table {
   TextColumn get icon => text().nullable()();
   TextColumn get emoji => text().nullable()(); // Emoji representativo
   TextColumn get color => text().nullable()();
-  IntColumn get parentId => integer().nullable().references(Categories, #id)();
+  TextColumn get parentId => text().nullable()(); // Reference to parent category
   BoolColumn get isSystem => boolean().withDefault(const Constant(false))();
-  BoolColumn get synced => boolean().withDefault(const Constant(false))();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 /// Transacciones (ingresos, gastos, transferencias)
@@ -54,7 +59,7 @@ class Transactions extends Table {
   TextColumn get id => text()(); // UUID string
   TextColumn get userId => text()();
   TextColumn get accountId => text()(); // Reference to Accounts.id
-  IntColumn get categoryId => integer().nullable().references(Categories, #id)();
+  TextColumn get categoryId => text().nullable()(); // Reference to Categories.id
   RealColumn get amount => real()();
   TextColumn get type => text()(); // income, expense, transfer
   TextColumn get description => text().nullable()();
@@ -76,7 +81,7 @@ class Budgets extends Table {
   TextColumn get id => text()(); // UUID string
   TextColumn get userId => text()();
   TextColumn get familyId => text().nullable()();
-  IntColumn get categoryId => integer().references(Categories, #id)();
+  TextColumn get categoryId => text()(); // Reference to Categories.id
   RealColumn get amount => real()();
   TextColumn get period => text().withDefault(const Constant('monthly'))(); // weekly, monthly, yearly
   DateTimeColumn get startDate => dateTime()();
@@ -109,24 +114,28 @@ class Goals extends Table {
 
 /// Familias/grupos
 class Families extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().unique()();
+  TextColumn get id => text()(); // UUID string
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get ownerId => text()();
   TextColumn get inviteCode => text().unique()();
-  BoolColumn get synced => boolean().withDefault(const Constant(false))();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 /// Miembros de familia
 class FamilyMembers extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get uuid => text().unique()();
-  IntColumn get familyId => integer().references(Families, #id)();
+  TextColumn get id => text()(); // UUID string
+  TextColumn get familyId => text()(); // Reference to Families.id
   TextColumn get userId => text()();
   TextColumn get role => text().withDefault(const Constant('member'))(); // owner, admin, member, viewer
-  BoolColumn get synced => boolean().withDefault(const Constant(false))();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get joinedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 /// Transacciones recurrentes
@@ -134,7 +143,7 @@ class RecurringTransactions extends Table {
   TextColumn get id => text()(); // UUID string
   TextColumn get userId => text()();
   TextColumn get accountId => text()(); // Reference to Accounts.id
-  IntColumn get categoryId => integer().nullable().references(Categories, #id)();
+  TextColumn get categoryId => text().nullable()(); // Reference to Categories.id
   RealColumn get amount => real()();
   TextColumn get type => text()(); // income, expense
   TextColumn get description => text().nullable()();
@@ -190,7 +199,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'finanzas_familiares');
@@ -212,7 +221,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> _insertDefaultCategories() async {
     // Mapa para guardar IDs de categorias padre
-    final parentIds = <String, int>{};
+    final parentIds = <String, String>{};
 
     // ============================================================
     // CATEGORIAS DE GASTOS
@@ -435,32 +444,33 @@ class AppDatabase extends _$AppDatabase {
     await _insertCategory('Ingresos Extraordinarios', 'income', 'stars', '⭐', '#eab308');
   }
 
-  /// Inserta una categoria principal y retorna su ID
-  Future<int> _insertCategory(String name, String type, String icon, String emoji, String color) async {
-    final uuid = '${DateTime.now().millisecondsSinceEpoch}_${name.replaceAll(' ', '_')}';
-    return await into(categories).insert(CategoriesCompanion.insert(
-      uuid: uuid,
+  /// Inserta una categoria principal y retorna su ID (UUID)
+  Future<String> _insertCategory(String name, String type, String icon, String emoji, String color) async {
+    final id = _uuid.v4();
+    await into(categories).insert(CategoriesCompanion.insert(
+      id: id,
       name: name,
       type: type,
       icon: Value(icon),
       emoji: Value(emoji),
       color: Value(color),
       isSystem: const Value(true),
-      synced: const Value(true),
+      isSynced: const Value(true),
     ));
+    return id;
   }
 
   /// Inserta subcategorias para una categoria padre
   Future<void> _insertSubcategories(
-    int parentId,
+    String parentId,
     String type,
     String color,
     List<(String name, String icon, String emoji)> subcats,
   ) async {
     for (final sub in subcats) {
-      final uuid = '${DateTime.now().millisecondsSinceEpoch}_${sub.$1.replaceAll(' ', '_')}';
+      final id = _uuid.v4();
       await into(categories).insert(CategoriesCompanion.insert(
-        uuid: uuid,
+        id: id,
         name: sub.$1,
         type: type,
         icon: Value(sub.$2),
@@ -468,7 +478,7 @@ class AppDatabase extends _$AppDatabase {
         color: Value(color),
         parentId: Value(parentId),
         isSystem: const Value(true),
-        synced: const Value(true),
+        isSynced: const Value(true),
       ));
     }
   }

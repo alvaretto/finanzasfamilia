@@ -9,7 +9,7 @@ void main() {
         accountId: 'account-456',
         amount: 150.50,
         type: TransactionType.expense,
-        categoryId: 1,
+        categoryId: 'cat-1',
         description: 'Compras supermercado',
       );
 
@@ -17,7 +17,7 @@ void main() {
       expect(tx.accountId, 'account-456');
       expect(tx.amount, 150.50);
       expect(tx.type, TransactionType.expense);
-      expect(tx.categoryId, 1);
+      expect(tx.categoryId, 'cat-1');
       expect(tx.description, 'Compras supermercado');
       expect(tx.isSynced, false);
       expect(tx.id, isNotEmpty);
@@ -77,15 +77,13 @@ void main() {
   group('CategoryModel', () {
     test('isIncome y isExpense funcionan correctamente', () {
       const incomeCategory = CategoryModel(
-        id: 1,
-        uuid: 'cat-1',
+        id: 'cat-1',
         name: 'Salario',
         type: 'income',
       );
 
       const expenseCategory = CategoryModel(
-        id: 2,
-        uuid: 'cat-2',
+        id: 'cat-2',
         name: 'Comida',
         type: 'expense',
       );

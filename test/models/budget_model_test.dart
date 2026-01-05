@@ -6,13 +6,13 @@ void main() {
     test('create() genera presupuesto con valores correctos', () {
       final budget = BudgetModel.create(
         userId: 'user-123',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 5000.0,
         period: BudgetPeriod.monthly,
       );
 
       expect(budget.userId, 'user-123');
-      expect(budget.categoryId, 1);
+      expect(budget.categoryId, 'cat-1');
       expect(budget.amount, 5000.0);
       expect(budget.period, BudgetPeriod.monthly);
       expect(budget.spent, 0.0);
@@ -23,7 +23,7 @@ void main() {
       final budget = BudgetModel(
         id: 'budget-1',
         userId: 'user-123',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 1000.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
@@ -37,7 +37,7 @@ void main() {
       final budget = BudgetModel(
         id: 'budget-1',
         userId: 'user-123',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 0.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
@@ -51,7 +51,7 @@ void main() {
       final budget = BudgetModel(
         id: 'budget-1',
         userId: 'user-123',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 1000.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
@@ -65,7 +65,7 @@ void main() {
       final overBudget = BudgetModel(
         id: 'budget-1',
         userId: 'user-123',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 1000.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
@@ -75,7 +75,7 @@ void main() {
       final underBudget = BudgetModel(
         id: 'budget-2',
         userId: 'user-123',
-        categoryId: 2,
+        categoryId: 'cat-2',
         amount: 1000.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
@@ -90,7 +90,7 @@ void main() {
       final nearLimit = BudgetModel(
         id: 'budget-1',
         userId: 'user-123',
-        categoryId: 1,
+        categoryId: 'cat-1',
         amount: 1000.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
@@ -100,7 +100,7 @@ void main() {
       final farFromLimit = BudgetModel(
         id: 'budget-2',
         userId: 'user-123',
-        categoryId: 2,
+        categoryId: 'cat-2',
         amount: 1000.0,
         period: BudgetPeriod.monthly,
         startDate: DateTime(2026, 1, 1),
