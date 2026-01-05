@@ -143,8 +143,19 @@ class AuthRepository {
     return response;
   }
 
-  /// Cerrar sesion
+  /// Cerrar sesion (incluye Google Sign-In)
   Future<void> signOut() async {
+    // Cerrar sesión de Google si estaba autenticado con Google
+    try {
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.disconnect(); // disconnect() fuerza selector de cuentas la próxima vez
+      }
+    } catch (e) {
+      debugPrint('Warning: Could not sign out from Google: $e');
+    }
+
+    // Cerrar sesión de Supabase
     await _auth.signOut();
   }
 
