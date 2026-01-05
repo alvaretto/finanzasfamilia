@@ -137,7 +137,7 @@ void main() {
         BudgetModel(
           id: const Uuid().v4(),
           userId: 'test-user',
-          categoryId: 1,
+          categoryId: 'cat-1',
           categoryName: 'Alimentacion',
           amount: 600.0,
           spent: 500.0,
