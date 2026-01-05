@@ -6,11 +6,6 @@ import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../../budgets/presentation/providers/budget_provider.dart' show budgetsProvider;
 
-/// Provider del servicio de IA
-final aiChatServiceProvider = Provider<AiChatService>((ref) {
-  return AiChatService();
-});
-
 /// Estado del chat
 class AiChatState {
   final List<ChatMessage> messages;

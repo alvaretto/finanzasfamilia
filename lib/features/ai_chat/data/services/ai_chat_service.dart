@@ -1,29 +1,29 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../transactions/domain/models/transaction_model.dart';
 import '../../../accounts/domain/models/account_model.dart';
 import '../../../budgets/domain/models/budget_model.dart' show BudgetModel;
+import '../../presentation/providers/ai_settings_provider.dart';
+import '../providers/ai_provider_interface.dart';
 
-/// Servicio de chat con IA
+/// Servicio de chat con IA - Multi-proveedor
 class AiChatService {
-  GenerativeModel? _model;
+  final Ref _ref;
+  AiProviderInterface? _provider;
+  bool _isInitialized = false;
 
-  /// Inicializar el modelo
+  AiChatService(this._ref);
+
+  /// Inicializar el proveedor según configuración
   Future<void> initialize() async {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('GEMINI_API_KEY no configurada en .env');
-    }
+    final settings = _ref.read(aiSettingsProvider);
+    _provider = _ref.read(aiProviderInstanceProvider);
 
-    _model = GenerativeModel(
-      model: 'gemini-2.0-flash-001',
-      apiKey: apiKey,
-      generationConfig: GenerationConfig(
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-      ),
+    await _provider!.initialize(
+      settings.apiKey ?? '',
+      model: settings.currentModel,
     );
+    _isInitialized = true;
   }
 
   /// Generar contexto financiero del usuario
@@ -38,14 +38,14 @@ class AiChatService {
     buffer.writeln('=== CUENTAS DEL USUARIO ===');
     double totalBalance = 0;
     for (final acc in accounts) {
-      buffer.writeln('- ${acc.name} (${acc.type.displayName}): \$${acc.balance.toStringAsFixed(2)} ${acc.currency}');
+      buffer.writeln('- ${acc.name} (${acc.type.displayName}): \$${acc.balance.toStringAsFixed(0)} ${acc.currency}');
       totalBalance += acc.balance;
     }
-    buffer.writeln('Balance total: \$${totalBalance.toStringAsFixed(2)}');
+    buffer.writeln('Balance total: \$${totalBalance.toStringAsFixed(0)}');
     buffer.writeln();
 
     // Resumen de transacciones recientes
-    buffer.writeln('=== TRANSACCIONES RECIENTES (ultimos 30 dias) ===');
+    buffer.writeln('=== TRANSACCIONES RECIENTES (últimos 30 días) ===');
     final now = DateTime.now();
     final thirtyDaysAgo = now.subtract(const Duration(days: 30));
     final recentTx = transactions.where((tx) => tx.date.isAfter(thirtyDaysAgo)).toList();
@@ -59,31 +59,35 @@ class AiChatService {
         totalIncome += tx.amount;
       } else if (tx.type == TransactionType.expense) {
         totalExpense += tx.amount;
-        final cat = tx.categoryName ?? 'Sin categoria';
+        final cat = tx.categoryName ?? 'Sin categoría';
         expenseByCategory[cat] = (expenseByCategory[cat] ?? 0) + tx.amount;
       }
     }
 
-    buffer.writeln('Ingresos del mes: \$${totalIncome.toStringAsFixed(2)}');
-    buffer.writeln('Gastos del mes: \$${totalExpense.toStringAsFixed(2)}');
-    buffer.writeln('Balance del mes: \$${(totalIncome - totalExpense).toStringAsFixed(2)}');
+    buffer.writeln('Ingresos del mes: \$${totalIncome.toStringAsFixed(0)}');
+    buffer.writeln('Gastos del mes: \$${totalExpense.toStringAsFixed(0)}');
+    buffer.writeln('Balance del mes: \$${(totalIncome - totalExpense).toStringAsFixed(0)}');
     buffer.writeln();
 
-    buffer.writeln('Gastos por categoria:');
+    buffer.writeln('Gastos por categoría:');
     final sortedCategories = expenseByCategory.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     for (final entry in sortedCategories.take(5)) {
-      final percentage = ((entry.value / totalExpense) * 100).toStringAsFixed(1);
-      buffer.writeln('- ${entry.key}: \$${entry.value.toStringAsFixed(2)} ($percentage%)');
+      final percentage = totalExpense > 0
+          ? ((entry.value / totalExpense) * 100).toStringAsFixed(1)
+          : '0';
+      buffer.writeln('- ${entry.key}: \$${entry.value.toStringAsFixed(0)} ($percentage%)');
     }
     buffer.writeln();
 
     // Presupuestos
     buffer.writeln('=== PRESUPUESTOS ===');
     for (final budget in budgets) {
-      final percentage = ((budget.spent / budget.amount) * 100).toStringAsFixed(0);
+      final percentage = budget.amount > 0
+          ? ((budget.spent / budget.amount) * 100).toStringAsFixed(0)
+          : '0';
       final status = budget.spent > budget.amount ? 'EXCEDIDO' : 'OK';
-      buffer.writeln('- ${budget.categoryName ?? "General"}: \$${budget.spent.toStringAsFixed(2)} / \$${budget.amount.toStringAsFixed(2)} ($percentage%) [$status]');
+      buffer.writeln('- ${budget.categoryName ?? "General"}: \$${budget.spent.toStringAsFixed(0)} / \$${budget.amount.toStringAsFixed(0)} ($percentage%) [$status]');
     }
 
     return buffer.toString();
@@ -95,9 +99,9 @@ class AiChatService {
     required List<TransactionModel> transactions,
     required List<AccountModel> accounts,
     required List<BudgetModel> budgets,
-    List<Content>? history,
+    List<Map<String, String>>? history,
   }) async {
-    if (_model == null) {
+    if (!_isInitialized || _provider == null) {
       await initialize();
     }
 
@@ -115,70 +119,40 @@ CONTEXTO FINANCIERO ACTUAL DEL USUARIO:
 $context
 
 INSTRUCCIONES:
-1. Responde en espanol de manera clara y concisa
+1. Responde en español de manera clara y concisa
 2. Usa los datos financieros del usuario para dar respuestas personalizadas
-3. Cuando des consejos, se especifico basandote en sus numeros reales
+3. Cuando des consejos, sé específico basándote en sus números reales
 4. Si el usuario pregunta algo que no puedes saber con los datos disponibles, dilo claramente
-5. Usa formato amigable con emojis ocasionalmente para hacer la conversacion mas agradable
+5. Usa formato amigable con emojis ocasionalmente para hacer la conversación más agradable
 6. Si detectas problemas financieros (gastos excesivos, presupuestos excedidos), sugiere mejoras
 7. Sé positivo pero honesto
-8. Mantén las respuestas concisas (maximo 200 palabras a menos que el usuario pida detalles)
+8. Mantén las respuestas concisas (máximo 200 palabras a menos que el usuario pida detalles)
 ''';
 
-    try {
-      final chat = _model!.startChat(
-        history: history ?? [],
-      );
-
-      final fullPrompt = history == null || history.isEmpty
-          ? '$systemPrompt\n\nUsuario: $userMessage'
-          : userMessage;
-
-      final response = await chat.sendMessage(Content.text(fullPrompt));
-      return response.text ?? 'No pude generar una respuesta.';
-    } catch (e) {
-      final errorStr = e.toString().toLowerCase();
-
-      // Error de API Key
-      if (errorStr.contains('api_key') || errorStr.contains('apikey') ||
-          errorStr.contains('invalid key') || errorStr.contains('api key not valid')) {
-        return 'Error de configuracion: La clave de API de Gemini no es valida. Contacta al desarrollador.';
-      }
-
-      // Error de cuota/limite (429 o RESOURCE_EXHAUSTED de Google)
-      if (errorStr.contains('429') || errorStr.contains('resource_exhausted') ||
-          errorStr.contains('quota exceeded') || errorStr.contains('rate limit')) {
-        return 'Limite de uso alcanzado. Intenta de nuevo en unos minutos.';
-      }
-
-      // Error de red/conexion
-      if (errorStr.contains('socket') || errorStr.contains('connection') ||
-          errorStr.contains('network') || errorStr.contains('timeout') ||
-          errorStr.contains('failed host lookup') || errorStr.contains('no address')) {
-        return 'Sin conexion a internet. Verifica tu conexion e intenta de nuevo.';
-      }
-
-      // Error de contenido bloqueado
-      if (errorStr.contains('blocked') || errorStr.contains('safety') ||
-          errorStr.contains('harm') || errorStr.contains('prohibited')) {
-        return 'No puedo responder a esa pregunta. Intenta reformularla.';
-      }
-
-      // Error generico con mas detalle
-      // Mostrar error completo para debugging (remover en producción)
-      return 'Error: ${e.toString()}';
-    }
+    return await _provider!.sendMessage(
+      message: userMessage,
+      systemPrompt: systemPrompt,
+      history: history,
+    );
   }
 
   /// Sugerencias de preguntas
   List<String> getSuggestions() {
     return [
-      '¿Como van mis finanzas este mes?',
-      '¿En que estoy gastando mas?',
+      '¿Cómo van mis finanzas este mes?',
+      '¿En qué estoy gastando más?',
       '¿Estoy cumpliendo mis presupuestos?',
       'Dame consejos para ahorrar',
-      '¿Cual es mi balance actual?',
+      '¿Cuál es mi balance actual?',
       'Analiza mis gastos de la semana',
     ];
   }
+
+  /// Obtener nombre del proveedor actual
+  String get currentProviderName => _provider?.providerName ?? 'No configurado';
 }
+
+/// Provider del servicio de chat
+final aiChatServiceProvider = Provider<AiChatService>((ref) {
+  return AiChatService(ref);
+});

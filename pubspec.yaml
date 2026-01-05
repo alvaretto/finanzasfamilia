@@ -63,8 +63,9 @@ dependencies:
   file_picker: ^8.1.6
   url_launcher: ^6.3.1
 
-  # AI Chat
+  # AI Chat (multi-provider support)
   google_generative_ai: ^0.4.7
+  http: ^1.2.2  # Para DeepSeek y Anthropic APIs
 
 dev_dependencies:
   flutter_test:
