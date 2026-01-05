@@ -110,106 +110,122 @@ class TransactionRepository {
     return _transactionFromRow(tx, category: cat, account: acc);
   }
 
-  /// Crear transaccion
+  /// Crear transaccion (ATOMICO)
   Future<TransactionModel> createTransaction(TransactionModel transaction) async {
-    final companion = TransactionsCompanion.insert(
-      id: transaction.id,
-      userId: transaction.userId,
-      accountId: transaction.accountId,
-      categoryId: Value(transaction.categoryId),
-      amount: transaction.amount,
-      type: transaction.type.name,
-      description: Value(transaction.description),
-      date: transaction.date,
-      notes: Value(transaction.notes),
-      tags: Value(transaction.tags.isEmpty ? null : transaction.tags.join(',')),
-      transferToAccountId: Value(transaction.transferToAccountId),
-      recurringId: Value(transaction.recurringId),
-      isSynced: const Value(false),
-    );
-
-    await _db.into(_db.transactions).insert(companion);
-
-    // Actualizar balance de cuenta
-    await _updateAccountBalance(
-      transaction.accountId,
-      transaction.signedAmount,
-    );
-
-    // Si es transferencia, actualizar cuenta destino
-    if (transaction.isTransfer && transaction.transferToAccountId != null) {
-      await _updateAccountBalance(
-        transaction.transferToAccountId!,
-        transaction.amount, // Positivo en destino
-      );
+    // Validación de monto
+    if (transaction.amount <= 0) {
+      throw ArgumentError('El monto debe ser mayor a cero');
     }
 
-    return transaction.copyWith(isSynced: false);
+    return await _db.transaction(() async {
+      final companion = TransactionsCompanion.insert(
+        id: transaction.id,
+        userId: transaction.userId,
+        accountId: transaction.accountId,
+        categoryId: Value(transaction.categoryId),
+        amount: transaction.amount,
+        type: transaction.type.name,
+        description: Value(transaction.description),
+        date: transaction.date,
+        notes: Value(transaction.notes),
+        tags: Value(transaction.tags.isEmpty ? null : transaction.tags.join(',')),
+        transferToAccountId: Value(transaction.transferToAccountId),
+        recurringId: Value(transaction.recurringId),
+        isSynced: const Value(false),
+      );
+
+      await _db.into(_db.transactions).insert(companion);
+
+      // Actualizar balance de cuenta
+      await _updateAccountBalance(
+        transaction.accountId,
+        transaction.signedAmount,
+      );
+
+      // Si es transferencia, actualizar cuenta destino
+      if (transaction.isTransfer && transaction.transferToAccountId != null) {
+        await _updateAccountBalance(
+          transaction.transferToAccountId!,
+          transaction.amount, // Positivo en destino
+        );
+      }
+
+      return transaction.copyWith(isSynced: false);
+    });
   }
 
-  /// Actualizar transaccion
+  /// Actualizar transaccion (ATOMICO - previene race conditions)
   Future<void> updateTransaction(
     TransactionModel oldTransaction,
     TransactionModel newTransaction,
   ) async {
-    // Revertir el balance anterior
-    await _updateAccountBalance(
-      oldTransaction.accountId,
-      -oldTransaction.signedAmount,
-    );
-    if (oldTransaction.isTransfer && oldTransaction.transferToAccountId != null) {
-      await _updateAccountBalance(
-        oldTransaction.transferToAccountId!,
-        -oldTransaction.amount,
-      );
+    // Validación de monto
+    if (newTransaction.amount <= 0) {
+      throw ArgumentError('El monto debe ser mayor a cero');
     }
 
-    // Actualizar transaccion
-    await (_db.update(_db.transactions)
-          ..where((t) => t.id.equals(newTransaction.id)))
-        .write(TransactionsCompanion(
-      accountId: Value(newTransaction.accountId),
-      categoryId: Value(newTransaction.categoryId),
-      amount: Value(newTransaction.amount),
-      type: Value(newTransaction.type.name),
-      description: Value(newTransaction.description),
-      date: Value(newTransaction.date),
-      notes: Value(newTransaction.notes),
-      tags: Value(newTransaction.tags.isEmpty ? null : newTransaction.tags.join(',')),
-      transferToAccountId: Value(newTransaction.transferToAccountId),
-      isSynced: const Value(false),
-      updatedAt: Value(DateTime.now()),
-    ));
-
-    // Aplicar nuevo balance
-    await _updateAccountBalance(
-      newTransaction.accountId,
-      newTransaction.signedAmount,
-    );
-    if (newTransaction.isTransfer && newTransaction.transferToAccountId != null) {
+    await _db.transaction(() async {
+      // Revertir el balance anterior
       await _updateAccountBalance(
-        newTransaction.transferToAccountId!,
-        newTransaction.amount,
+        oldTransaction.accountId,
+        -oldTransaction.signedAmount,
       );
-    }
+      if (oldTransaction.isTransfer && oldTransaction.transferToAccountId != null) {
+        await _updateAccountBalance(
+          oldTransaction.transferToAccountId!,
+          -oldTransaction.amount,
+        );
+      }
+
+      // Actualizar transaccion
+      await (_db.update(_db.transactions)
+            ..where((t) => t.id.equals(newTransaction.id)))
+          .write(TransactionsCompanion(
+        accountId: Value(newTransaction.accountId),
+        categoryId: Value(newTransaction.categoryId),
+        amount: Value(newTransaction.amount),
+        type: Value(newTransaction.type.name),
+        description: Value(newTransaction.description),
+        date: Value(newTransaction.date),
+        notes: Value(newTransaction.notes),
+        tags: Value(newTransaction.tags.isEmpty ? null : newTransaction.tags.join(',')),
+        transferToAccountId: Value(newTransaction.transferToAccountId),
+        isSynced: const Value(false),
+        updatedAt: Value(DateTime.now()),
+      ));
+
+      // Aplicar nuevo balance
+      await _updateAccountBalance(
+        newTransaction.accountId,
+        newTransaction.signedAmount,
+      );
+      if (newTransaction.isTransfer && newTransaction.transferToAccountId != null) {
+        await _updateAccountBalance(
+          newTransaction.transferToAccountId!,
+          newTransaction.amount,
+        );
+      }
+    });
   }
 
-  /// Eliminar transaccion
+  /// Eliminar transaccion (ATOMICO)
   Future<void> deleteTransaction(TransactionModel transaction) async {
-    // Revertir balance
-    await _updateAccountBalance(
-      transaction.accountId,
-      -transaction.signedAmount,
-    );
-    if (transaction.isTransfer && transaction.transferToAccountId != null) {
+    await _db.transaction(() async {
+      // Revertir balance
       await _updateAccountBalance(
-        transaction.transferToAccountId!,
-        -transaction.amount,
+        transaction.accountId,
+        -transaction.signedAmount,
       );
-    }
+      if (transaction.isTransfer && transaction.transferToAccountId != null) {
+        await _updateAccountBalance(
+          transaction.transferToAccountId!,
+          -transaction.amount,
+        );
+      }
 
-    // Eliminar
-    await (_db.delete(_db.transactions)..where((t) => t.id.equals(transaction.id))).go();
+      // Eliminar
+      await (_db.delete(_db.transactions)..where((t) => t.id.equals(transaction.id))).go();
+    });
   }
 
   /// Actualizar balance de cuenta
@@ -501,26 +517,43 @@ class TransactionRepository {
         .toList();
   }
 
+  /// Insertar transaccion desde servidor (CON ACTUALIZACION DE BALANCES)
   Future<void> _insertFromRemote(TransactionModel tx) async {
-    final companion = TransactionsCompanion.insert(
-      id: tx.id,
-      userId: tx.userId,
-      accountId: tx.accountId,
-      categoryId: Value(tx.categoryId),
-      amount: tx.amount,
-      type: tx.type.name,
-      description: Value(tx.description),
-      date: tx.date,
-      notes: Value(tx.notes),
-      tags: Value(tx.tags.isEmpty ? null : tx.tags.join(',')),
-      transferToAccountId: Value(tx.transferToAccountId),
-      recurringId: Value(tx.recurringId),
-      isSynced: const Value(true),
-      createdAt: Value(tx.createdAt ?? DateTime.now()),
-      updatedAt: Value(tx.updatedAt),
-    );
+    await _db.transaction(() async {
+      final companion = TransactionsCompanion.insert(
+        id: tx.id,
+        userId: tx.userId,
+        accountId: tx.accountId,
+        categoryId: Value(tx.categoryId),
+        amount: tx.amount,
+        type: tx.type.name,
+        description: Value(tx.description),
+        date: tx.date,
+        notes: Value(tx.notes),
+        tags: Value(tx.tags.isEmpty ? null : tx.tags.join(',')),
+        transferToAccountId: Value(tx.transferToAccountId),
+        recurringId: Value(tx.recurringId),
+        isSynced: const Value(true),
+        createdAt: Value(tx.createdAt ?? DateTime.now()),
+        updatedAt: Value(tx.updatedAt),
+      );
 
-    await _db.into(_db.transactions).insertOnConflictUpdate(companion);
+      await _db.into(_db.transactions).insertOnConflictUpdate(companion);
+
+      // FIX CRÍTICO: Actualizar balance de cuenta al sincronizar
+      await _updateAccountBalance(
+        tx.accountId,
+        tx.signedAmount,
+      );
+
+      // Si es transferencia, actualizar cuenta destino
+      if (tx.isTransfer && tx.transferToAccountId != null) {
+        await _updateAccountBalance(
+          tx.transferToAccountId!,
+          tx.amount, // Positivo en destino
+        );
+      }
+    });
   }
 
   // ==================== HELPERS ====================
