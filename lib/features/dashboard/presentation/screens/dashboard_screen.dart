@@ -20,6 +20,7 @@ import '../../../../shared/widgets/month_comparison_widget.dart';
 import '../../../../shared/utils/month_comparison.dart';
 import '../../../../shared/widgets/upcoming_payments_widget.dart';
 import '../../../../shared/utils/upcoming_payments.dart';
+import '../../../../shared/utils/icon_utils.dart';
 import '../../../../shared/services/notification_aggregator_service.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
@@ -484,12 +485,26 @@ class DashboardScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '${account.icon ?? '🏦'} ${account.name}:',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 14,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            IconUtils.fromName(
+                              account.icon,
+                              fallback: Icons.account_balance,
+                            ),
+                            color: Colors.white.withValues(alpha: 0.8),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${account.name}:',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                       Text(
                         '\$${account.balance.toStringAsFixed(0)}',
