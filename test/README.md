@@ -315,11 +315,25 @@ group('Categoría: Subcategoría', () {
 ## ⚠️ Tests Saltados (Skipped)
 
 21 tests están marcados como `skip` porque requieren:
-- Conexión real a Supabase
-- Credenciales de producción
-- Sesión de usuario activa
 
-Estos tests se ejecutan manualmente en entornos de staging/producción.
+1. **Conexión real a Supabase** - Tests de auth y realtime
+2. **Credenciales configuradas** - Tests de sync
+
+### Ejecutar tests de integración
+
+1. Verificar que existe `.env.test` con credenciales válidas:
+```bash
+# .env.test debe contener:
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_ANON_KEY=xxx
+```
+
+2. Ejecutar:
+```bash
+flutter test --dart-define=INTEGRATION_TESTS=true
+```
+
+> ⚠️ **Nota**: `.env.test` está en `.gitignore` y NO debe commitearse.
 
 ---
 

@@ -71,3 +71,4 @@ google-services.json
 GoogleService-Info.plist
 releases/
 rpa/output/*.json
+.env.test
