@@ -13,6 +13,7 @@ import 'export_screen.dart';
 import 'import_test_data_screen.dart';
 import 'profile_screen.dart';
 import 'change_password_screen.dart';
+import 'backup_screen.dart';
 
 /// Versión de la aplicación
 const String appVersion = '1.9.1';
@@ -212,8 +213,12 @@ class SettingsScreen extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.backup_outlined,
                 title: 'Respaldo',
-                subtitle: 'Próximamente',
-                onTap: () => _showComingSoonDialog(context, 'Respaldo'),
+                subtitle: 'Crear y restaurar respaldos',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const BackupScreen()),
+                  );
+                },
               ),
               _SettingsTile(
                 icon: Icons.science_outlined,
