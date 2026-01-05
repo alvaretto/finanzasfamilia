@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -11,12 +12,18 @@ import '../../data/providers/anthropic_provider.dart';
 /// Notifier para gestionar configuración de IA
 class AiSettingsNotifier extends StateNotifier<AiSettingsModel> {
   final FlutterSecureStorage _storage;
+  
+  // Completer para indicar cuando la carga inicial está lista
+  final Completer<void> _loadCompleter = Completer<void>();
+  
+  /// Future que se completa cuando los settings están cargados
+  Future<void> get initialized => _loadCompleter.future;
 
   static const _providerKey = 'ai_provider';
   static const _apiKeyKey = 'ai_api_key';
   static const _modelKey = 'ai_model';
 
-  AiSettingsNotifier(this._storage) : super(const AiSettingsModel()) {
+  AiSettingsNotifier(this._storage) : super(const AiSettingsModel(isLoading: true)) {
     _loadSettings();
   }
 
@@ -28,7 +35,7 @@ class AiSettingsNotifier extends StateNotifier<AiSettingsModel> {
 
       debugPrint('🔑 AI Settings loaded:');
       debugPrint('  Provider: $providerName');
-      debugPrint('  API Key: ${apiKey != null ? "***${apiKey.substring(apiKey.length - 4)}" : "null"}');
+      debugPrint('  API Key: ${apiKey != null ? "***${apiKey.substring(apiKey.length > 4 ? apiKey.length - 4 : 0)}" : "null"}');
       debugPrint('  Model: $model');
 
       final provider = AiProvider.values.firstWhere(
@@ -41,10 +48,17 @@ class AiSettingsNotifier extends StateNotifier<AiSettingsModel> {
         apiKey: apiKey,
         selectedModel: model,
         useCustomProvider: apiKey != null && apiKey.isNotEmpty,
+        isLoading: false, // Ya terminó de cargar
       );
     } catch (e) {
-      // Si hay error, usar configuración por defecto
-      state = const AiSettingsModel();
+      debugPrint('❌ Error loading AI settings: $e');
+      // Si hay error, usar configuración por defecto pero marcar como cargado
+      state = const AiSettingsModel(isLoading: false);
+    } finally {
+      // Completar el future para notificar que la carga terminó
+      if (!_loadCompleter.isCompleted) {
+        _loadCompleter.complete();
+      }
     }
   }
 
@@ -63,6 +77,7 @@ class AiSettingsNotifier extends StateNotifier<AiSettingsModel> {
 
     state = settings.copyWith(
       useCustomProvider: settings.apiKey != null && settings.apiKey!.isNotEmpty,
+      isLoading: false,
     );
   }
 
@@ -93,6 +108,12 @@ class AiSettingsNotifier extends StateNotifier<AiSettingsModel> {
 /// Provider principal de configuración de IA
 final aiSettingsProvider = StateNotifierProvider<AiSettingsNotifier, AiSettingsModel>((ref) {
   return AiSettingsNotifier(const FlutterSecureStorage());
+});
+
+/// Provider que expone el future de inicialización
+final aiSettingsInitializedProvider = FutureProvider<void>((ref) async {
+  final notifier = ref.read(aiSettingsProvider.notifier);
+  await notifier.initialized;
 });
 
 /// Provider que crea la instancia correcta del proveedor de IA
