@@ -1,6 +1,7 @@
 // test/helpers/test_helpers.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
 import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
 import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
@@ -84,7 +85,7 @@ class TestMainScaffold extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Nueva transaccion',
+              'Nueva transacción',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -432,13 +433,20 @@ bool verificarCompatibilidad(String featureA, String featureB) {
 
 /// Setup completo del ambiente de testing
 Future<void> setupFullTestEnvironment() async {
+  // Inicializar localización para DateFormat (español)
+  await initializeDateFormatting('es', null);
+
   // Habilitar modo test de Supabase para evitar llamadas reales
   SupabaseClientProvider.enableTestMode();
 }
 
 /// Alias para setupFullTestEnvironment (usado en E2E tests)
 Future<void> setupTestEnvironment() async {
-  await setupFullTestEnvironment();
+  // Inicializar localización para DateFormat (español)
+  await initializeDateFormatting('es', null);
+
+  // Habilitar modo test de Supabase
+  SupabaseClientProvider.enableTestMode();
 }
 
 /// Teardown del ambiente de testing

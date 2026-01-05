@@ -57,7 +57,7 @@ class MainScaffold extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Nueva transaccion',
+              'Nueva transacción',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

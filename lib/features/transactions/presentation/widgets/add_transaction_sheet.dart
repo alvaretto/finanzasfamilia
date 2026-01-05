@@ -132,7 +132,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                         controller: _descriptionController,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: const InputDecoration(
-                          labelText: 'Descripcion',
+                          labelText: 'Descripción',
                           prefixIcon: Icon(Icons.short_text),
                           hintText: 'ej. Compras supermercado',
                         ),
@@ -217,7 +217,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               ),
               Expanded(
                 child: Text(
-                  isEditing ? 'Editar Transaccion' : 'Nueva Transaccion',
+                  isEditing ? 'Editar Transacción' : 'Nueva Transacción',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -309,7 +309,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             }
             final amount = double.tryParse(value);
             if (amount == null || amount <= 0) {
-              return 'Monto invalido';
+              return 'Monto inválido';
             }
             return null;
           },
@@ -393,7 +393,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     return DropdownButtonFormField<String>(
       value: _selectedCategoryId,
       decoration: const InputDecoration(
-        labelText: 'Categoria',
+        labelText: 'Categoría',
         prefixIcon: Icon(Icons.category),
       ),
       items: categories.map((cat) {
@@ -425,7 +425,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       },
       validator: (value) {
         if (_selectedType != TransactionType.transfer && value == null) {
-          return 'Selecciona una categoria';
+          return 'Selecciona una categoría';
         }
         return null;
       },
@@ -504,7 +504,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditing ? 'Transaccion actualizada' : _getSuccessMessage()),
+            content: Text(isEditing ? 'Transacción actualizada' : _getSuccessMessage()),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
           ),

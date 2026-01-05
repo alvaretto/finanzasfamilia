@@ -45,7 +45,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que aparece el selector de tipo
-      expect(find.text('Nueva transaccion'), findsOneWidget,
+      expect(find.text('Nueva transacción'), findsOneWidget,
           reason: 'Debe aparecer el título del selector');
       expect(find.text('Gasto'), findsOneWidget,
           reason: 'Debe aparecer opción Gasto');
@@ -82,15 +82,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que se abre el formulario
-      expect(find.text('Nueva Transaccion'), findsOneWidget,
+      expect(find.text('Nueva Transacción'), findsOneWidget,
           reason: 'Debe abrir formulario de transacción');
 
       // Verificar elementos del formulario de gasto
       expect(find.text('Cuenta'), findsWidgets,
           reason: 'Debe mostrar selector de cuenta');
-      expect(find.text('Categoria'), findsWidgets,
+      expect(find.text('Categoría'), findsWidgets,
           reason: 'Debe mostrar selector de categoría');
-      expect(find.text('Descripcion'), findsWidgets,
+      expect(find.text('Descripción'), findsWidgets,
           reason: 'Debe mostrar campo de descripción');
       expect(find.text('Registrar Gasto'), findsOneWidget,
           reason: 'Botón debe decir Registrar Gasto');
@@ -123,7 +123,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que se abre el formulario con tipo ingreso
-      expect(find.text('Nueva Transaccion'), findsOneWidget);
+      expect(find.text('Nueva Transacción'), findsOneWidget);
       expect(find.text('Registrar Ingreso'), findsOneWidget,
           reason: 'Botón debe decir Registrar Ingreso');
     });
@@ -155,7 +155,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar formulario de transferencia
-      expect(find.text('Nueva Transaccion'), findsOneWidget);
+      expect(find.text('Nueva Transacción'), findsOneWidget);
       expect(find.text('Realizar Transferencia'), findsOneWidget,
           reason: 'Botón debe decir Realizar Transferencia');
     });
@@ -185,14 +185,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que formulario está abierto
-      expect(find.text('Nueva Transaccion'), findsOneWidget);
+      expect(find.text('Nueva Transacción'), findsOneWidget);
 
       // Cerrar con botón X
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
       // Verificar que formulario se cerró
-      expect(find.text('Nueva Transaccion'), findsNothing,
+      expect(find.text('Nueva Transacción'), findsNothing,
           reason: 'Formulario debe cerrarse');
     });
 
@@ -410,21 +410,21 @@ void main() {
         await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
 
-        expect(find.text('Nueva transaccion'), findsOneWidget,
+        expect(find.text('Nueva transacción'), findsOneWidget,
             reason: 'Iteración $i: Debe abrir selector');
 
         // Abrir formulario
         await tester.tap(find.text('Gasto'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Nueva Transaccion'), findsOneWidget,
+        expect(find.text('Nueva Transacción'), findsOneWidget,
             reason: 'Iteración $i: Debe abrir formulario');
 
         // Cerrar
         await tester.tap(find.byIcon(Icons.close));
         await tester.pumpAndSettle();
 
-        expect(find.text('Nueva Transaccion'), findsNothing,
+        expect(find.text('Nueva Transacción'), findsNothing,
             reason: 'Iteración $i: Debe cerrar formulario');
       }
     });
