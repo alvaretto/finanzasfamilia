@@ -1,90 +1,125 @@
 ---
 name: testing
-description: Estrategias de testing para Finanzas Familiares. Incluye tests unitarios, widgets, integracion, AI Chat, seguridad, performance, PWA/offline, Android y produccion. Usar para crear, ejecutar, o mejorar tests.
+description: Suite completa de 500+ tests. Incluye unit, widget, integration, E2E, interdependencias, AI Chat, seguridad, performance, PWA/offline, Android y produccion. Usar para crear, ejecutar, o mejorar tests.
 ---
 
 # Testing
 
-Skill de testing completo para Finanzas Familiares (300+ tests).
+Skill de testing unificado para Finanzas Familiares - **500+ tests** en **11 categorías**.
 
-## Estructura de Tests
-
-```
-test/
-├── unit/                 # Tests de logica pura (29)
-│   ├── models/           # Tests de modelos
-│   └── providers/        # Tests de providers
-├── widget/               # Tests de UI (28)
-│   └── features/         # Por feature
-├── integration/          # Tests de flujos (28)
-│   └── flows/
-├── ai_chat/              # Tests del asistente IA (41)
-│   ├── ai_chat_service_test.dart
-│   └── chat_widget_test.dart
-├── security/             # Tests de seguridad (20)
-│   └── api_security_test.dart
-├── performance/          # Tests de rendimiento (18)
-│   └── chat_performance_test.dart
-├── pwa/                  # Tests PWA/Offline (17)
-│   └── service_worker_test.dart
-├── android/              # Tests Android (12)
-│   └── android_compatibility_test.dart
-├── production/           # Tests agresivos (40+)
-│   └── production_readiness_test.dart
-├── e2e/                  # Tests end-to-end (81)
-│   └── scenarios/
-├── supabase/             # Tests Supabase Auth/RLS
-│   ├── auth_test.dart
-│   └── security_rls_test.dart
-└── helpers/              # Mocks y utilidades compartidas
-    └── test_helpers.dart
-```
-
-## Comandos Rapidos
+## 🎯 Quick Start
 
 ```bash
-# Todos los tests
+# Todos los tests (500+)
 flutter test
 
-# Por categoria
-flutter test test/unit/
-flutter test test/widget/
-flutter test test/integration/
-flutter test test/ai_chat/
-flutter test test/security/
-flutter test test/performance/
-flutter test test/pwa/
-flutter test test/android/
-flutter test test/production/
+# Tests rápidos (unit + widget - ~110 tests)
+flutter test test/models/ test/widget/
+
+# Tests de interdependencias (NUEVO - ~210 tests)
+flutter test test/novedades/
 
 # Con coverage
-flutter test --coverage
-genhtml coverage/lcov.info -o coverage/html
+flutter test --coverage && genhtml coverage/lcov.info -o coverage/html
 ```
 
-## Estado Actual
+## 📊 Categorías de Tests
 
-| Categoria | Tests | Descripcion |
-|-----------|-------|-------------|
-| Unit | 29 | Modelos, repositorios, utils |
-| Widget | 28 | Componentes UI, forms |
-| Integration | 28 | Flujos completos |
-| AI Chat | 41 | Servicio Gemini, mensajes, contexto |
-| Security | 20 | Validacion, RLS, API |
-| Performance | 18 | Tiempos, memoria, stress |
-| PWA/Offline | 17 | Sync, cache, offline-first |
-| Android | 12 | Pantallas, orientacion, temas |
-| Production | 40+ | Edge cases, valores extremos |
-| E2E | 81 | Requieren Supabase activo |
-| **Total** | **300+** | **Pasando (excepto E2E)** |
+| Categoría | Tests | Estado |
+|-----------|-------|--------|
+| Core (Unit) | 80+ | ✅ Activos |
+| Widget | 30+ | ✅ Activos |
+| Integration | 40+ | ✅ Activos |
+| E2E | 80+ | ✅ Activos |
+| **Interdependencias** | **210+** | ⏳ **Pendientes** |
+| AI Chat (Fina) | 80+ | ✅ Activos |
+| Security | 40+ | ✅ Activos |
+| PWA/Offline | 50+ | ✅ Activos |
+| Platform (Android) | 30+ | ✅ Activos |
+| Performance | 30+ | ✅ Activos |
+| Supabase | 40+ | ✅ Activos |
+| Production | 40+ | ✅ Activos |
+| **TOTAL** | **500+** | **300+ activos** |
 
-## Documentacion Detallada
+## 🆕 Tests Avanzados de Interdependencias
 
-- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - Estrategia completa
+**Nuevos en test/novedades/** - ~210 tests distribuidos en 5 archivos:
+
+### 1. Core Integration (`core_integration_test.dart`)
+Tests básicos de integración entre features:
+- Transacción → Cuenta
+- Transacción → Presupuesto
+- Transacción → Meta
+- Flujos End-to-End básicos
+
+### 2. Cross-Feature Tests (`cross_feature_test.dart`)
+**60+ tests** de interdependencias específicas:
+- Cuenta × Transacción × Reporte
+- Transacción × Presupuesto × Alerta
+- Dependencias bidireccionales
+- Cascadas de eliminación
+
+### 3. State Transition Tests (`state_transition_test.dart`)
+**40+ tests** de transiciones de estado:
+- Meta: nueva → en_progreso → completada
+- Presupuesto: normal → cerca_limite → excedido
+- Transacción: pendiente → procesada → completada
+- Validaciones de transiciones inválidas
+
+### 4. Combinatorial Tests (`combinatorial_test.dart`)
+**80+ tests** de combinaciones exhaustivas:
+- Presupuesto × Alerta × Notificación (36 combinaciones)
+- Usuario × Configuración × Features (27 combinaciones)
+- Fechas × Recurrencia × Ejecución (80 combinaciones)
+
+### 5. Complete Month Scenario (`complete_month_scenario_test.dart`)
+**1 test épico** - Simula uso completo durante un mes entero:
+- Usuario real (María González)
+- 4 semanas de actividad
+- 50+ transacciones
+- Verificación de integridad completa
+
+## 📁 Estructura Completa
+
+Ver [UNIFIED_TESTING_STRATEGY.md](UNIFIED_TESTING_STRATEGY.md) para arquitectura detallada.
+
+## 🚀 Comandos por Categoría
+
+```bash
+# Core (Unit tests)
+flutter test test/models/ test/services/ test/filters/ test/providers/
+
+# Widgets
+flutter test test/widget/ test/router/ test/initialization/
+
+# Integration + E2E
+flutter test test/integration/ test/e2e/
+
+# Interdependencias (NUEVO)
+flutter test test/novedades/
+
+# AI Chat
+flutter test test/ai_chat/
+
+# Security + Supabase
+flutter test test/security/ test/supabase/
+
+# PWA + Platform
+flutter test test/pwa/ test/android/
+
+# Performance + Production
+flutter test test/performance/ test/production/
+```
+
+## 📚 Documentación Completa
+
+- **[UNIFIED_TESTING_STRATEGY.md](UNIFIED_TESTING_STRATEGY.md)** - ⭐ Estrategia unificada completa
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - Estrategia general
 - [PWA_OFFLINE_TESTS.md](PWA_OFFLINE_TESTS.md) - Tests offline-first
-- [SUPABASE_AUTH_TESTS.md](SUPABASE_AUTH_TESTS.md) - Tests de autenticacion
+- [SUPABASE_AUTH_TESTS.md](SUPABASE_AUTH_TESTS.md) - Tests de autenticación
 - [SECURITY_RLS_TESTS.md](SECURITY_RLS_TESTS.md) - Tests de seguridad RLS
-- [PRODUCTION_TESTS.md](PRODUCTION_TESTS.md) - Tests agresivos de produccion
+- [PRODUCTION_TESTS.md](PRODUCTION_TESTS.md) - Tests agresivos de producción
+- [../../test/novedades/README.md](../../test/novedades/README.md) - Guía de interdependencias (521 líneas)
 
 ## Ejemplo Rapido: Test Unitario
 

@@ -4,9 +4,27 @@ Todos los cambios notables en Finanzas Familiares AS seran documentados en este 
 
 ## [1.9.5] - 2026-01-04
 
-### Configuración Completamente Funcional
+### Configuración Completamente Funcional + Fix Asistente AI Fina
 
 Todas las funcionalidades marcadas como "Próximamente" en Configuración han sido implementadas.
+
+#### Fix Crítico: Asistente AI Fina (`lib/features/ai_chat/data/services/ai_chat_service.dart`)
+- **Problema**: Modelos Gemini serie 1.5 descontinuados por Google
+- **Intentos fallidos**:
+  - ❌ `gemini-1.5-flash` → "not found for API version v1beta"
+  - ❌ `gemini-pro` → "not found for API version v1beta"
+  - ❌ `gemini-1.5-pro-latest` → "not found for API version v1beta"
+- **Solución**: Migración a `gemini-2.0-flash-001` (modelo estable enero 2025)
+- **Características del modelo**:
+  - 1M tokens de entrada (1,048,576)
+  - 8K tokens de salida (8,192)
+  - Versión estable de Gemini 2.0
+  - Soporte completo para generateContent
+- **Verificación**: API Key validada con curl contra API de Google
+- **Modelos disponibles actuales**: gemini-2.0-flash-001, gemini-2.5-flash, gemini-2.5-pro
+- **Manejo de errores mejorado**: Muestra mensaje completo del error para debugging
+- **Detección de límites**: Rate limiting detectado correctamente (429/RESOURCE_EXHAUSTED)
+- **Estado**: ✅ Fina completamente funcional con Gemini 2.0 Flash
 
 #### Cambiar Contraseña (`lib/features/settings/presentation/screens/change_password_screen.dart`)
 - Formulario con validación robusta (mínimo 8 caracteres)
