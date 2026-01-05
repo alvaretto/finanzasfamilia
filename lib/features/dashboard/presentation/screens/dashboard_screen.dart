@@ -45,7 +45,7 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Saludo
+              // Saludo personalizado
               _buildGreeting(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
@@ -53,23 +53,23 @@ class DashboardScreen extends ConsumerWidget {
               _buildMotivationalMessage(context),
               const SizedBox(height: AppSpacing.lg),
 
-              // Widget Regla 50/30/20
+              // 💰 Tus Cuentas (balance total con desglose)
+              _buildBalanceCard(context, ref),
+              const SizedBox(height: AppSpacing.lg),
+
+              // 📊 Este Mes (ingresos, gastos, disponible)
+              _buildQuickStats(context, ref),
+              const SizedBox(height: AppSpacing.lg),
+
+              // 📊 Widget Regla 50/30/20
               _build503020Widget(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
-              // Salud Financiera
+              // 🏥 Salud Financiera
               _buildFinancialHealthWidget(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
-              // Balance total
-              _buildBalanceCard(context),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Resumen rapido
-              _buildQuickStats(context),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Grafico de gastos
+              // Grafico de gastos por categoría
               _buildExpenseChart(context),
               const SizedBox(height: AppSpacing.lg),
 
@@ -221,7 +221,22 @@ class DashboardScreen extends ConsumerWidget {
     return FinancialHealthWidget(health: health);
   }
 
-  Widget _buildBalanceCard(BuildContext context) {
+  Widget _buildBalanceCard(BuildContext context, WidgetRef ref) {
+    final accountsState = ref.watch(accountsProvider);
+    final transactionsState = ref.watch(transactionsProvider);
+
+    // Calcular balance total de cuentas activas
+    final totalBalance = accountsState.accounts
+        .where((acc) => acc.isActive && acc.includeInTotal)
+        .fold(0.0, (sum, acc) => sum + acc.balance);
+
+    // Obtener top 4 cuentas con más balance
+    final topAccounts = accountsState.accounts
+        .where((acc) => acc.isActive)
+        .toList()
+      ..sort((a, b) => b.balance.compareTo(a.balance));
+    final displayAccounts = topAccounts.take(4).toList();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -250,25 +265,61 @@ class DashboardScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Mi Dinero',
+                '💰 Tus Cuentas',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontWeight: FontWeight.bold,
                     ),
               ),
               Icon(
-                Icons.visibility_outlined,
+                Icons.account_balance_wallet_outlined,
                 color: Colors.white.withValues(alpha: 0.8),
+                size: 20,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '\$125,430.00', // TODO: Balance real
+            'Total disponible',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+          ),
+          Text(
+            '\$${totalBalance.toStringAsFixed(0)}',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
           ),
+          if (displayAccounts.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            const Divider(color: Colors.white24),
+            const SizedBox(height: AppSpacing.sm),
+            ...displayAccounts.map((account) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${account.icon ?? '🏦'} ${account.name}:',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '\$${account.balance.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
@@ -276,7 +327,7 @@ class DashboardScreen extends ConsumerWidget {
                 context,
                 icon: Icons.arrow_upward,
                 label: 'Recibí',
-                value: '\$45,200',
+                value: '\$${transactionsState.totalIncome.toStringAsFixed(0)}',
                 color: AppColors.income,
               ),
               const SizedBox(width: AppSpacing.lg),
@@ -284,7 +335,7 @@ class DashboardScreen extends ConsumerWidget {
                 context,
                 icon: Icons.arrow_downward,
                 label: 'Gasté',
-                value: '\$32,150',
+                value: '\$${transactionsState.totalExpenses.toStringAsFixed(0)}',
                 color: AppColors.expense,
               ),
             ],
@@ -335,36 +386,156 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickStats(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            icon: Icons.savings_outlined,
-            label: 'Ahorrado',
-            value: '\$13,050',
-            color: AppColors.secondary,
-          ),
+  Widget _buildQuickStats(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final currentDay = now.day;
+
+    final monthlyIncome = transactionsState.totalIncome;
+    final monthlyExpenses = transactionsState.totalExpenses;
+    final available = monthlyIncome - monthlyExpenses;
+
+    // Obtener nombre del mes en español
+    final months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+    final monthName = months[now.month - 1];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '📊 Este Mes',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  '($monthName)',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Llevamos $currentDay de $daysInMonth días',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color:
+                        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_upward,
+                          color: AppColors.income,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Ingresos',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '\$${monthlyIncome.toStringAsFixed(0)}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.income,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_downward,
+                          color: AppColors.expense,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Gastos',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '\$${monthlyExpenses.toStringAsFixed(0)}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.expense,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          available >= 0
+                              ? Icons.check_circle_outline
+                              : Icons.warning_amber_outlined,
+                          color: available >= 0 ? AppColors.income : AppColors.error,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Disponible',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '\$${available.toStringAsFixed(0)}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: available >= 0 ? AppColors.income : AppColors.error,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.pie_chart_outline,
-            label: 'Presupuesto',
-            value: '68%',
-            color: AppColors.warning,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.flag_outlined,
-            label: 'Metas',
-            value: '2/5',
-            color: AppColors.info,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -510,47 +681,6 @@ class DashboardScreen extends ConsumerWidget {
           isExpense: true,
         ),
       ],
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
