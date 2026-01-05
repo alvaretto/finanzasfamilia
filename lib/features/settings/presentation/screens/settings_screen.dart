@@ -11,6 +11,7 @@ import '../../../transactions/presentation/screens/categories_screen.dart';
 import 'notifications_screen.dart';
 import 'export_screen.dart';
 import 'import_test_data_screen.dart';
+import 'profile_screen.dart';
 
 /// Versión de la aplicación
 const String appVersion = '1.9.1';
@@ -39,7 +40,11 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.person_outline,
                 title: 'Mi Perfil',
                 subtitle: 'Nombre, foto, email',
-                onTap: () => _showComingSoonDialog(context, 'Editar Perfil'),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                },
               ),
               _SettingsTile(
                 icon: Icons.family_restroom,

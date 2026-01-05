@@ -143,6 +143,16 @@ class AuthRepository {
     return response;
   }
 
+  /// Actualizar perfil del usuario
+  Future<UserResponse> updateProfile({String? fullName}) async {
+    final response = await _auth.updateUser(
+      UserAttributes(
+        data: fullName != null ? {'full_name': fullName} : null,
+      ),
+    );
+    return response;
+  }
+
   /// Cerrar sesion
   Future<void> signOut() async {
     await _auth.signOut();
