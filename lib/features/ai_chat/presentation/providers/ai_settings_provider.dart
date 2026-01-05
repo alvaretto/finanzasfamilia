@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -24,6 +25,11 @@ class AiSettingsNotifier extends StateNotifier<AiSettingsModel> {
       final providerName = await _storage.read(key: _providerKey);
       final apiKey = await _storage.read(key: _apiKeyKey);
       final model = await _storage.read(key: _modelKey);
+
+      debugPrint('🔑 AI Settings loaded:');
+      debugPrint('  Provider: $providerName');
+      debugPrint('  API Key: ${apiKey != null ? "***${apiKey.substring(apiKey.length - 4)}" : "null"}');
+      debugPrint('  Model: $model');
 
       final provider = AiProvider.values.firstWhere(
         (p) => p.name == providerName,
