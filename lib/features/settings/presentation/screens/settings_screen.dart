@@ -14,6 +14,8 @@ import 'import_test_data_screen.dart';
 import 'profile_screen.dart';
 import 'change_password_screen.dart';
 import 'backup_screen.dart';
+import 'help_screen.dart';
+import 'feedback_screen.dart';
 
 /// Versión de la aplicación
 const String appVersion = '1.9.1';
@@ -242,13 +244,21 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.help_outline,
                 title: 'Ayuda',
                 subtitle: 'Guías y tutoriales',
-                onTap: () => _showComingSoonDialog(context, 'Centro de Ayuda'),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HelpScreen()),
+                  );
+                },
               ),
               _SettingsTile(
                 icon: Icons.feedback_outlined,
                 title: 'Enviar Comentarios',
                 subtitle: 'Tu opinión nos importa',
-                onTap: () => _showComingSoonDialog(context, 'Comentarios'),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const FeedbackScreen()),
+                  );
+                },
               ),
               _SettingsTile(
                 icon: Icons.info_outline,
