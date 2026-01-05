@@ -165,6 +165,7 @@ class NotificationAggregatorService {
         message:
             'Llevas \$${antExpenseAnalysis.totalAmount.toStringAsFixed(0)} en $topCategory este mes',
         timestamp: now,
+        actionRoute: '/reports',
         actionLabel: 'Ver análisis',
         metadata: {
           'totalAmount': antExpenseAnalysis.totalAmount,
@@ -208,6 +209,7 @@ class NotificationAggregatorService {
         title: '¡Excelente Salud Financiera!',
         message: 'Tus finanzas están muy bien. ¡Sigue así!',
         timestamp: now,
+        actionRoute: '/reports',
         actionLabel: 'Ver detalles',
         metadata: {'score': financialHealth.globalScore},
       ));

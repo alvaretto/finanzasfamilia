@@ -8,6 +8,7 @@ import '../providers/report_provider.dart';
 import '../widgets/pie_chart_widget.dart';
 import '../widgets/bar_chart_widget.dart';
 import '../widgets/line_chart_widget.dart';
+import '../../../transactions/presentation/providers/transaction_provider.dart';
 
 class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
@@ -17,10 +18,41 @@ class ReportsScreen extends ConsumerWidget {
     final state = ref.watch(reportProvider);
     final currencyFormat = NumberFormat.currency(locale: 'es_MX', symbol: '\$', decimalDigits: 0);
 
+    // Debug: Ver por qué no hay datos
+    final transactionsState = ref.watch(transactionsProvider);
+    final hasTransactions = transactionsState.transactions.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reportes'),
         actions: [
+          // Debug info
+          if (hasTransactions && state.summary == null)
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Debug Info'),
+                    content: Text(
+                      'Transacciones: ${transactionsState.transactions.length}\n'
+                      'Summary: ${state.summary}\n'
+                      'Error: ${state.errorMessage ?? "ninguno"}\n'
+                      'Período: ${state.selectedPeriod.displayName}\n'
+                      'Desde: ${state.fromDate}\n'
+                      'Hasta: ${state.toDate}',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cerrar'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.read(reportProvider.notifier).loadReport(),
