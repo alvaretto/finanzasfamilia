@@ -1,5 +1,16 @@
 {
-  "errors": {},
+  "errors": {
+    "ERR-0001": {
+      "keywords": ["api key", "no carga", "límite de uso", "actualización apk", "flutter_secure_storage", "async constructor"],
+      "patterns": [
+        "Límite de uso alcanzado",
+        "api.*key.*null",
+        "settings.*not.*loaded",
+        "async.*constructor.*not.*waiting"
+      ],
+      "tags": ["flutter", "riverpod", "async", "initialization", "ai_chat", "flutter_secure_storage"]
+    }
+  },
   "metadata": {
     "version": "1.0.0",
     "created_at": "2026-01-05",
