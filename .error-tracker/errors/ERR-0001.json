@@ -1,0 +1,44 @@
+{
+  "id": "ERR-0001",
+  "title": "API Key no carga al iniciar la app después de actualización",
+  "description": "Después de actualizar el APK, la API key no se cargaba automáticamente desde el almacenamiento seguro, requiriendo que el usuario guardara manualmente la configuración de API para que el chat funcionara. El problema se debía a que AiSettingsNotifier llamaba a _loadSettings() de forma asíncrona en el constructor sin esperar su finalización.",
+  "error_message": "Límite de uso alcanzado. Intenta en unos minutos.",
+  "stack_trace": null,
+  "root_cause": "El AiSettingsNotifier inicializaba el estado con apiKey: null y luego cargaba la API key de forma asíncrona sin ningún mecanismo para esperar la finalización. Cuando el usuario intentaba usar el chat inmediatamente después de abrir la app, los settings aún no habían terminado de cargar.",
+  "affected_files": [
+    "lib/features/ai_chat/domain/models/ai_settings_model.dart",
+    "lib/features/ai_chat/presentation/providers/ai_settings_provider.dart",
+    "lib/features/ai_chat/data/services/ai_chat_service.dart"
+  ],
+  "solution": {
+    "summary": "Agregar flag isLoading al modelo y usar Completer para exponer el estado de carga. El servicio de chat ahora espera a que la carga termine antes de usar los settings.",
+    "changes": [
+      {
+        "file": "ai_settings_model.dart",
+        "before": "const AiSettingsModel({...})",
+        "after": "const AiSettingsModel({..., this.isLoading = true})"
+      },
+      {
+        "file": "ai_settings_provider.dart",
+        "before": "AiSettingsNotifier(this._storage) : super(const AiSettingsModel()) { _loadSettings(); }",
+        "after": "AiSettingsNotifier(this._storage) : super(const AiSettingsModel(isLoading: true)) { _loadSettings(); } + Completer<void> _loadCompleter para exponer cuando termina"
+      },
+      {
+        "file": "ai_chat_service.dart",
+        "before": "Future<void> _ensureInitialized() async { final settings = _ref.read(aiSettingsProvider); ... }",
+        "after": "Future<void> _ensureInitialized() async { await _waitForSettingsLoaded(); ... }"
+      }
+    ]
+  },
+  "anti_patterns": [],
+  "status": "resolved",
+  "resolved_at": "2026-01-05T23:30:00Z",
+  "related_tests": [],
+  "tags": ["flutter", "riverpod", "async", "initialization", "ai_chat", "flutter_secure_storage"],
+  "commits": [
+    "be303146d23f8db16762632cc5163f5653acdcc8",
+    "0124b07cbe477180ce7b3e439054098f43b940de",
+    "0474bdffdb329ccae253faf7c64626965dd7fffe"
+  ],
+  "created_at": "2026-01-05T23:28:00Z"
+}
