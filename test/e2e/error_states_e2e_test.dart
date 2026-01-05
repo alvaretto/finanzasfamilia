@@ -57,7 +57,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Debe mostrar estado vacío
-      expect(find.text('Sin cuentas'), findsOneWidget);
+      expect(find.text('Comienza tu viaje financiero'), findsOneWidget);
     });
 
     // =========================================================================
@@ -310,7 +310,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que elementos críticos son visibles
-      expect(find.byType(BottomAppBar), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
       expect(find.byType(FloatingActionButton), findsOneWidget);
 
       // Reset
@@ -380,7 +380,7 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      expect(find.text('Nueva transaccion'), findsOneWidget);
+      expect(find.text('Nueva transacción'), findsOneWidget);
     });
 
     // =========================================================================

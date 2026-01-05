@@ -403,7 +403,7 @@ void main() {
         await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
 
-        expect(find.text('Nueva transaccion'), findsOneWidget,
+        expect(find.text('Nueva transacción'), findsOneWidget,
             reason: 'FAB debe funcionar desde tab $tab');
 
         // Cerrar
@@ -434,7 +434,7 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      expect(find.text('Nueva transaccion'), findsOneWidget);
+      expect(find.text('Nueva transacción'), findsOneWidget);
 
       // Cerrar y cambiar tab
       await tester.tapAt(const Offset(10, 100));
@@ -447,7 +447,7 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      expect(find.text('Nueva transaccion'), findsOneWidget);
+      expect(find.text('Nueva transacción'), findsOneWidget);
     });
   });
 

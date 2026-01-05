@@ -58,11 +58,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Estado vacío debe mostrar mensaje
-      expect(find.text('Sin cuentas'), findsOneWidget,
-          reason: 'Debe mostrar mensaje de sin cuentas');
-      expect(find.text('Agregar Cuenta'), findsOneWidget,
-          reason: 'Debe mostrar botón para agregar cuenta');
+      // Estado vacío debe mostrar wizard de primera cuenta
+      expect(find.text('Comienza tu viaje financiero'), findsOneWidget,
+          reason: 'Debe mostrar wizard de primera cuenta');
+      expect(find.text('Selecciona el tipo de cuenta que quieres crear primero'), findsOneWidget,
+          reason: 'Debe mostrar instrucciones del wizard');
     });
 
     // =========================================================================
@@ -179,7 +179,7 @@ void main() {
           reason: 'Debe mostrar título Nueva Cuenta');
       expect(find.text('Nombre de la cuenta'), findsOneWidget,
           reason: 'Debe tener campo de nombre');
-      expect(find.text('Tipo de cuenta'), findsOneWidget,
+      expect(find.text('Tipo de Cuenta'), findsOneWidget,
           reason: 'Debe tener selector de tipo');
     });
 
@@ -423,7 +423,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Buscar campo de balance
-      expect(find.text('Balance inicial'), findsOneWidget,
+      expect(find.text('Balance actual'), findsOneWidget,
           reason: 'Debe tener campo de balance inicial');
     });
 

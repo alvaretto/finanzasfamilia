@@ -185,7 +185,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que el modal se abre
-      expect(find.text('Nueva transaccion'), findsOneWidget);
+      expect(find.text('Nueva transacción'), findsOneWidget);
       expect(find.text('Gasto'), findsOneWidget);
       expect(find.text('Ingreso'), findsOneWidget);
       expect(find.text('Transferencia'), findsOneWidget);
@@ -218,7 +218,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Modal debe cerrarse
-      expect(find.text('Nueva transaccion'), findsNothing);
+      expect(find.text('Nueva transacción'), findsNothing);
     });
 
     // =========================================================================
@@ -248,7 +248,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Modal debe cerrarse
-      expect(find.text('Nueva transaccion'), findsNothing);
+      expect(find.text('Nueva transacción'), findsNothing);
     });
 
     // =========================================================================
@@ -278,7 +278,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Modal debe cerrarse
-      expect(find.text('Nueva transaccion'), findsNothing);
+      expect(find.text('Nueva transacción'), findsNothing);
     });
 
     // =========================================================================
@@ -507,7 +507,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(BottomAppBar), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
       expect(find.byType(FloatingActionButton), findsOneWidget);
 
       tester.view.resetPhysicalSize();
@@ -540,7 +540,7 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      expect(find.text('Nueva transaccion'), findsOneWidget);
+      expect(find.text('Nueva transacción'), findsOneWidget);
     });
 
     // =========================================================================
