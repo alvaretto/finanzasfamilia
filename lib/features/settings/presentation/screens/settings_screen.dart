@@ -12,6 +12,7 @@ import 'notifications_screen.dart';
 import 'export_screen.dart';
 import 'import_test_data_screen.dart';
 import 'profile_screen.dart';
+import 'change_password_screen.dart';
 
 /// Versión de la aplicación
 const String appVersion = '1.9.1';
@@ -127,8 +128,12 @@ class SettingsScreen extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.lock_outline,
                 title: 'Cambiar Contrasena',
-                subtitle: 'Próximamente',
-                onTap: () => _showComingSoonDialog(context, 'Cambiar Contraseña'),
+                subtitle: 'Actualizar tu contraseña',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                  );
+                },
               ),
               _SettingsTile(
                 icon: Icons.timer_outlined,
