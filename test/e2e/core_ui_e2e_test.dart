@@ -62,11 +62,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verificar íconos
-      expect(find.byIcon(Icons.dashboard), findsOneWidget);
-      expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.receipt_long_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.bar_chart_outlined), findsOneWidget);
+      // Verificar íconos (TestMainScaffold usa estos íconos)
+      expect(find.byIcon(Icons.home), findsOneWidget);
+      expect(find.byIcon(Icons.account_balance_wallet), findsOneWidget);
+      expect(find.byIcon(Icons.swap_horiz), findsOneWidget);
+      expect(find.byIcon(Icons.bar_chart), findsOneWidget);
     });
 
     // =========================================================================

@@ -34,8 +34,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar elementos básicos
-      expect(find.text('Cuentas'), findsOneWidget,
-          reason: 'Debe mostrar título Cuentas');
+      expect(find.text('Mis Cuentas'), findsOneWidget,
+          reason: 'Debe mostrar título Mis Cuentas');
       expect(find.byIcon(Icons.sync), findsOneWidget,
           reason: 'Debe tener botón de sincronización');
       expect(find.byIcon(Icons.add), findsOneWidget,

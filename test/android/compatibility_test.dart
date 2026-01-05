@@ -211,7 +211,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final context = tester.element(find.byType(MaterialApp));
+      // Obtener theme desde un hijo del MaterialApp, no del MaterialApp mismo
+      final context = tester.element(find.byType(Scaffold));
       final theme = Theme.of(context);
       expect(theme.brightness, Brightness.light);
     });
@@ -230,7 +231,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final context = tester.element(find.byType(MaterialApp));
+      // Obtener theme desde un hijo del MaterialApp, no del MaterialApp mismo
+      final context = tester.element(find.byType(Scaffold));
       final theme = Theme.of(context);
       expect(theme.brightness, Brightness.dark);
     });

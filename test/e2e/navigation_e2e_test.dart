@@ -70,10 +70,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verificar íconos
-      expect(find.byIcon(Icons.dashboard), findsOneWidget);
+      // Verificar íconos (TestMainScaffold usa estos íconos)
+      expect(find.byIcon(Icons.home), findsOneWidget);
       expect(find.byIcon(Icons.account_balance_wallet), findsOneWidget);
-      expect(find.byIcon(Icons.receipt_long), findsOneWidget);
+      expect(find.byIcon(Icons.swap_horiz), findsOneWidget);
       expect(find.byIcon(Icons.bar_chart), findsOneWidget);
     });
 
@@ -206,7 +206,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(AccountsScreen), findsOneWidget);
-      expect(find.text('Cuentas'), findsOneWidget);
+      expect(find.text('Mis Cuentas'), findsOneWidget);
     });
 
     // =========================================================================
