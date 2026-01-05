@@ -19,7 +19,7 @@ class TransactionRepository {
     AppDatabase? database,
     SupabaseClient? supabaseClient,
     AccountRepository? accountRepository,
-  })  : _db = database ?? AppDatabase(),
+  })  : _db = database ?? AppDatabase.instance,
         _supabase = supabaseClient ?? SupabaseClientProvider.clientOrNull,
         _accountRepository = accountRepository ?? AccountRepository();
 

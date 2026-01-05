@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 part 'app_database.g.dart';
 
@@ -164,6 +165,28 @@ class RecurringTransactions extends Table {
   RecurringTransactions,
 ])
 class AppDatabase extends _$AppDatabase {
+  // Singleton instance
+  static AppDatabase? _instance;
+
+  /// Returns the singleton instance of AppDatabase
+  static AppDatabase get instance {
+    _instance ??= AppDatabase();
+    return _instance!;
+  }
+
+  /// Resets the singleton instance (for testing only)
+  @visibleForTesting
+  static void resetInstance() {
+    _instance?.close();
+    _instance = null;
+  }
+
+  /// Sets a custom instance (for testing/mocking only)
+  @visibleForTesting
+  static void setInstance(AppDatabase db) {
+    _instance = db;
+  }
+
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override

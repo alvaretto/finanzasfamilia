@@ -13,7 +13,7 @@ class BudgetRepository {
   BudgetRepository({
     AppDatabase? database,
     SupabaseClient? supabaseClient,
-  })  : _db = database ?? AppDatabase(),
+  })  : _db = database ?? AppDatabase.instance,
         _supabase = supabaseClient ?? SupabaseClientProvider.clientOrNull;
 
   /// Verifica si Supabase está disponible

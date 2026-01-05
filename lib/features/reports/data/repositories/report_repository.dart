@@ -7,7 +7,7 @@ import '../../domain/models/report_model.dart';
 class ReportRepository {
   final AppDatabase _db;
 
-  ReportRepository({AppDatabase? database}) : _db = database ?? AppDatabase();
+  ReportRepository({AppDatabase? database}) : _db = database ?? AppDatabase.instance;
 
   /// Obtener resumen de reporte para un periodo
   Future<ReportSummary> getReportSummary(
