@@ -10,6 +10,8 @@ Guia paso a paso para desarrolladores que quieran entender y contribuir al proye
 4. [Agregar una Nueva Feature](#agregar-una-nueva-feature)
 5. [Testing](#testing)
 6. [Sincronizacion Offline-First](#sincronizacion-offline-first)
+7. [Error Tracking](#error-tracking)
+8. [Claude Code Integration](#claude-code-integration)
 
 ---
 
@@ -228,6 +230,7 @@ test/
 ├── performance/             # Rendimiento
 ├── pwa/                     # Offline-first
 ├── android/                 # Compatibilidad
+├── regression/              # Tests generados de errores
 └── helpers/
     └── test_helpers.dart    # Utilidades compartidas
 ```
@@ -298,6 +301,9 @@ flutter test
 # Categoria especifica
 flutter test test/ai_chat/
 
+# Tests de regresion (generados del error tracker)
+flutter test test/regression/
+
 # Con coverage
 flutter test --coverage
 genhtml coverage/lcov.info -o coverage/html
@@ -345,6 +351,123 @@ Future<void> syncWithSupabase(String userId) async {
 
 ---
 
+## Error Tracking
+
+Sistema de documentacion acumulativa de errores para evitar regresiones.
+
+### Estructura
+
+```
+.error-tracker/
+├── errors/              # JSONs individuales (ERR-XXXX.json)
+├── scripts/             # Scripts Python de gestion
+│   ├── add_error.py     # Agregar/actualizar errores
+│   ├── search_errors.py # Buscar errores similares
+│   ├── detect_recurrence.py # Detectar errores recurrentes
+│   ├── mark_failed.py   # Marcar solucion fallida
+│   ├── generate_test.py # Generar test de regresion
+│   └── rebuild_index.py # Regenerar indice
+├── patterns.json        # Patrones de deteccion
+├── anti-patterns.json   # Soluciones que NO funcionan
+└── index.md             # Indice auto-generado
+```
+
+### Workflow al Corregir Errores
+
+```bash
+# 1. ANTES de implementar, buscar errores similares
+python .error-tracker/scripts/search_errors.py "RLS policy recursion"
+
+# 2. Revisar anti-patrones si hay resultados
+# 3. Implementar la solucion
+
+# 4. Documentar el error corregido
+python .error-tracker/scripts/add_error.py
+# Sigue el prompt interactivo:
+#   - Titulo breve
+#   - Descripcion detallada
+#   - Severidad
+#   - Archivos afectados
+#   - Tags
+
+# 5. Generar test de regresion
+python .error-tracker/scripts/generate_test.py ERR-0001
+# Genera: test/regression/{tipo}/{feature}/err_0001_regression_test.dart
+
+# 6. Completar el test generado (tiene TODOs)
+code test/regression/unit/err_0001_regression_test.dart
+
+# 7. Ejecutar para verificar
+flutter test test/regression/
+```
+
+### Cuando una Solucion Falla
+
+```bash
+# 1. Marcar como fallida
+python .error-tracker/scripts/mark_failed.py ERR-0001 "Causa timeout en sync"
+
+# Esto automaticamente:
+# - Mueve la solucion a anti-patterns del error
+# - Actualiza anti-patterns.json global
+# - Cambia estado a "reopened"
+# - Regenera index.md
+
+# 2. Buscar nueva solucion (revisar anti-patrones primero)
+cat .error-tracker/errors/ERR-0001.json | jq '.anti_patterns'
+
+# 3. Implementar y documentar nueva solucion
+python .error-tracker/scripts/add_error.py --update ERR-0001
+```
+
+### Deteccion de Errores Recurrentes
+
+```bash
+# Al encontrar un error, verificar si ya existe
+python .error-tracker/scripts/detect_recurrence.py "infinite recursion in policy"
+
+# Si encuentra similares, muestra:
+# - ID y titulo del error
+# - Porcentaje de similitud
+# - Solucion si existe
+# - Anti-patrones (lo que NO hacer)
+```
+
+### Esquema JSON de Error
+
+```json
+{
+  "id": "ERR-0001",
+  "title": "RLS Recursion en family_members",
+  "severity": "high",
+  "status": "resolved",
+  "error_details": {
+    "message": "infinite recursion detected in policy",
+    "error_type": "database"
+  },
+  "context": {
+    "affected_files": [{"path": "lib/.../provider.dart"}]
+  },
+  "solution": {
+    "summary": "Usar funcion helper con SECURITY DEFINER",
+    "root_cause": "Policy referenciaba a si misma"
+  },
+  "anti_patterns": [
+    {
+      "attempted_solution": "SECURITY DEFINER sin materializar",
+      "why_failed": "Causa recursion infinita"
+    }
+  ],
+  "metadata": {
+    "tags": ["supabase", "rls", "database"]
+  }
+}
+```
+
+Ver [ERROR_TRACKER_GUIDE.md](ERROR_TRACKER_GUIDE.md) para documentacion completa.
+
+---
+
 ## Comandos de Desarrollo
 
 ```bash
@@ -365,6 +488,7 @@ flutter analyze                       # Lint
 
 # Tests
 flutter test                          # Todos
+flutter test test/regression/         # Solo regresion
 flutter test --coverage               # Con coverage
 ```
 
@@ -398,6 +522,14 @@ r // Hot reload
 R // Hot restart (reinicia providers)
 ```
 
+### 4. Buscar Errores Antes de Corregir
+
+```bash
+# Siempre buscar si el error ya fue documentado
+python .error-tracker/scripts/search_errors.py "descripcion"
+# Evita repetir soluciones que no funcionaron
+```
+
 ---
 
 ## Claude Code Integration
@@ -414,11 +546,13 @@ Este proyecto incluye configuracion completa para desarrollo con Claude Code.
 │   ├── run-tests.md
 │   ├── full-workflow.md
 │   └── ...
-├── skills/             # 4 dominios de conocimiento
+├── skills/             # 6 dominios de conocimiento
 │   ├── sync-management/
 │   ├── financial-analysis/
 │   ├── flutter-architecture/
-│   └── testing/
+│   ├── testing/
+│   ├── data-testing/
+│   └── error-tracker/    # Documentacion de errores
 └── hooks/              # Automatizaciones
 ```
 
@@ -447,11 +581,18 @@ Este proyecto incluye configuracion completa para desarrollo con Claude Code.
 # 6. Deploy a emulador
 ```
 
+### Skill de Error Tracking
+
+Claude Code activa automaticamente el skill `error-tracker` cuando mencionas:
+- "error", "bug", "fix"
+- "solucion", "corregir"
+- "falla", "no funciona", "reaparece"
+
 Ver [CLAUDE_WORKFLOW.md](CLAUDE_WORKFLOW.md) para diagramas Mermaid detallados.
 
 ---
 
-**Version**: 1.9.2
-**Ultima actualizacion**: 2026-01-04
+**Version**: 1.9.8
+**Ultima actualizacion**: 2026-01-05
 
 **Siguiente**: Ver [USER_MANUAL.md](USER_MANUAL.md) para guia de usuario final.

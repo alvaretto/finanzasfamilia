@@ -24,7 +24,9 @@
     ├── sync-management/     # Offline-first, sincronizacion
     ├── financial-analysis/  # Calculos financieros
     ├── flutter-architecture/# Patrones Flutter + Riverpod
-    └── testing/            # Testing PWA, Supabase, RLS
+    ├── testing/            # Testing PWA, Supabase, RLS
+    ├── data-testing/       # Generacion de datos de prueba
+    └── error-tracker/      # Documentacion de errores y anti-patrones
 ```
 
 ## Niveles de Disclosure
@@ -56,18 +58,23 @@ graph TD
     B -->|Test| D[/run-tests]
     B -->|Release| E[/full-release]
     B -->|Workflow completo| F[/full-workflow]
+    B -->|Corregir error| G[error-tracker skill]
 
-    C --> G[Hook: pre-build]
-    G --> H[flutter build apk]
-    H --> I[Hook: post-build]
-    I --> J[Copia a releases/]
+    C --> H[Hook: pre-build]
+    H --> I[flutter build apk]
+    I --> J[Hook: post-build]
+    J --> K[Copia a releases/]
 
-    D --> K[Skill: testing]
-    K --> L[Ejecutar suite]
-    L --> M[Hook: post-test]
+    D --> L[Skill: testing]
+    L --> M[Ejecutar suite]
+    M --> N[Hook: post-test]
 
-    E --> N[Tests + Build + Deploy]
-    F --> O[Docs + Tests + Build + Git + Deploy]
+    E --> O[Tests + Build + Deploy]
+    F --> P[Docs + Tests + Build + Git + Deploy]
+    
+    G --> Q[Buscar errores similares]
+    Q --> R[Documentar solucion]
+    R --> S[Generar test regresion]
 ```
 
 ## Comandos Disponibles
@@ -122,9 +129,41 @@ graph TD
 - Tests de seguridad RLS
 - Tests de performance
 
+### data-testing
+- Generacion de datos de prueba
+- Patrones de datos colombianos
+- Import/export de datos
+- Escenarios de testing
+
+### error-tracker (NUEVO)
+- Documentacion acumulativa de errores
+- Registro de anti-patrones (soluciones que NO funcionan)
+- Deteccion automatica de errores recurrentes
+- Generacion de tests de regresion
+- Historial de soluciones por error
+
+#### Workflow de Error Tracking
+
+```bash
+# 1. Antes de corregir, buscar errores similares
+python .error-tracker/scripts/search_errors.py "mensaje"
+
+# 2. Documentar error y solucion
+python .error-tracker/scripts/add_error.py
+
+# 3. Generar test de regresion
+python .error-tracker/scripts/generate_test.py ERR-XXXX
+
+# 4. Si la solucion falla
+python .error-tracker/scripts/mark_failed.py ERR-XXXX
+```
+
+Ver [ERROR_TRACKER_GUIDE.md](../docs/ERROR_TRACKER_GUIDE.md) para documentacion completa.
+
 ## Uso
 
 1. **Consulta rapida**: Lee CLAUDE.md
 2. **Ejecutar tarea**: Usa comando `/nombre-comando`
 3. **Conocimiento profundo**: Consulta skill especifico
 4. **Automatizacion**: Los hooks se ejecutan automaticamente
+5. **Corregir errores**: Usa skill `error-tracker` para documentar

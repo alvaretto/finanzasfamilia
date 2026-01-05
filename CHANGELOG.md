@@ -2,6 +2,77 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.9.8] - 2026-01-05
+
+### Sistema de Error Tracking
+
+Nuevo sistema de documentacion acumulativa de errores con generacion automatica de tests de regresion.
+
+#### Nuevo Skill: error-tracker
+- **Documentacion de errores**: JSON individual por error con contexto completo
+- **Anti-patrones**: Registro de soluciones que NO funcionan
+- **Deteccion automatica**: Identifica errores recurrentes por patrones
+- **Tests de regresion**: Generacion automatica de tests Flutter
+- **Indice auto-generado**: Markdown con estadisticas y prioridades
+
+#### Scripts Python (6 archivos)
+- `add_error.py` - Agregar/actualizar errores interactivamente
+- `search_errors.py` - Buscar errores similares por texto/tags/archivo
+- `detect_recurrence.py` - Detectar si error ya fue documentado
+- `mark_failed.py` - Marcar solucion como fallida (mueve a anti-patterns)
+- `generate_test.py` - Generar test de regresion (unit/widget/integration)
+- `rebuild_index.py` - Regenerar indice con estadisticas
+
+#### Estructura Agregada
+```
+.error-tracker/
+├── errors/              # JSONs individuales (ERR-XXXX.json)
+├── scripts/             # 6 scripts Python
+├── patterns.json        # Patrones de deteccion
+├── anti-patterns.json   # Soluciones fallidas globales
+└── index.md             # Indice auto-generado
+
+.claude/skills/error-tracker/
+├── SKILL.md             # Documentacion del skill
+└── references/
+    └── schema.md        # Esquema JSON completo
+```
+
+#### Workflow de Uso
+```bash
+# 1. Buscar errores similares ANTES de implementar
+python .error-tracker/scripts/search_errors.py "descripcion"
+
+# 2. Documentar error corregido
+python .error-tracker/scripts/add_error.py
+
+# 3. Generar test de regresion
+python .error-tracker/scripts/generate_test.py ERR-XXXX
+
+# 4. Si solucion falla, marcar como fallida
+python .error-tracker/scripts/mark_failed.py ERR-XXXX
+```
+
+#### Documentacion Actualizada
+- `CLAUDE.md` - Skill error-tracker y comandos
+- `README.md` - Seccion Error Tracking System
+- `docs/CLAUDE_WORKFLOW.md` - Diagramas Mermaid de error tracking
+- `docs/ERROR_TRACKER_GUIDE.md` - Guia completa (nueva)
+- `docs/WALKTHROUGH.md` - Seccion para desarrolladores
+- `.claude/README.md` - Skill error-tracker agregado
+
+#### Triggers del Skill
+Se activa automaticamente con: "error", "bug", "fix", "solucion", "corregir", "falla", "no funciona", "reaparece"
+
+#### Metricas
+- **6 scripts Python** funcionales
+- **3 tipos de test** generables (unit, widget, integration)
+- **Esquema JSON** con 20+ campos
+- **4 estados** de error (open, investigating, resolved, reopened)
+- **Tags predefinidos** por tecnologia, area, tipo y feature
+
+---
+
 ## [1.9.7] - 2026-01-05
 
 ### Testing Suite Production-Ready
