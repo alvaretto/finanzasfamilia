@@ -4,26 +4,40 @@ import '../../../transactions/domain/models/transaction_model.dart';
 import '../../../accounts/domain/models/account_model.dart';
 import '../../../budgets/domain/models/budget_model.dart' show BudgetModel;
 import '../../presentation/providers/ai_settings_provider.dart';
+import '../../domain/models/ai_settings_model.dart';
 import '../providers/ai_provider_interface.dart';
 
 /// Servicio de chat con IA - Multi-proveedor
 class AiChatService {
   final Ref _ref;
   AiProviderInterface? _provider;
-  bool _isInitialized = false;
+  AiProvider? _lastProvider;
+  String? _lastApiKey;
 
   AiChatService(this._ref);
 
+  /// Verificar si necesita reinicializar (configuración cambió)
+  bool _needsReinitialize(AiSettingsModel settings) {
+    return _provider == null ||
+        _lastProvider != settings.provider ||
+        _lastApiKey != settings.apiKey;
+  }
+
   /// Inicializar el proveedor según configuración
-  Future<void> initialize() async {
+  Future<void> _ensureInitialized() async {
     final settings = _ref.read(aiSettingsProvider);
+
+    // Solo reinicializar si cambió la configuración
+    if (!_needsReinitialize(settings)) return;
+
     _provider = _ref.read(aiProviderInstanceProvider);
+    _lastProvider = settings.provider;
+    _lastApiKey = settings.apiKey;
 
     await _provider!.initialize(
       settings.apiKey ?? '',
       model: settings.currentModel,
     );
-    _isInitialized = true;
   }
 
   /// Generar contexto financiero del usuario
@@ -101,9 +115,8 @@ class AiChatService {
     required List<BudgetModel> budgets,
     List<Map<String, String>>? history,
   }) async {
-    if (!_isInitialized || _provider == null) {
-      await initialize();
-    }
+    // SIEMPRE verificar si necesita reinicializar
+    await _ensureInitialized();
 
     final context = _buildFinancialContext(
       transactions: transactions,
