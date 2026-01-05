@@ -2,21 +2,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:finanzas_familiares/core/network/supabase_client.dart';
+import 'package:finanzas_familiares/features/transactions/domain/models/transaction_model.dart';
+import 'package:finanzas_familiares/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 
-/// Widget de prueba que simula el MainScaffold de la app
-/// Usado en tests E2E y de widget
+/// TestMainScaffold que replica la funcionalidad del MainScaffold real
+/// Mantiene BottomNavigationBar para compatibilidad con tests existentes
+/// pero agrega la funcionalidad del FAB para mostrar el selector de transacciones
 class TestMainScaffold extends StatelessWidget {
   final Widget child;
   final int currentIndex;
   final ValueChanged<int>? onNavigationTap;
-  final VoidCallback? onFabPressed;
 
   const TestMainScaffold({
     super.key,
     required this.child,
     this.currentIndex = 0,
     this.onNavigationTap,
-    this.onFabPressed,
   });
 
   @override
@@ -24,7 +25,7 @@ class TestMainScaffold extends StatelessWidget {
     return Scaffold(
       body: child,
       floatingActionButton: FloatingActionButton(
-        onPressed: onFabPressed ?? () {},
+        onPressed: () => _showAddTransactionSheet(context),
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -50,6 +51,150 @@ class TestMainScaffold extends StatelessWidget {
             label: 'Reportes',
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAddTransactionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Nueva transaccion',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _TransactionTypeButton(
+                      icon: Icons.arrow_downward,
+                      label: 'Gasto',
+                      color: Colors.red,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openTransactionForm(context, TransactionType.expense);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _TransactionTypeButton(
+                      icon: Icons.arrow_upward,
+                      label: 'Ingreso',
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openTransactionForm(context, TransactionType.income);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _TransactionTypeButton(
+                      icon: Icons.swap_horiz,
+                      label: 'Transferencia',
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _openTransactionForm(context, TransactionType.transfer);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openTransactionForm(BuildContext context, TransactionType type) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
+        child: AddTransactionSheet(initialType: type),
+      ),
+    );
+  }
+}
+
+class _TransactionTypeButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _TransactionTypeButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
