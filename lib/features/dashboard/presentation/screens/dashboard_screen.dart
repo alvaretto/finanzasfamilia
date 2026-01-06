@@ -46,7 +46,9 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // TODO: Recargar datos
+          // Limpiar duplicados al refrescar
+          await ref.read(accountsProvider.notifier).cleanDuplicates();
+          await ref.read(accountsProvider.notifier).syncAccounts();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -410,15 +412,16 @@ class DashboardScreen extends ConsumerWidget {
     final accountsState = ref.watch(accountsProvider);
     final transactionsState = ref.watch(transactionsProvider);
 
-    // Calcular balance total de cuentas activas
-    final totalBalance = accountsState.accounts
-        .where((acc) => acc.isActive && acc.includeInTotal)
+    // Usar cuentas únicas para evitar duplicados en la visualización
+    final uniqueAccounts = accountsState.uniqueActiveAccounts;
+
+    // Calcular balance total de cuentas activas únicas
+    final totalBalance = uniqueAccounts
+        .where((acc) => acc.includeInTotal)
         .fold(0.0, (sum, acc) => sum + acc.balance);
 
-    // Obtener top 4 cuentas con más balance
-    final topAccounts = accountsState.accounts
-        .where((acc) => acc.isActive)
-        .toList()
+    // Obtener top 4 cuentas únicas con más balance
+    final topAccounts = List.of(uniqueAccounts)
       ..sort((a, b) => b.balance.compareTo(a.balance));
     final displayAccounts = topAccounts.take(4).toList();
 
