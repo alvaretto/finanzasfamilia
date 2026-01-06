@@ -14,6 +14,10 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_welcome_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_accounts_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_account_details_screen.dart';
+import '../../features/onboarding/presentation/providers/onboarding_wizard_provider.dart';
 import '../../features/ai_chat/presentation/screens/ai_chat_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/settings/presentation/screens/ai_settings_screen.dart';
@@ -23,6 +27,9 @@ import '../../shared/widgets/main_scaffold.dart';
 class AppRoutes {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
+  static const String onboardingWelcome = '/onboarding/welcome';
+  static const String onboardingAccounts = '/onboarding/accounts';
+  static const String onboardingDetails = '/onboarding/details';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
@@ -51,13 +58,30 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     refreshListenable: GoRouterRefreshStream(ref.read(authProvider.notifier).stream),
     routes: [
-      // Onboarding
+      // Onboarding original (features tour)
       GoRoute(
         path: AppRoutes.onboarding,
         name: 'onboarding',
         builder: (context, state) => OnboardingScreen(
           onComplete: () => GoRouter.of(context).go(AppRoutes.login),
         ),
+      ),
+
+      // Onboarding Wizard de Cuentas (nuevo)
+      GoRoute(
+        path: AppRoutes.onboardingWelcome,
+        name: 'onboarding_welcome',
+        builder: (context, state) => const OnboardingWelcomeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboardingAccounts,
+        name: 'onboarding_accounts',
+        builder: (context, state) => const OnboardingAccountsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboardingDetails,
+        name: 'onboarding_details',
+        builder: (context, state) => const OnboardingAccountDetailsScreen(),
       ),
 
       // Auth routes
@@ -171,20 +195,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ),
 
-    // Redirect logic
-    redirect: (context, state) {
+    // Redirect logic con soporte para onboarding de cuentas
+    redirect: (context, state) async {
       final isAuthenticated = authState.isAuthenticated;
       final isAuthRoute = state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register ||
           state.matchedLocation == AppRoutes.forgotPassword;
+      final isOnboardingRoute = state.matchedLocation.startsWith('/onboarding');
 
-      // Si no esta autenticado y no esta en una pagina de auth, redirigir a login
-      if (!isAuthenticated && !isAuthRoute) {
+      // Si no esta autenticado y no esta en una pagina de auth ni onboarding inicial
+      if (!isAuthenticated && !isAuthRoute && state.matchedLocation != AppRoutes.onboarding) {
         return AppRoutes.login;
       }
 
-      // Si esta autenticado y esta en una pagina de auth, redirigir a dashboard
+      // Si esta autenticado y esta en una pagina de auth
       if (isAuthenticated && isAuthRoute) {
+        // Verificar si necesita completar onboarding de cuentas
+        // Nota: Esto se maneja de forma asíncrona, así que por ahora redirigimos al dashboard
+        // La verificación real se puede hacer en el dashboard
         return AppRoutes.dashboard;
       }
 
