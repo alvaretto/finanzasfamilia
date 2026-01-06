@@ -94,7 +94,7 @@ class AccountsState {
     return unique;
   }
 
-  /// Cuentas por tipo
+  /// Cuentas por tipo (incluye todas las activas)
   Map<AccountType, List<AccountModel>> get accountsByType {
     final map = <AccountType, List<AccountModel>>{};
     for (final account in activeAccounts) {
@@ -103,10 +103,20 @@ class AccountsState {
     return map;
   }
 
+  /// Cuentas por tipo (filtradas, sin fantasmas)
+  /// Usar esta versión en la UI para evitar mostrar cuentas fantasma
+  Map<AccountType, List<AccountModel>> get uniqueAccountsByType {
+    final map = <AccountType, List<AccountModel>>{};
+    for (final account in uniqueActiveAccounts) {
+      map.putIfAbsent(account.type, () => []).add(account);
+    }
+    return map;
+  }
+
   /// Balance por tipo de cuenta
   Map<AccountType, double> get balanceByType {
     final map = <AccountType, double>{};
-    for (final account in activeAccounts) {
+    for (final account in uniqueActiveAccounts) {
       final current = map[account.type] ?? 0.0;
       map[account.type] = current + account.balance;
     }

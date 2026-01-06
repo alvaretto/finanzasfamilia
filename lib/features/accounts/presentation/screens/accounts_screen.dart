@@ -68,7 +68,7 @@ class AccountsScreen extends ConsumerWidget {
       ),
       body: accountsState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : accountsState.activeAccounts.isEmpty
+          : accountsState.uniqueActiveAccounts.isEmpty
               ? _buildEmptyState(context)
               : RefreshIndicator(
                   onRefresh: () =>
@@ -80,8 +80,8 @@ class AccountsScreen extends ConsumerWidget {
                       _buildTotalBalance(context, accountsState, currencyFormat),
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Cuentas agrupadas por tipo
-                      ...accountsState.accountsByType.entries.map((entry) {
+                      // Cuentas agrupadas por tipo (filtradas sin fantasmas)
+                      ...accountsState.uniqueAccountsByType.entries.map((entry) {
                         return _buildAccountTypeSection(
                           context,
                           type: entry.key,
