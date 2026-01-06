@@ -100,10 +100,7 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
           totalBalance: total,
         );
 
-        // Crear cuentas por defecto si es la primera vez
-        if (accounts.isEmpty) {
-          await _createDefaultAccounts();
-        }
+        // No crear cuentas por defecto - el usuario las crea manualmente
       },
       onError: (error) {
         state = state.copyWith(
@@ -124,24 +121,6 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
 
     // Sincronizar al iniciar si hay conexión
     _checkAndSync();
-  }
-
-  /// Crear cuentas por defecto para nuevo usuario
-  Future<void> _createDefaultAccounts() async {
-    try {
-      // Cuenta para registrar préstamos/deudas
-      await createAccount(
-        name: 'Préstamos',
-        type: AccountType.payable,
-        currency: 'COP',
-        balance: 0.0,
-        color: '#ef4444', // Rojo (indica deuda)
-        icon: 'attach_money',
-        bankName: null,
-      );
-    } catch (e) {
-      // No hacer nada si falla, el usuario puede crear sus cuentas manualmente
-    }
   }
 
   Future<void> _checkAndSync() async {

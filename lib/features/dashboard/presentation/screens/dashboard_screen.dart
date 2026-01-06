@@ -23,6 +23,7 @@ import '../../../../shared/utils/upcoming_payments.dart';
 import '../../../../shared/utils/icon_utils.dart';
 import '../../../../shared/services/notification_aggregator_service.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
+import '../../../transactions/domain/models/transaction_model.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../../budgets/presentation/providers/budget_provider.dart';
 import '../../../goals/presentation/providers/goal_provider.dart';
@@ -90,11 +91,11 @@ class DashboardScreen extends ConsumerWidget {
               _buildAntExpenseWidget(context, ref),
 
               // Grafico de gastos por categoría
-              _buildExpenseChart(context),
+              _buildExpenseChart(context, ref),
               const SizedBox(height: AppSpacing.lg),
 
               // Ultimas transacciones
-              _buildRecentTransactions(context),
+              _buildRecentTransactions(context, ref),
               const SizedBox(height: AppSpacing.xl),
             ],
           ),
@@ -756,7 +757,83 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildExpenseChart(BuildContext context) {
+  Widget _buildExpenseChart(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final expenses = transactionsState.transactions
+        .where((t) => t.type == TransactionType.expense)
+        .toList();
+
+    // Si no hay gastos, mostrar estado vacío
+    if (expenses.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Gastos por Categoría',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push(AppRoutes.reports),
+                    child: const Text('Ver todo'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.pie_chart_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Sin gastos registrados',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Registra tu primer gasto para ver\nel análisis por categorías',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Agrupar gastos por categoría
+    final Map<String, double> categoryTotals = {};
+    for (final expense in expenses) {
+      final category = expense.categoryName ?? 'Otros';
+      categoryTotals[category] = (categoryTotals[category] ?? 0) + expense.amount.abs();
+    }
+
+    final total = categoryTotals.values.fold(0.0, (sum, val) => sum + val);
+    final sortedCategories = categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    // Limitar a 4 categorías principales
+    final topCategories = sortedCategories.take(4).toList();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -767,15 +844,13 @@ class DashboardScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Gastos por Categoria',
+                  'Gastos por Categoría',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    // TODO: Ver detalle
-                  },
+                  onPressed: () => context.push(AppRoutes.reports),
                   child: const Text('Ver todo'),
                 ),
               ],
@@ -787,52 +862,22 @@ class DashboardScreen extends ConsumerWidget {
                 PieChartData(
                   sectionsSpace: 2,
                   centerSpaceRadius: 40,
-                  sections: [
-                    PieChartSectionData(
-                      value: 35,
-                      title: '35%',
-                      color: AppColors.categoryColors[0],
+                  sections: topCategories.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final category = entry.value;
+                    final percentage = (category.value / total * 100).round();
+                    return PieChartSectionData(
+                      value: category.value,
+                      title: '$percentage%',
+                      color: AppColors.categoryColors[index % AppColors.categoryColors.length],
                       radius: 50,
                       titleStyle: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
-                    ),
-                    PieChartSectionData(
-                      value: 25,
-                      title: '25%',
-                      color: AppColors.categoryColors[1],
-                      radius: 50,
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    PieChartSectionData(
-                      value: 20,
-                      title: '20%',
-                      color: AppColors.categoryColors[2],
-                      radius: 50,
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    PieChartSectionData(
-                      value: 20,
-                      title: '20%',
-                      color: AppColors.categoryColors[3],
-                      radius: 50,
-                      titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -840,12 +885,14 @@ class DashboardScreen extends ConsumerWidget {
             Wrap(
               spacing: AppSpacing.md,
               runSpacing: AppSpacing.sm,
-              children: [
-                _LegendItem(color: AppColors.categoryColors[0], label: 'Alimentacion'),
-                _LegendItem(color: AppColors.categoryColors[1], label: 'Transporte'),
-                _LegendItem(color: AppColors.categoryColors[2], label: 'Servicios'),
-                _LegendItem(color: AppColors.categoryColors[3], label: 'Otros'),
-              ],
+              children: topCategories.asMap().entries.map((entry) {
+                final index = entry.key;
+                final category = entry.value;
+                return _LegendItem(
+                  color: AppColors.categoryColors[index % AppColors.categoryColors.length],
+                  label: category.key,
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -853,7 +900,10 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context) {
+  Widget _buildRecentTransactions(BuildContext context, WidgetRef ref) {
+    final transactionsState = ref.watch(transactionsProvider);
+    final recentTransactions = transactionsState.transactions.take(5).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -861,44 +911,89 @@ class DashboardScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Ultimos Movimientos',
+              'Últimos Movimientos',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
             ),
             TextButton(
-              onPressed: () {
-                // TODO: Ver todos
-              },
+              onPressed: () => context.push(AppRoutes.transactions),
               child: const Text('Ver todo'),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        // Transacciones de ejemplo
-        _TransactionItem(
-          icon: Icons.restaurant,
-          title: 'Restaurante',
-          subtitle: 'Hoy, 14:30',
-          amount: '-\$350.00',
-          isExpense: true,
-        ),
-        _TransactionItem(
-          icon: Icons.work,
-          title: 'Salario',
-          subtitle: 'Ayer',
-          amount: '+\$25,000.00',
-          isExpense: false,
-        ),
-        _TransactionItem(
-          icon: Icons.local_gas_station,
-          title: 'Gasolina',
-          subtitle: 'Hace 2 dias',
-          amount: '-\$800.00',
-          isExpense: true,
-        ),
+        if (recentTransactions.isEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.receipt_long_outlined,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Sin movimientos',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Toca el botón + para registrar\ntu primera transacción',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          ...recentTransactions.map((transaction) {
+            final isExpense = transaction.type == TransactionType.expense;
+            final icon = IconUtils.fromName(
+              transaction.categoryIcon,
+              fallback: isExpense ? Icons.shopping_cart : Icons.attach_money,
+            );
+            final formattedAmount = isExpense
+                ? '-\$${transaction.amount.abs().toStringAsFixed(0)}'
+                : '+\$${transaction.amount.abs().toStringAsFixed(0)}';
+            final subtitle = _formatTransactionDate(transaction.date);
+
+            return _TransactionItem(
+              icon: icon,
+              title: transaction.description ?? transaction.categoryName ?? 'Sin descripción',
+              subtitle: subtitle,
+              amount: formattedAmount,
+              isExpense: isExpense,
+            );
+          }),
       ],
     );
+  }
+
+  String _formatTransactionDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final transactionDay = DateTime(date.year, date.month, date.day);
+    final difference = today.difference(transactionDay).inDays;
+
+    if (difference == 0) {
+      return 'Hoy, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } else if (difference == 1) {
+      return 'Ayer';
+    } else if (difference < 7) {
+      return 'Hace $difference días';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
   }
 }
 
