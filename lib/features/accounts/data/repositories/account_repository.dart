@@ -47,8 +47,104 @@ class AccountRepository {
     return result != null ? _accountFromRow(result) : null;
   }
 
+  /// Verificar si existe una cuenta con el mismo nombre y tipo
+  /// [excludeId] - ID de cuenta a excluir (útil para actualizaciones)
+  Future<bool> accountExistsByNameAndType(
+    String userId,
+    String name,
+    AccountType type, {
+    String? excludeId,
+  }) async {
+    final normalizedName = name.trim().toLowerCase();
+    final query = _db.select(_db.accounts)
+      ..where((t) {
+        var condition = t.userId.equals(userId) &
+            t.type.equals(type.name) &
+            t.isActive.equals(true);
+        if (excludeId != null) {
+          condition = condition & t.id.equals(excludeId).not();
+        }
+        return condition;
+      });
+    
+    final accounts = await query.get();
+    return accounts.any(
+      (acc) => acc.name.trim().toLowerCase() == normalizedName,
+    );
+  }
+
+  /// Obtener cuentas únicas (deduplicadas por nombre y tipo)
+  /// Mantiene la cuenta con el balance más alto en caso de duplicados
+  Future<List<AccountModel>> getUniqueAccounts(String userId) async {
+    final query = _db.select(_db.accounts)
+      ..where((t) => t.userId.equals(userId) & t.isActive.equals(true))
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.name),
+        (t) => OrderingTerm.desc(t.balance),
+      ]);
+    
+    final allAccounts = await query.get();
+    final uniqueMap = <String, Account>{};
+    
+    for (final account in allAccounts) {
+      final key = '${account.name.trim().toLowerCase()}_${account.type}';
+      if (!uniqueMap.containsKey(key)) {
+        uniqueMap[key] = account;
+      }
+      // Si ya existe, mantiene el primero (que tiene mayor balance por ordenamiento)
+    }
+    
+    return uniqueMap.values.map(_accountFromRow).toList();
+  }
+
+  /// Eliminar cuentas duplicadas manteniendo la de mayor balance
+  /// Retorna el número de cuentas eliminadas
+  Future<int> removeDuplicateAccounts(String userId) async {
+    final query = _db.select(_db.accounts)
+      ..where((t) => t.userId.equals(userId) & t.isActive.equals(true))
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.name),
+        (t) => OrderingTerm.asc(t.type),
+        (t) => OrderingTerm.desc(t.balance),
+      ]);
+    
+    final allAccounts = await query.get();
+    final seenKeys = <String>{};
+    final duplicateIds = <String>[];
+    
+    for (final account in allAccounts) {
+      final key = '${account.name.trim().toLowerCase()}_${account.type}';
+      if (seenKeys.contains(key)) {
+        duplicateIds.add(account.id);
+      } else {
+        seenKeys.add(key);
+      }
+    }
+    
+    // Soft delete de duplicados
+    for (final id in duplicateIds) {
+      await deleteAccount(id);
+    }
+    
+    return duplicateIds.length;
+  }
+
   /// Crear cuenta localmente
+  /// Lanza excepción si ya existe una cuenta con el mismo nombre y tipo
   Future<AccountModel> createAccount(AccountModel account) async {
+    // Validar duplicados antes de crear
+    final exists = await accountExistsByNameAndType(
+      account.userId,
+      account.name,
+      account.type,
+    );
+    
+    if (exists) {
+      throw DuplicateAccountException(
+        'Ya existe una cuenta "${account.name}" de tipo ${account.type.displayName}',
+      );
+    }
+
     final companion = AccountsCompanion.insert(
       id: account.id,
       userId: account.userId,
@@ -73,6 +169,20 @@ class AccountRepository {
 
   /// Actualizar cuenta localmente
   Future<void> updateAccount(AccountModel account) async {
+    // Validar que no exista otra cuenta con el mismo nombre y tipo
+    final exists = await accountExistsByNameAndType(
+      account.userId,
+      account.name,
+      account.type,
+      excludeId: account.id,
+    );
+    
+    if (exists) {
+      throw DuplicateAccountException(
+        'Ya existe otra cuenta "${account.name}" de tipo ${account.type.displayName}',
+      );
+    }
+
     await (_db.update(_db.accounts)..where((t) => t.id.equals(account.id)))
         .write(AccountsCompanion(
       name: Value(account.name),
@@ -159,6 +269,9 @@ class AccountRepository {
     if (!_isOnline) return; // Sin conexión, solo modo offline
 
     try {
+      // 0. Limpiar duplicados locales antes de sincronizar
+      await removeDuplicateAccounts(userId);
+
       // 1. Subir cuentas locales no sincronizadas
       final unsyncedAccounts = await getUnsyncedAccounts();
       for (final account in unsyncedAccounts) {
@@ -169,12 +282,22 @@ class AccountRepository {
       // 2. Descargar cuentas remotas
       final remoteAccounts = await _fetchFromSupabase(userId);
 
-      // 3. Actualizar localmente
+      // 3. Actualizar localmente (con validación de duplicados)
       for (final remote in remoteAccounts) {
         final local = await getAccountById(remote.id);
         if (local == null) {
-          // Cuenta nueva del servidor
-          await _insertFromRemote(remote);
+          // Verificar si ya existe localmente con mismo nombre y tipo
+          final existsLocally = await accountExistsByNameAndType(
+            userId,
+            remote.name,
+            remote.type,
+          );
+          
+          if (!existsLocally) {
+            // Cuenta nueva del servidor - insertar
+            await _insertFromRemote(remote);
+          }
+          // Si existe localmente, ignorar la remota (offline-first)
         } else if (!local.isSynced) {
           // Conflicto: priorizar local (offline-first)
           await _upsertToSupabase(local);
@@ -288,4 +411,14 @@ class AccountRepository {
       isSynced: row.isSynced,
     );
   }
+}
+
+/// Excepción lanzada cuando se intenta crear una cuenta duplicada
+class DuplicateAccountException implements Exception {
+  final String message;
+  
+  DuplicateAccountException(this.message);
+  
+  @override
+  String toString() => 'DuplicateAccountException: $message';
 }
