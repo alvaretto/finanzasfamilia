@@ -1,0 +1,88 @@
+{
+  "id": "ERR-0002",
+  "title": "MCP servers no conectan - configuracion incorrecta en ~/.claude.json",
+  "description": "Los servidores MCP (filesystem, context7, etc.) fallan al conectar debido a configuracion incorrecta o servidores deshabilitados en ~/.claude.json. El problema principal es que servidores criticos estan marcados como disabled:true o simplemente no estan configurados.",
+  "severity": "high",
+  "status": "resolved",
+  "error_details": {
+    "message": "7 MCP servers failed - ✘ failed · Enter to view details",
+    "stack_trace": "MCP server connection timeout or configuration missing",
+    "error_type": "configuration",
+    "reproducibility": "always"
+  },
+  "context": {
+    "affected_files": [
+      {
+        "path": "~/.claude.json",
+        "lines": [78, 150],
+        "function": "mcpServers configuration section"
+      }
+    ],
+    "environment": {
+      "flutter_version": "3.24+",
+      "platform": "linux",
+      "mode": "development"
+    },
+    "user_action": "Iniciar Claude Code en proyecto Finanzas Familiares",
+    "prerequisites": "Claude Code instalado, proyecto con CLAUDE.md configurado"
+  },
+  "solution": {
+    "summary": "Activar servidores MCP necesarios quitando disabled:true y agregar context7",
+    "changes": [
+      {
+        "file": "~/.claude.json",
+        "description": "Quitar disabled:true de filesystem",
+        "before": "\"filesystem\": { ... \"disabled\": true }",
+        "after": "\"filesystem\": { ... } (sin disabled)"
+      },
+      {
+        "file": "~/.claude.json",
+        "description": "Agregar context7 MCP server",
+        "before": "(no existia)",
+        "after": "\"context7\": { \"command\": \"npx\", \"args\": [\"-y\", \"@upstash/context7-mcp@latest\"] }"
+      },
+      {
+        "file": "~/.claude.json",
+        "description": "Mantener MiniMax deshabilitado (no necesario)",
+        "before": "\"MiniMax\": { ... \"disabled\": true }",
+        "after": "Sin cambios - mantener disabled"
+      }
+    ],
+    "root_cause": "Configuracion MCP por defecto deshabilita servidores utiles y no incluye context7",
+    "applied_at": "2026-01-05T00:00:00Z",
+    "verified": true
+  },
+  "anti_patterns": [
+    {
+      "description": "Habilitar todos los MCP servers sin verificar cual es necesario",
+      "why_fails": "Algunos servers (MiniMax, perplexityai) requieren API keys o no son necesarios"
+    },
+    {
+      "description": "Configurar MCP servers solo a nivel de proyecto",
+      "why_fails": "Los MCP servers globales en ~/.claude.json aplican a todos los proyectos"
+    }
+  ],
+  "related_tests": [
+    {
+      "file": "test/configuration/mcp_config_test.dart",
+      "description": "Verificar que configuracion MCP esperada existe"
+    }
+  ],
+  "metadata": {
+    "created_at": "2026-01-05T00:00:00Z",
+    "updated_at": "2026-01-05T00:00:00Z",
+    "resolved_at": "2026-01-05T00:00:00Z",
+    "reopened_count": 0,
+    "tags": ["mcp", "configuration", "claude-code", "setup"],
+    "related_errors": [],
+    "references": [
+      "https://github.com/upstash/context7",
+      "https://www.npmjs.com/package/@upstash/context7-mcp"
+    ]
+  },
+  "detection_patterns": {
+    "error_regex": "MCP server.*failed|disabled.*true",
+    "keywords": ["MCP", "failed", "disabled", "context7", "filesystem"],
+    "file_patterns": ["*.json", ".claude.json"]
+  }
+}

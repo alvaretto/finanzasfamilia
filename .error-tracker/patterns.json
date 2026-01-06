@@ -9,6 +9,16 @@
         "async.*constructor.*not.*waiting"
       ],
       "tags": ["flutter", "riverpod", "async", "initialization", "ai_chat", "flutter_secure_storage"]
+    },
+    "ERR-0002": {
+      "keywords": ["MCP", "failed", "disabled", "context7", "filesystem", "claude.json", "server"],
+      "patterns": [
+        "MCP server.*failed",
+        "disabled.*true",
+        "context7.*not.*configured",
+        "filesystem.*disabled"
+      ],
+      "tags": ["mcp", "configuration", "claude-code", "setup"]
     }
   },
   "metadata": {
