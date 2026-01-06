@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/models/payment_enums.dart' as payment;
+
 part 'transaction_model.freezed.dart';
 part 'transaction_model.g.dart';
 
@@ -13,7 +15,8 @@ enum TransactionType {
   transfer,
 }
 
-/// Metodos de pago disponibles
+/// Metodos de pago disponibles (legacy - mantener para compatibilidad)
+/// @deprecated Usar payment.PaymentMethod y payment.PaymentMedium
 enum PaymentMethod {
   cash,
   debitCard,
@@ -110,12 +113,43 @@ class TransactionModel with _$TransactionModel {
     @Default(false) bool isSynced,
     DateTime? createdAt,
     DateTime? updatedAt,
-    // Campos para UI (no persistidos)
+
+    // ============ NUEVOS CAMPOS v3 - Detalles del artículo ============
+    /// Descripción específica del artículo (ej: "Arroz")
+    String? itemDescription,
+    /// Marca del producto (ej: "Roa")
+    String? brand,
+    /// Cantidad comprada (ej: 10)
+    double? quantity,
+    /// ID de la unidad de medida (reference to Units.id)
+    String? unitId,
+    /// Precio unitario calculado (amount / quantity)
+    double? unitPrice,
+
+    // ============ NUEVOS CAMPOS v3 - Lugar de compra ============
+    /// ID del establecimiento (reference to Establishments.id)
+    String? establishmentId,
+
+    // ============ NUEVOS CAMPOS v3 - Forma y medio de pago mejorado ============
+    /// Forma de pago: credit, cash (nuevo sistema)
+    String? paymentMethodV2,
+    /// Medio de pago: credit_card, fiado, cash, bank_transfer, app_transfer
+    String? paymentMedium,
+    /// Submedio de pago: davivienda, bancolombia, nequi, daviplata, etc.
+    String? paymentSubmedium,
+
+    // ============ Campos para UI (no persistidos) ============
     String? accountName,
     String? categoryName,
     String? categoryIcon,
     String? categoryColor,
     String? transferToAccountName,
+    /// Nombre de la unidad de medida (para UI)
+    String? unitName,
+    String? unitShortName,
+    /// Datos del establecimiento (para UI)
+    String? establishmentName,
+    String? establishmentAddress,
   }) = _TransactionModel;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>
@@ -135,7 +169,22 @@ class TransactionModel with _$TransactionModel {
     List<String>? tags,
     String? transferToAccountId,
     String? recurringId,
+    // Nuevos campos v3
+    String? itemDescription,
+    String? brand,
+    double? quantity,
+    String? unitId,
+    String? establishmentId,
+    String? paymentMethodV2,
+    String? paymentMedium,
+    String? paymentSubmedium,
   }) {
+    // Calcular precio unitario si hay cantidad
+    double? unitPrice;
+    if (quantity != null && quantity > 0) {
+      unitPrice = amount.abs() / quantity;
+    }
+
     return TransactionModel(
       id: _uuid.v4(),
       userId: userId,
@@ -153,6 +202,16 @@ class TransactionModel with _$TransactionModel {
       isSynced: false,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
+      // Nuevos campos v3
+      itemDescription: itemDescription,
+      brand: brand,
+      quantity: quantity,
+      unitId: unitId,
+      unitPrice: unitPrice,
+      establishmentId: establishmentId,
+      paymentMethodV2: paymentMethodV2,
+      paymentMedium: paymentMedium,
+      paymentSubmedium: paymentSubmedium,
     );
   }
 
@@ -232,7 +291,72 @@ class TransactionModel with _$TransactionModel {
       'tags': tags.isEmpty ? null : tags.join(','),
       'transfer_to_account_id': transferToAccountId,
       'recurring_id': recurringId,
+      // Nuevos campos v3
+      'item_description': itemDescription,
+      'brand': brand,
+      'quantity': quantity,
+      'unit_id': unitId,
+      'unit_price': unitPrice,
+      'establishment_id': establishmentId,
+      'payment_method_v2': paymentMethodV2,
+      'payment_medium': paymentMedium,
+      'payment_submedium': paymentSubmedium,
     };
+  }
+
+  /// Descripción completa del artículo para mostrar en UI
+  /// Ejemplo: "Arroz Roa 10 lb" o solo "Arroz" si no hay detalles
+  String get fullItemDescription {
+    final parts = <String>[];
+    if (itemDescription != null && itemDescription!.isNotEmpty) {
+      parts.add(itemDescription!);
+    }
+    if (brand != null && brand!.isNotEmpty) {
+      parts.add(brand!);
+    }
+    if (quantity != null && quantity! > 0) {
+      final qtyStr = quantity! == quantity!.toInt()
+          ? quantity!.toInt().toString()
+          : quantity!.toStringAsFixed(2);
+      final unitStr = unitShortName ?? '';
+      parts.add('$qtyStr $unitStr'.trim());
+    }
+    return parts.isEmpty ? (description ?? '') : parts.join(' ');
+  }
+
+  /// Obtiene el medio de pago como enum tipado
+  payment.PaymentMethod? get paymentMethodV2Enum =>
+      payment.PaymentMethod.fromValue(paymentMethodV2);
+
+  /// Obtiene el medio de pago específico como enum tipado
+  payment.PaymentMedium? get paymentMediumEnum =>
+      payment.PaymentMedium.fromValue(paymentMedium);
+
+  /// Descripción legible del método de pago
+  String get paymentDescription {
+    final method = paymentMethodV2Enum;
+    final medium = paymentMediumEnum;
+
+    if (method == null && medium == null) {
+      return paymentMethod.displayName; // Fallback al legacy
+    }
+
+    final parts = <String>[];
+    if (medium != null) {
+      parts.add(medium.displayName);
+    }
+    if (paymentSubmedium != null && paymentSubmedium!.isNotEmpty) {
+      // Intentar obtener nombre legible del submedio
+      final bank = payment.BankTransferProvider.fromValue(paymentSubmedium);
+      final app = payment.AppTransferProvider.fromValue(paymentSubmedium);
+      if (bank != null && bank != payment.BankTransferProvider.otro) {
+        parts.add('(${bank.displayName})');
+      } else if (app != null && app != payment.AppTransferProvider.otro) {
+        parts.add('(${app.displayName})');
+      }
+    }
+
+    return parts.isEmpty ? 'Sin especificar' : parts.join(' ');
   }
 
   /// Crear desde respuesta de Supabase
@@ -268,6 +392,16 @@ class TransactionModel with _$TransactionModel {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,
+      // Nuevos campos v3
+      itemDescription: json['item_description'] as String?,
+      brand: json['brand'] as String?,
+      quantity: (json['quantity'] as num?)?.toDouble(),
+      unitId: json['unit_id'] as String?,
+      unitPrice: (json['unit_price'] as num?)?.toDouble(),
+      establishmentId: json['establishment_id'] as String?,
+      paymentMethodV2: json['payment_method_v2'] as String?,
+      paymentMedium: json['payment_medium'] as String?,
+      paymentSubmedium: json['payment_submedium'] as String?,
     );
   }
 }

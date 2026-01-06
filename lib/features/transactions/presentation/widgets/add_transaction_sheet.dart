@@ -9,6 +9,7 @@ import '../../../accounts/domain/models/account_model.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../domain/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
+import 'transaction_details_section.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
   final TransactionModel? transaction; // Para editar
@@ -36,6 +37,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
+
+  // Detalles adicionales de transacción
+  TransactionDetails _transactionDetails = const TransactionDetails();
 
   bool get isEditing => widget.transaction != null;
 
@@ -154,6 +158,42 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                           hintText: 'Detalles adicionales...',
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // Detalles adicionales (solo para gastos)
+                      if (_selectedType == TransactionType.expense)
+                        TransactionDetailsSection(
+                          initialItemDescription: isEditing
+                              ? widget.transaction?.itemDescription
+                              : null,
+                          initialBrand:
+                              isEditing ? widget.transaction?.brand : null,
+                          initialQuantity:
+                              isEditing ? widget.transaction?.quantity : null,
+                          initialUnitId:
+                              isEditing ? widget.transaction?.unitId : null,
+                          initialEstablishmentId: isEditing
+                              ? widget.transaction?.establishmentId
+                              : null,
+                          initialPaymentMethod: isEditing
+                              ? widget.transaction?.paymentMethodV2
+                              : null,
+                          initialPaymentMedium: isEditing
+                              ? widget.transaction?.paymentMedium
+                              : null,
+                          initialPaymentSubmedium: isEditing
+                              ? widget.transaction?.paymentSubmedium
+                              : null,
+                          selectedAccount: _selectedAccountId != null
+                              ? accounts.cast<AccountModel?>().firstWhere(
+                                    (a) => a?.id == _selectedAccountId,
+                                    orElse: () => null,
+                                  )
+                              : null,
+                          onDetailsChanged: (details) {
+                            setState(() => _transactionDetails = details);
+                          },
+                        ),
                       const SizedBox(height: AppSpacing.xl),
 
                       // Boton guardar
@@ -463,6 +503,13 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       final amount = double.parse(_amountController.text);
       bool success;
 
+      // Calcular precio unitario si hay cantidad
+      double? unitPrice;
+      if (_transactionDetails.quantity != null &&
+          _transactionDetails.quantity! > 0) {
+        unitPrice = amount / _transactionDetails.quantity!;
+      }
+
       if (isEditing) {
         final newTx = widget.transaction!.copyWith(
           accountId: _selectedAccountId!,
@@ -478,6 +525,16 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               : _notesController.text.trim(),
           transferToAccountId: _selectedTransferAccountId,
           isSynced: false,
+          // Campos detallados v3
+          itemDescription: _transactionDetails.itemDescription,
+          brand: _transactionDetails.brand,
+          quantity: _transactionDetails.quantity,
+          unitId: _transactionDetails.unitId,
+          unitPrice: unitPrice,
+          establishmentId: _transactionDetails.establishmentId,
+          paymentMethodV2: _transactionDetails.paymentMethod,
+          paymentMedium: _transactionDetails.paymentMedium,
+          paymentSubmedium: _transactionDetails.paymentSubmedium,
         );
 
         success = await ref
@@ -497,6 +554,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   ? null
                   : _notesController.text.trim(),
               transferToAccountId: _selectedTransferAccountId,
+              // Campos detallados v3
+              itemDescription: _transactionDetails.itemDescription,
+              brand: _transactionDetails.brand,
+              quantity: _transactionDetails.quantity,
+              unitId: _transactionDetails.unitId,
+              establishmentId: _transactionDetails.establishmentId,
+              paymentMethodV2: _transactionDetails.paymentMethod,
+              paymentMedium: _transactionDetails.paymentMedium,
+              paymentSubmedium: _transactionDetails.paymentSubmedium,
             );
       }
 

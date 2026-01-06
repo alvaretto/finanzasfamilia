@@ -61,6 +61,28 @@ class IconUtils {
     'more_horiz': Icons.more_horiz,
     'category': Icons.category,
 
+    // Iconos de pago (PaymentEnums)
+    'payment': Icons.payment,
+    'smartphone': Icons.smartphone,
+    'handshake': Icons.handshake,
+
+    // Iconos de establecimientos (EstablishmentCategory)
+    'shopping_cart': Icons.shopping_cart,
+    'store': Icons.store,
+    // 'restaurant': Icons.restaurant, // Ya definido arriba
+    'local_pharmacy': Icons.local_pharmacy,
+    'hardware': Icons.hardware,
+    'devices': Icons.devices,
+    'storefront': Icons.storefront,
+    'bakery_dining': Icons.bakery_dining,
+    'set_meal': Icons.set_meal,
+    'place': Icons.place,
+
+    // Iconos de unidades (UnitCategory)
+    'scale': Icons.scale,
+    'straighten': Icons.straighten,
+    'inventory_2': Icons.inventory_2,
+
     // Iconos adicionales de UI
     'arrow_upward': Icons.arrow_upward,
     'arrow_downward': Icons.arrow_downward,

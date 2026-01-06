@@ -189,6 +189,15 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
     String? notes,
     List<String>? tags,
     String? transferToAccountId,
+    // Campos detallados v3
+    String? itemDescription,
+    String? brand,
+    double? quantity,
+    String? unitId,
+    String? establishmentId,
+    String? paymentMethodV2,
+    String? paymentMedium,
+    String? paymentSubmedium,
   }) async {
     final userId = _userId;
     if (userId == null) return false;
@@ -205,6 +214,15 @@ class TransactionsNotifier extends StateNotifier<TransactionsState> {
         notes: notes,
         tags: tags,
         transferToAccountId: transferToAccountId,
+        // Campos detallados v3 (unitPrice se calcula internamente)
+        itemDescription: itemDescription,
+        brand: brand,
+        quantity: quantity,
+        unitId: unitId,
+        establishmentId: establishmentId,
+        paymentMethodV2: paymentMethodV2,
+        paymentMedium: paymentMedium,
+        paymentSubmedium: paymentSubmedium,
       );
 
       // Validar transacción antes de crear

@@ -72,6 +72,52 @@ class Transactions extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
 
+  // ============ NUEVOS CAMPOS v3 - Detalles del artículo ============
+  TextColumn get itemDescription => text().nullable()(); // Qué compraste (ej: "Arroz")
+  TextColumn get brand => text().nullable()(); // Marca (ej: "Roa")
+  RealColumn get quantity => real().nullable()(); // Cantidad (ej: 10)
+  TextColumn get unitId => text().nullable()(); // Reference to Units.id
+  RealColumn get unitPrice => real().nullable()(); // Precio unitario calculado
+
+  // ============ NUEVOS CAMPOS v3 - Lugar de compra ============
+  TextColumn get establishmentId => text().nullable()(); // Reference to Establishments.id
+
+  // ============ NUEVOS CAMPOS v3 - Forma y medio de pago ============
+  TextColumn get paymentMethod => text().nullable()(); // credit, cash
+  TextColumn get paymentMedium => text().nullable()(); // credit_card, fiado, cash, bank_transfer, app_transfer
+  TextColumn get paymentSubmedium => text().nullable()(); // davivienda, bancolombia, nequi, daviplata, dollarapp
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Unidades de medida (Libra, Kg, Unidad, etc.)
+class Units extends Table {
+  TextColumn get id => text()(); // UUID string
+  TextColumn get name => text().withLength(min: 1, max: 50)(); // Libra, Kilogramo, etc.
+  TextColumn get shortName => text().withLength(min: 1, max: 10)(); // lb, kg, ud, etc.
+  TextColumn get category => text()(); // weight, volume, length, unit
+  BoolColumn get isSystem => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Establecimientos (lugares de compra con autocompletado)
+class Establishments extends Table {
+  TextColumn get id => text()(); // UUID string
+  TextColumn get userId => text()();
+  TextColumn get name => text().withLength(min: 1, max: 100)(); // Nombre del lugar
+  TextColumn get address => text().nullable()(); // Dirección
+  TextColumn get phone => text().nullable()(); // Teléfono
+  TextColumn get category => text().nullable()(); // supermercado, restaurante, tienda, etc.
+  TextColumn get icon => text().nullable()();
+  IntColumn get useCount => integer().withDefault(const Constant(0))(); // Para ordenar por uso
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -172,6 +218,8 @@ class RecurringTransactions extends Table {
   Families,
   FamilyMembers,
   RecurringTransactions,
+  Units,
+  Establishments,
 ])
 class AppDatabase extends _$AppDatabase {
   // Singleton instance
@@ -199,7 +247,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'finanzas_familiares');
@@ -212,9 +260,30 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
         // Insert default categories
         await _insertDefaultCategories();
+        // Insert default units
+        await _insertDefaultUnits();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Handle future migrations here
+        // Migración v2 -> v3: Nuevos campos en Transactions + tablas Units y Establishments
+        if (from < 3) {
+          // Crear nuevas tablas
+          await m.createTable(units);
+          await m.createTable(establishments);
+
+          // Agregar nuevas columnas a Transactions
+          await m.addColumn(transactions, transactions.itemDescription);
+          await m.addColumn(transactions, transactions.brand);
+          await m.addColumn(transactions, transactions.quantity);
+          await m.addColumn(transactions, transactions.unitId);
+          await m.addColumn(transactions, transactions.unitPrice);
+          await m.addColumn(transactions, transactions.establishmentId);
+          await m.addColumn(transactions, transactions.paymentMethod);
+          await m.addColumn(transactions, transactions.paymentMedium);
+          await m.addColumn(transactions, transactions.paymentSubmedium);
+
+          // Insertar unidades por defecto
+          await _insertDefaultUnits();
+        }
       },
     );
   }
@@ -479,6 +548,52 @@ class AppDatabase extends _$AppDatabase {
         parentId: Value(parentId),
         isSystem: const Value(true),
         isSynced: const Value(true),
+      ));
+    }
+  }
+
+  /// Inserta unidades de medida por defecto
+  Future<void> _insertDefaultUnits() async {
+    final defaultUnits = <(String id, String name, String shortName, String category)>[
+      // Peso
+      ('unit_libra', 'Libra', 'lb', 'weight'),
+      ('unit_kg', 'Kilogramo', 'kg', 'weight'),
+      ('unit_gramo', 'Gramo', 'g', 'weight'),
+      ('unit_arroba', 'Arroba', '@', 'weight'),
+      ('unit_onza', 'Onza', 'oz', 'weight'),
+
+      // Volumen
+      ('unit_litro', 'Litro', 'L', 'volume'),
+      ('unit_ml', 'Mililitro', 'ml', 'volume'),
+      ('unit_galon', 'Galón', 'gal', 'volume'),
+      ('unit_botella', 'Botella', 'bot', 'volume'),
+
+      // Longitud
+      ('unit_metro', 'Metro', 'm', 'length'),
+      ('unit_cm', 'Centímetro', 'cm', 'length'),
+      ('unit_pulgada', 'Pulgada', 'in', 'length'),
+
+      // Unidades discretas
+      ('unit_unidad', 'Unidad', 'ud', 'unit'),
+      ('unit_paquete', 'Paquete', 'paq', 'unit'),
+      ('unit_caja', 'Caja', 'caja', 'unit'),
+      ('unit_docena', 'Docena', 'doc', 'unit'),
+      ('unit_par', 'Par', 'par', 'unit'),
+      ('unit_bolsa', 'Bolsa', 'bolsa', 'unit'),
+      ('unit_rollo', 'Rollo', 'rollo', 'unit'),
+      ('unit_lata', 'Lata', 'lata', 'unit'),
+      ('unit_frasco', 'Frasco', 'frasco', 'unit'),
+      ('unit_sobre', 'Sobre', 'sobre', 'unit'),
+      ('unit_porcion', 'Porción', 'porc', 'unit'),
+    ];
+
+    for (final unit in defaultUnits) {
+      await into(units).insert(UnitsCompanion.insert(
+        id: unit.$1,
+        name: unit.$2,
+        shortName: unit.$3,
+        category: unit.$4,
+        isSystem: const Value(true),
       ));
     }
   }
