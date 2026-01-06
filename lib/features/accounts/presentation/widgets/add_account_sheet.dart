@@ -24,12 +24,17 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
   final _lastFourController = TextEditingController();
 
   AccountType _selectedType = AccountType.bank;
+  DebtSubtype? _selectedDebtSubtype;
   String _selectedCurrency = 'COP';
   String _selectedColor = '#4CAF50';
   bool _includeInTotal = true;
   bool _isLoading = false;
 
   bool get isEditing => widget.account != null;
+
+  /// Indica si el tipo de cuenta actual requiere subtipo de deuda
+  bool get _needsDebtSubtype =>
+      _selectedType == AccountType.loan || _selectedType == AccountType.payable;
 
   final List<String> _currencies = ['COP', 'USD', 'EUR', 'MXN', 'ARS', 'PEN', 'CLP', 'BRL'];
   final List<String> _colors = [
@@ -53,6 +58,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
       _bankNameController.text = widget.account!.bankName ?? '';
       _lastFourController.text = widget.account!.lastFourDigits ?? '';
       _selectedType = widget.account!.type;
+      _selectedDebtSubtype = widget.account!.debtSubtype;
       _selectedCurrency = widget.account!.currency;
       _selectedColor = widget.account!.color ?? '#4CAF50';
       _includeInTotal = widget.account!.includeInTotal;
@@ -139,13 +145,53 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                             selected: isSelected,
                             onSelected: (selected) {
                               if (selected) {
-                                setState(() => _selectedType = type);
+                                setState(() {
+                                  _selectedType = type;
+                                  // Resetear subtipo si cambia a tipo no-deuda
+                                  if (type != AccountType.loan && type != AccountType.payable) {
+                                    _selectedDebtSubtype = null;
+                                  }
+                                });
                               }
                             },
                           );
                         }).toList(),
                       ),
                       const SizedBox(height: AppSpacing.lg),
+
+                      // Subtipo de deuda (solo para préstamos y cuentas por pagar)
+                      if (_needsDebtSubtype) ...[
+                        Text(
+                          'Tipo de Deuda',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        DropdownButtonFormField<DebtSubtype>(
+                          value: _selectedDebtSubtype,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.category_outlined),
+                            hintText: 'Selecciona el tipo de deuda',
+                          ),
+                          items: DebtSubtype.values.map((subtype) {
+                            return DropdownMenuItem(
+                              value: subtype,
+                              child: Row(
+                                children: [
+                                  Text(subtype.emoji),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Text(subtype.displayName),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() => _selectedDebtSubtype = value);
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
 
                       // Nombre
                       TextFormField(
@@ -379,6 +425,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
               ? null
               : _lastFourController.text,
           includeInTotal: _includeInTotal,
+          debtSubtype: _needsDebtSubtype ? _selectedDebtSubtype : null,
           isSynced: false,
         );
         success = await ref
@@ -398,6 +445,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
               lastFourDigits: _lastFourController.text.isEmpty
                   ? null
                   : _lastFourController.text,
+              debtSubtype: _needsDebtSubtype ? _selectedDebtSubtype : null,
             );
       }
 

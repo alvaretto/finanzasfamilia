@@ -82,6 +82,125 @@ extension AccountTypeExtension on AccountType {
   bool get isAsset => !isLiability;
 }
 
+/// Subtipo de deuda (para loan y payable)
+enum DebtSubtype {
+  bankLoan,         // Préstamo bancario tradicional
+  mortgage,         // Hipoteca / Crédito vivienda
+  vehicleLoan,      // Crédito de vehículo
+  personalLoan,     // Préstamo personal (libre inversión)
+  familyLoan,       // Préstamo de familiar
+  friendLoan,       // Préstamo de amigo
+  employerLoan,     // Préstamo de empleador
+  educationLoan,    // Crédito educativo (ICETEX, etc.)
+  appliances,       // Cuotas electrodomésticos/muebles
+  utilities,        // Servicios públicos atrasados
+  taxes,            // Impuestos pendientes
+  medical,          // Deudas médicas
+  informalLoan,     // Préstamo informal (gota a gota, etc.)
+  other,            // Otro tipo de deuda
+}
+
+extension DebtSubtypeExtension on DebtSubtype {
+  String get displayName {
+    switch (this) {
+      case DebtSubtype.bankLoan:
+        return 'Préstamo Bancario';
+      case DebtSubtype.mortgage:
+        return 'Hipoteca / Vivienda';
+      case DebtSubtype.vehicleLoan:
+        return 'Crédito Vehículo';
+      case DebtSubtype.personalLoan:
+        return 'Libre Inversión';
+      case DebtSubtype.familyLoan:
+        return 'Préstamo Familiar';
+      case DebtSubtype.friendLoan:
+        return 'Préstamo de Amigo';
+      case DebtSubtype.employerLoan:
+        return 'Préstamo Empleador';
+      case DebtSubtype.educationLoan:
+        return 'Crédito Educativo';
+      case DebtSubtype.appliances:
+        return 'Cuotas Electrodomésticos';
+      case DebtSubtype.utilities:
+        return 'Servicios Atrasados';
+      case DebtSubtype.taxes:
+        return 'Impuestos Pendientes';
+      case DebtSubtype.medical:
+        return 'Deudas Médicas';
+      case DebtSubtype.informalLoan:
+        return 'Préstamo Informal';
+      case DebtSubtype.other:
+        return 'Otra Deuda';
+    }
+  }
+
+  String get icon {
+    switch (this) {
+      case DebtSubtype.bankLoan:
+        return 'account_balance';
+      case DebtSubtype.mortgage:
+        return 'home';
+      case DebtSubtype.vehicleLoan:
+        return 'directions_car';
+      case DebtSubtype.personalLoan:
+        return 'person';
+      case DebtSubtype.familyLoan:
+        return 'family_restroom';
+      case DebtSubtype.friendLoan:
+        return 'people';
+      case DebtSubtype.employerLoan:
+        return 'business';
+      case DebtSubtype.educationLoan:
+        return 'school';
+      case DebtSubtype.appliances:
+        return 'kitchen';
+      case DebtSubtype.utilities:
+        return 'bolt';
+      case DebtSubtype.taxes:
+        return 'receipt_long';
+      case DebtSubtype.medical:
+        return 'local_hospital';
+      case DebtSubtype.informalLoan:
+        return 'warning';
+      case DebtSubtype.other:
+        return 'more_horiz';
+    }
+  }
+
+  String get emoji {
+    switch (this) {
+      case DebtSubtype.bankLoan:
+        return '🏦';
+      case DebtSubtype.mortgage:
+        return '🏠';
+      case DebtSubtype.vehicleLoan:
+        return '🚗';
+      case DebtSubtype.personalLoan:
+        return '💰';
+      case DebtSubtype.familyLoan:
+        return '👨‍👩‍👧';
+      case DebtSubtype.friendLoan:
+        return '🤝';
+      case DebtSubtype.employerLoan:
+        return '🏢';
+      case DebtSubtype.educationLoan:
+        return '🎓';
+      case DebtSubtype.appliances:
+        return '📺';
+      case DebtSubtype.utilities:
+        return '💡';
+      case DebtSubtype.taxes:
+        return '📋';
+      case DebtSubtype.medical:
+        return '🏥';
+      case DebtSubtype.informalLoan:
+        return '⚠️';
+      case DebtSubtype.other:
+        return '📝';
+    }
+  }
+}
+
 /// Grupo de cuenta para organización
 enum AccountGroup {
   personal,  // Cuentas personales
@@ -140,6 +259,7 @@ class AccountModel with _$AccountModel {
     @Default(false) bool includeInTotal,
     @Default(AccountGroup.personal) AccountGroup accountGroup,
     @Default(false) bool isTestAccount,
+    DebtSubtype? debtSubtype,  // Subtipo de deuda (para loan, payable)
     DateTime? createdAt,
     DateTime? updatedAt,
     @Default(false) bool isSynced,
@@ -163,6 +283,7 @@ class AccountModel with _$AccountModel {
     double creditLimit = 0.0,
     AccountGroup accountGroup = AccountGroup.personal,
     bool isTestAccount = false,
+    DebtSubtype? debtSubtype,
   }) {
     return AccountModel(
       id: _uuid.v4(),
@@ -181,6 +302,7 @@ class AccountModel with _$AccountModel {
       includeInTotal: true,
       accountGroup: accountGroup,
       isTestAccount: isTestAccount,
+      debtSubtype: debtSubtype,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isSynced: false,
@@ -225,6 +347,7 @@ class AccountModel with _$AccountModel {
       'include_in_total': includeInTotal,
       'account_group': accountGroup.name,
       'is_test_account': isTestAccount,
+      'debt_subtype': debtSubtype?.name,
     };
 
     // Solo incluir family_id si no es null (evita trigger de RLS)
@@ -260,6 +383,12 @@ class AccountModel with _$AccountModel {
         orElse: () => AccountGroup.personal,
       ),
       isTestAccount: json['is_test_account'] as bool? ?? false,
+      debtSubtype: json['debt_subtype'] != null
+          ? DebtSubtype.values.firstWhere(
+              (e) => e.name == json['debt_subtype'],
+              orElse: () => DebtSubtype.other,
+            )
+          : null,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,

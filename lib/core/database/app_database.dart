@@ -27,6 +27,7 @@ class Accounts extends Table {
   TextColumn get lastFourDigits => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   BoolColumn get includeInTotal => boolean().withDefault(const Constant(true))();
+  TextColumn get debtSubtype => text().nullable()(); // Subtipo de deuda (loan, payable)
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
@@ -247,7 +248,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'finanzas_familiares');
@@ -283,6 +284,11 @@ class AppDatabase extends _$AppDatabase {
 
           // Insertar unidades por defecto
           await _insertDefaultUnits();
+        }
+
+        // Migración v3 -> v4: Subtipo de deuda en Accounts
+        if (from < 4) {
+          await m.addColumn(accounts, accounts.debtSubtype);
         }
       },
     );

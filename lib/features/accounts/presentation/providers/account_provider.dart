@@ -211,6 +211,7 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
     String? bankName,
     String? lastFourDigits,
     double creditLimit = 0.0,
+    DebtSubtype? debtSubtype,
   }) async {
     final userId = _userId;
     if (userId == null) return false;
@@ -228,6 +229,7 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
         bankName: bankName,
         lastFourDigits: lastFourDigits,
         creditLimit: creditLimit,
+        debtSubtype: debtSubtype,
       );
 
       await _repository.createAccount(account);

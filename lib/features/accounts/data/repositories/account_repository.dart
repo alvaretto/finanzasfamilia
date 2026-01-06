@@ -206,6 +206,7 @@ class AccountRepository {
       lastFourDigits: Value(account.lastFourDigits),
       isActive: Value(account.isActive),
       includeInTotal: Value(account.includeInTotal),
+      debtSubtype: Value(account.debtSubtype?.name),
       isSynced: const Value(false),
     );
 
@@ -242,6 +243,7 @@ class AccountRepository {
       lastFourDigits: Value(account.lastFourDigits),
       isActive: Value(account.isActive),
       includeInTotal: Value(account.includeInTotal),
+      debtSubtype: Value(account.debtSubtype?.name),
       isSynced: const Value(false),
       updatedAt: Value(DateTime.now()),
     ));
@@ -397,6 +399,7 @@ class AccountRepository {
       lastFourDigits: Value(account.lastFourDigits),
       isActive: Value(account.isActive),
       includeInTotal: Value(account.includeInTotal),
+      debtSubtype: Value(account.debtSubtype?.name),
       isSynced: const Value(true),
       createdAt: Value(account.createdAt ?? DateTime.now()),
       updatedAt: Value(account.updatedAt),
@@ -420,6 +423,7 @@ class AccountRepository {
       lastFourDigits: Value(account.lastFourDigits),
       isActive: Value(account.isActive),
       includeInTotal: Value(account.includeInTotal),
+      debtSubtype: Value(account.debtSubtype?.name),
       isSynced: const Value(true),
       updatedAt: Value(account.updatedAt),
     ));
@@ -452,6 +456,12 @@ class AccountRepository {
       lastFourDigits: row.lastFourDigits,
       isActive: row.isActive,
       includeInTotal: row.includeInTotal,
+      debtSubtype: row.debtSubtype != null
+          ? DebtSubtype.values.firstWhere(
+              (e) => e.name == row.debtSubtype,
+              orElse: () => DebtSubtype.other,
+            )
+          : null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       isSynced: row.isSynced,
