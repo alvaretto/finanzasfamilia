@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../models/account_template.dart';
+import '../../models/account_template.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Tarjeta de selección de cuenta para el wizard de onboarding

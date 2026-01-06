@@ -1,0 +1,51 @@
+{
+  "id": "ERR-0003",
+  "title": "Cuentas fantasma 'Préstamos' aparecen en Dashboard con balance $0",
+  "description": "En el dashboard aparecían múltiples cuentas con nombre 'Préstamos' y balance $0, incluso cuando el usuario no había creado ninguna cuenta de ese tipo. Estas cuentas fantasma ocupaban espacio visual y confundían al usuario. El problema era recurrente y persistía incluso después de limpiezas parciales.",
+  "error_message": "N/A - Error visual, no de código",
+  "stack_trace": null,
+  "root_cause": "Las cuentas fantasma se creaban por múltiples causas: 1) Sincronización incorrecta con Supabase que traía cuentas huérfanas, 2) Datos de prueba/demo no limpiados correctamente, 3) La deduplicación solo filtraba por nombre+tipo pero no eliminaba pasivos vacíos con nombres genéricos. Estas cuentas tenían nombres genéricos como 'Préstamos', 'Préstamo Bancario', 'Tarjeta de Crédito' con balance $0 y tipo pasivo (loan, credit, payable).",
+  "affected_files": [
+    "lib/features/accounts/presentation/providers/account_provider.dart",
+    "lib/features/accounts/data/repositories/account_repository.dart",
+    "lib/features/dashboard/presentation/screens/dashboard_screen.dart"
+  ],
+  "solution": {
+    "summary": "Triple defensa contra cuentas fantasma: 1) Filtrado en uniqueActiveAccounts para excluir pasivos vacíos con nombres genéricos, 2) Método removeGhostAccounts() para eliminación permanente, 3) Limpieza automática al iniciar el provider.",
+    "changes": [
+      {
+        "file": "account_provider.dart:uniqueActiveAccounts",
+        "before": "Deduplicación simple por nombre_tipo",
+        "after": "Lista de nombres genéricos + verificación isLiability && balance == 0 para excluir cuentas fantasma"
+      },
+      {
+        "file": "account_repository.dart",
+        "before": "Solo removeDuplicateAccounts()",
+        "after": "Nuevo método removeGhostAccounts() que elimina permanentemente (hard delete) cuentas fantasma"
+      },
+      {
+        "file": "account_provider.dart:_init()",
+        "before": "Solo observaba cuentas",
+        "after": "Llama a _cleanGhostAccounts() al inicializar para limpiar automáticamente"
+      }
+    ]
+  },
+  "anti_patterns": [
+    {
+      "description": "No confiar solo en deduplicación por nombre+tipo - verificar también estado (balance, actividad)",
+      "better_approach": "Agregar validación de cuentas 'válidas' que excluya pasivos vacíos sin uso real"
+    },
+    {
+      "description": "Soft delete no es suficiente para datos corruptos/fantasma",
+      "better_approach": "Usar hard delete para cuentas que nunca debieron existir"
+    }
+  ],
+  "status": "resolved",
+  "resolved_at": "2026-01-05T16:00:00Z",
+  "related_tests": [
+    "test/regression/ghost_accounts_test.dart"
+  ],
+  "tags": ["flutter", "dashboard", "accounts", "deduplication", "data-cleanup", "visual-bug", "recurrent"],
+  "commits": [],
+  "created_at": "2026-01-05T15:45:00Z"
+}

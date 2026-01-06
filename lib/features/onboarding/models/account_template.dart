@@ -4,7 +4,7 @@
 /// Versión: 1.0.0
 /// Fecha: 2025-01-05
 
-import '../../../accounts/domain/models/account_model.dart';
+import '../../accounts/domain/models/account_model.dart';
 
 /// Template de cuenta para el wizard de onboarding
 /// Define la configuración predeterminada de cada tipo de cuenta

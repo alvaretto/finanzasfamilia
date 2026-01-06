@@ -49,22 +49,46 @@ class AccountsState {
       accounts.where((a) => a.isActive).toList();
 
   /// Cuentas activas únicas (deduplicadas por nombre y tipo)
+  /// Filtra cuentas fantasma (balance $0, nombre genérico de tipo, sin uso real)
   List<AccountModel> get uniqueActiveAccounts {
     final seen = <String>{};
     final unique = <AccountModel>[];
-    
+
+    // Nombres genéricos que indican cuentas fantasma/huérfanas
+    // Incluye versiones con y sin acentos para matching robusto
+    final genericNames = {
+      // Préstamos (con y sin acento)
+      'préstamos', 'prestamos', 'préstamo', 'prestamo',
+      'préstamo bancario', 'prestamo bancario',
+      'préstamo personal', 'prestamo personal',
+      // Tarjeta de crédito
+      'tarjeta de crédito', 'tarjeta de credito',
+      // Cuentas por cobrar/pagar
+      'me deben', 'debo pagar',
+    };
+
     // Ordenar por balance descendente para mantener la de mayor balance
     final sorted = List<AccountModel>.from(activeAccounts)
       ..sort((a, b) => b.balance.compareTo(a.balance));
-    
+
     for (final account in sorted) {
-      final key = '${account.name.trim().toLowerCase()}_${account.type.name}';
+      // Filtrar cuentas fantasma: balance $0 + nombre genérico + pasivo
+      final normalizedName = account.name.trim().toLowerCase();
+      final isGenericName = genericNames.contains(normalizedName);
+      final isEmptyLiability = account.type.isLiability && account.balance == 0;
+
+      // Saltar cuentas fantasma (pasivos vacíos con nombres genéricos)
+      if (isGenericName && isEmptyLiability) {
+        continue;
+      }
+
+      final key = '${normalizedName}_${account.type.name}';
       if (!seen.contains(key)) {
         seen.add(key);
         unique.add(account);
       }
     }
-    
+
     // Ordenar alfabéticamente por nombre para consistencia en UI
     unique.sort((a, b) => a.name.compareTo(b.name));
     return unique;
@@ -112,6 +136,9 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
     final userId = _userId;
     if (userId == null) return;
 
+    // Limpiar cuentas fantasma al iniciar (antes de observar)
+    _cleanGhostAccounts(userId);
+
     // Observar cuentas locales
     _accountsSubscription = _repository.watchAccounts(userId).listen(
       (accounts) async {
@@ -143,6 +170,15 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
 
     // Sincronizar al iniciar si hay conexión
     _checkAndSync();
+  }
+
+  /// Limpia cuentas fantasma silenciosamente al iniciar
+  Future<void> _cleanGhostAccounts(String userId) async {
+    try {
+      await _repository.removeGhostAccounts(userId);
+    } catch (_) {
+      // Ignorar errores - es limpieza opcional
+    }
   }
 
   Future<void> _checkAndSync() async {
@@ -250,20 +286,26 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
     }
   }
 
-  /// Limpiar cuentas duplicadas
-  /// Retorna el número de duplicados eliminados
+  /// Limpiar cuentas duplicadas y fantasma
+  /// Retorna el número de cuentas eliminadas (duplicados + fantasma)
   Future<int> cleanDuplicates() async {
     final userId = _userId;
     if (userId == null) return 0;
 
     try {
-      final removed = await _repository.removeDuplicateAccounts(userId);
-      if (removed > 0) {
+      // Limpiar duplicados
+      final duplicatesRemoved = await _repository.removeDuplicateAccounts(userId);
+
+      // Limpiar cuentas fantasma (pasivos vacíos con nombres genéricos)
+      final ghostsRemoved = await _repository.removeGhostAccounts(userId);
+
+      final totalRemoved = duplicatesRemoved + ghostsRemoved;
+      if (totalRemoved > 0) {
         _trySyncInBackground();
       }
-      return removed;
+      return totalRemoved;
     } catch (e) {
-      state = state.copyWith(errorMessage: 'Error al limpiar duplicados: $e');
+      state = state.copyWith(errorMessage: 'Error al limpiar cuentas: $e');
       return 0;
     }
   }

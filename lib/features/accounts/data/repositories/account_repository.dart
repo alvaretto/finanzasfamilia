@@ -107,11 +107,11 @@ class AccountRepository {
         (t) => OrderingTerm.asc(t.type),
         (t) => OrderingTerm.desc(t.balance),
       ]);
-    
+
     final allAccounts = await query.get();
     final seenKeys = <String>{};
     final duplicateIds = <String>[];
-    
+
     for (final account in allAccounts) {
       final key = '${account.name.trim().toLowerCase()}_${account.type}';
       if (seenKeys.contains(key)) {
@@ -120,13 +120,59 @@ class AccountRepository {
         seenKeys.add(key);
       }
     }
-    
+
     // Soft delete de duplicados
     for (final id in duplicateIds) {
       await deleteAccount(id);
     }
-    
+
     return duplicateIds.length;
+  }
+
+  /// Eliminar cuentas fantasma (pasivos vacíos con nombres genéricos)
+  /// Estas son cuentas huérfanas creadas por error o sincronización incorrecta
+  /// Retorna el número de cuentas eliminadas
+  Future<int> removeGhostAccounts(String userId) async {
+    // Nombres genéricos que indican cuentas fantasma
+    // Incluye versiones con y sin acentos para matching robusto
+    final genericNames = {
+      // Préstamos (con y sin acento)
+      'préstamos', 'prestamos', 'préstamo', 'prestamo',
+      'préstamo bancario', 'prestamo bancario',
+      'préstamo personal', 'prestamo personal',
+      // Tarjeta de crédito
+      'tarjeta de crédito', 'tarjeta de credito',
+      // Cuentas por cobrar/pagar
+      'me deben', 'debo pagar',
+    };
+
+    // Tipos de pasivo
+    final liabilityTypes = {'credit', 'loan', 'payable'};
+
+    final query = _db.select(_db.accounts)
+      ..where((t) => t.userId.equals(userId) & t.isActive.equals(true));
+
+    final allAccounts = await query.get();
+    final ghostIds = <String>[];
+
+    for (final account in allAccounts) {
+      final normalizedName = account.name.trim().toLowerCase();
+      final isGenericName = genericNames.contains(normalizedName);
+      final isLiability = liabilityTypes.contains(account.type);
+      final isEmptyBalance = account.balance == 0;
+
+      // Cuenta fantasma: pasivo + balance $0 + nombre genérico
+      if (isGenericName && isLiability && isEmptyBalance) {
+        ghostIds.add(account.id);
+      }
+    }
+
+    // Hard delete de cuentas fantasma (no soft delete)
+    for (final id in ghostIds) {
+      await hardDeleteAccount(id);
+    }
+
+    return ghostIds.length;
   }
 
   /// Crear cuenta localmente
