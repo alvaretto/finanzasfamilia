@@ -15,8 +15,12 @@ import '../helpers/test_helpers.dart';
 import '../mocks/mock_providers.dart';
 
 void main() {
-  setUpAll(() => setupTestEnvironment());
-  tearDownAll(() => tearDownTestEnvironment());
+  setUpAll(() async {
+    await setupTestEnvironment();
+  });
+  tearDownAll(() async {
+    await tearDownTestEnvironment();
+  });
   group('E2E: Flujo Completo de Transacciones', () {
     // =========================================================================
     // TEST 1: Apertura del selector de tipo de transacción

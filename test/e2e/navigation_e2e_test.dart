@@ -20,8 +20,12 @@ import '../helpers/test_helpers.dart';
 import '../mocks/mock_providers.dart';
 
 void main() {
-  setUpAll(() => setupTestEnvironment());
-  tearDownAll(() => tearDownTestEnvironment());
+  setUpAll(() async {
+    await setupTestEnvironment();
+  });
+  tearDownAll(() async {
+    await tearDownTestEnvironment();
+  });
   group('E2E: Bottom Navigation Bar', () {
     // =========================================================================
     // TEST 1: BottomNavigationBar se renderiza correctamente

@@ -14,7 +14,10 @@ class AuthRepository {
       _authClient ??= SupabaseClientProvider.auth;
       return _authClient!;
     } catch (e) {
-      debugPrint('Error accessing Supabase auth: $e');
+      // Solo imprimir en modo no-test para evitar ruido en tests
+      if (!SupabaseClientProvider.isTestMode) {
+        debugPrint('Error accessing Supabase auth: $e');
+      }
       rethrow;
     }
   }
@@ -34,7 +37,10 @@ class AuthRepository {
     try {
       return _auth.currentUser;
     } catch (e) {
-      debugPrint('Warning: Could not get current user: $e');
+      // Solo imprimir en modo no-test
+      if (!SupabaseClientProvider.isTestMode) {
+        debugPrint('Warning: Could not get current user: $e');
+      }
       return null;
     }
   }
@@ -44,7 +50,10 @@ class AuthRepository {
     try {
       return _auth.currentSession;
     } catch (e) {
-      debugPrint('Warning: Could not get current session: $e');
+      // Solo imprimir en modo no-test
+      if (!SupabaseClientProvider.isTestMode) {
+        debugPrint('Warning: Could not get current session: $e');
+      }
       return null;
     }
   }
@@ -55,7 +64,10 @@ class AuthRepository {
     try {
       return _auth.onAuthStateChange;
     } catch (e) {
-      debugPrint('Warning: Could not get auth state changes: $e');
+      // Solo imprimir en modo no-test
+      if (!SupabaseClientProvider.isTestMode) {
+        debugPrint('Warning: Could not get auth state changes: $e');
+      }
       // Retornar un stream vacío para evitar crashes
       return const Stream.empty();
     }

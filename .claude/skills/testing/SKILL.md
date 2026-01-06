@@ -113,7 +113,8 @@ flutter test test/performance/ test/production/
 
 ## 📚 Documentación Completa
 
-- **[UNIFIED_TESTING_STRATEGY.md](UNIFIED_TESTING_STRATEGY.md)** - ⭐ Estrategia unificada completa
+- **[TEST_SETUP_GUIDE.md](TEST_SETUP_GUIDE.md)** - ⭐ **LEER PRIMERO** - Setup estandarizado
+- **[UNIFIED_TESTING_STRATEGY.md](UNIFIED_TESTING_STRATEGY.md)** - Estrategia unificada completa
 - [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - Estrategia general
 - [PWA_OFFLINE_TESTS.md](PWA_OFFLINE_TESTS.md) - Tests offline-first
 - [SUPABASE_AUTH_TESTS.md](SUPABASE_AUTH_TESTS.md) - Tests de autenticación

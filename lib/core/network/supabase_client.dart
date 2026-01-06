@@ -9,6 +9,9 @@ class SupabaseClientProvider {
   static bool _isInitialized = false;
   static bool _isTestMode = false;
 
+  /// Verifica si estamos en modo de pruebas
+  static bool get isTestMode => _isTestMode;
+
   /// Verifica si Supabase esta inicializado
   static bool get isInitialized => _isInitialized || _isTestMode;
 

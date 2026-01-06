@@ -107,7 +107,12 @@ class _TransactionDetailsSectionState
         _selectedPaymentMedium = suggestion.medium;
         _selectedPaymentSubmedium = suggestion.submedium;
       });
-      _notifyChanges();
+      // Diferir notificación para evitar setState durante build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _notifyChanges();
+        }
+      });
     }
   }
 
@@ -115,7 +120,12 @@ class _TransactionDetailsSectionState
   void didUpdateWidget(TransactionDetailsSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedAccount != oldWidget.selectedAccount) {
-      _autoSuggestPayment();
+      // Diferir para evitar setState durante build del parent
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _autoSuggestPayment();
+        }
+      });
     }
   }
 

@@ -280,17 +280,34 @@ flutter test --reporter expanded
 
 ## 🔧 Setup de Tests
 
-### Configuración inicial
+### Configuración Automática Global
 
-Todos los tests usan el helper centralizado:
+El archivo `flutter_test_config.dart` configura automáticamente:
+- Supabase en modo test (GLOBAL para todos los tests)
+- Localización española para DateFormat
+- Binding de Flutter inicializado
+
+**Los mensajes "Test mode: Use mock providers..." son ESPERADOS** y no son errores.
+Indican que Supabase está correctamente en modo test.
+
+### Configuración en tests individuales
+
+Para tests que necesitan setup adicional:
 
 ```dart
 import '../helpers/test_helpers.dart';
 import '../mocks/mock_providers.dart';
 
 void main() {
-  setUpAll(() => setupTestEnvironment());
-  tearDownAll(() => tearDownTestEnvironment());
+  // Setup global ya está aplicado por flutter_test_config.dart
+  // Solo necesitas esto si requieres configuración adicional:
+  setUpAll(() async {
+    await setupTestEnvironment(); // Idempotente, seguro llamar
+  });
+
+  tearDownAll(() async {
+    await tearDownTestEnvironment();
+  });
 
   // Tests aquí...
 }
@@ -376,14 +393,27 @@ void main() {
 
 ---
 
-## ⚠️ Tests Saltados (Skipped)
+## ⚠️ Tests Saltados (Skipped) y Mensajes Esperados
 
-21 tests están marcados como `skip` porque requieren:
+### Mensajes de Test Mode (ESPERADOS - NO SON ERRORES)
 
-1. **Conexión real a Supabase** - Tests de auth y realtime
-2. **Credenciales configuradas** - Tests de sync
+Estos mensajes aparecen cuando Supabase está correctamente en modo test:
+```
+Error accessing Supabase auth: Exception: Test mode: Use mock providers...
+Warning: Could not get current user: Exception: Test mode...
+```
 
-### Ejecutar tests de integración
+**Esto es COMPORTAMIENTO ESPERADO** - indica que:
+- Supabase está en modo test
+- Los tests usan mocks en lugar de conexión real
+- No hay errores reales
+
+### Tests Saltados
+
+~21 tests están marcados como `skip` porque requieren base de datos configurada.
+Estos tests verifican rendimiento con DB real y están diseñados para CI/CD.
+
+### Ejecutar tests de integración con Supabase real
 
 1. Verificar que existe `.env.test` con credenciales válidas:
 ```bash

@@ -1,4 +1,10 @@
 // test/helpers/test_helpers.dart
+//
+// Helper centralizado para TODOS los tests de Finanzas Familiares.
+// Incluye setup automático de Supabase en modo test.
+//
+// IMPORTANTE: Usar siempre setupTestEnvironment() en setUpAll()
+// Los mensajes "Test mode: Use mock providers..." son ESPERADOS.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +18,9 @@ import '../mocks/mock_supabase.dart';
 
 // Re-exportar mocks para uso en tests
 export '../mocks/mock_supabase.dart';
+
+/// Flag global para saber si el ambiente ya fue configurado
+bool _isTestEnvironmentReady = false;
 
 /// Instancia global de MockSupabase para tests
 final mockSupabase = MockSupabase();
@@ -442,7 +451,13 @@ bool verificarCompatibilidad(String featureA, String featureB) {
 // ============================================
 
 /// Setup completo del ambiente de testing
+///
+/// NOTA: Esta función es idempotente - puede llamarse múltiples veces
+/// sin efectos secundarios. El flag _isTestEnvironmentReady previene
+/// re-inicializaciones innecesarias.
 Future<void> setupFullTestEnvironment() async {
+  if (_isTestEnvironmentReady) return;
+
   // Asegurar que el binding de Flutter está inicializado para Drift/SQLite
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -460,13 +475,21 @@ Future<void> setupFullTestEnvironment() async {
     id: 'test-user-123',
     email: 'test@finanzasfamiliares.com',
   ));
+
+  _isTestEnvironmentReady = true;
 }
 
 /// Configura el entorno de tests (usado en E2E y otros tests)
 ///
 /// Los mensajes "Test mode: Use mock providers..." son ESPERADOS y no son errores.
 /// Indican que Supabase está correctamente en modo test.
+///
+/// Esta función es IDEMPOTENTE: puede llamarse múltiples veces sin problemas.
+/// El flutter_test_config.dart ya configura el ambiente globalmente,
+/// pero esta función asegura que esté listo para tests individuales.
 Future<void> setupTestEnvironment() async {
+  if (_isTestEnvironmentReady) return;
+
   // Asegurar que el binding de Flutter está inicializado
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -482,15 +505,37 @@ Future<void> setupTestEnvironment() async {
     id: 'test-user-123',
     email: 'test@finanzasfamiliares.com',
   ));
+
+  _isTestEnvironmentReady = true;
+}
+
+/// Forzar re-inicialización del ambiente (para tests que lo requieran)
+Future<void> forceSetupTestEnvironment() async {
+  _isTestEnvironmentReady = false;
+  await setupTestEnvironment();
 }
 
 /// Teardown del ambiente de testing
+///
+/// NOTA: Esta función NO deshabilita el modo test de Supabase
+/// para evitar problemas con tests paralelos. El cleanup completo
+/// se hace en flutter_test_config.dart al final de todos los tests.
 Future<void> tearDownTestEnvironment() async {
-  // Resetear mocks
+  // Resetear mocks pero mantener modo test activo
   mockSupabase.reset();
 
-  // Resetear el provider de Supabase
+  // Re-configurar usuario mock para el siguiente test
+  mockSupabase.auth.setMockUser(MockSupabaseUser(
+    id: 'test-user-123',
+    email: 'test@finanzasfamiliares.com',
+  ));
+}
+
+/// Teardown completo (solo usar al final de todos los tests)
+Future<void> tearDownTestEnvironmentComplete() async {
+  mockSupabase.reset();
   SupabaseClientProvider.reset();
+  _isTestEnvironmentReady = false;
 }
 
 /// Crear database de prueba con SQLite in-memory

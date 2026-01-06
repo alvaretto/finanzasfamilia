@@ -20,8 +20,14 @@ import '../helpers/test_helpers.dart';
 import '../mocks/mock_providers.dart';
 
 void main() {
-  setUpAll(() => setupTestEnvironment());
-  tearDownAll(() => tearDownTestEnvironment());
+  // Setup automático por flutter_test_config.dart
+  // Este setUpAll es adicional para configuración específica de E2E
+  setUpAll(() async {
+    await setupTestEnvironment();
+  });
+  tearDownAll(() async {
+    await tearDownTestEnvironment();
+  });
   group('E2E: ProviderScope Initialization', () {
     // =========================================================================
     // TEST 1: ProviderScope se inicializa correctamente
