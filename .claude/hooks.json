@@ -27,6 +27,13 @@
       "events": ["PostToolUse"],
       "matcher": "Edit(**/models/*.dart)",
       "script": "echo '🔄 Si editaste un modelo freezed, ejecuta: dart run build_runner build'"
+    },
+    {
+      "name": "post-pubspec-edit",
+      "description": "Detecta cambios de versión en pubspec.yaml",
+      "events": ["PostToolUse"],
+      "matcher": "Edit(**/pubspec.yaml)",
+      "script": "bash .claude/hooks/version-check.sh"
     }
   ]
 }
