@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../accounts/domain/models/account_model.dart';
 import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../domain/models/transaction_model.dart';
+import '../helpers/default_account_selector.dart';
 import '../providers/transaction_provider.dart';
 import 'transaction_details_section.dart';
 
@@ -83,9 +84,12 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       return _buildNoAccountsMessage(context);
     }
 
-    // Seleccionar primera cuenta si no hay ninguna
+    // Seleccionar cuenta predeterminada según tipo de transacción
     if (_selectedAccountId == null && accounts.isNotEmpty) {
-      _selectedAccountId = accounts.first.id;
+      _selectedAccountId = DefaultAccountSelector.selectDefaultAccount(
+        accounts: accounts,
+        transactionType: _selectedType,
+      );
     }
 
     return Padding(
@@ -305,9 +309,20 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               ],
               selected: {_selectedType},
               onSelectionChanged: (selection) {
+                final newType = selection.first;
+                final accounts = ref.read(activeAccountsProvider);
                 setState(() {
-                  _selectedType = selection.first;
+                  _selectedType = newType;
                   _selectedCategoryId = null;
+                  // Reseleccionar cuenta predeterminada según nuevo tipo
+                  _selectedAccountId = DefaultAccountSelector.selectDefaultAccount(
+                    accounts: accounts,
+                    transactionType: newType,
+                  );
+                  // Limpiar cuenta de transferencia si ya no es transferencia
+                  if (newType != TransactionType.transfer) {
+                    _selectedTransferAccountId = null;
+                  }
                 });
               },
             ),

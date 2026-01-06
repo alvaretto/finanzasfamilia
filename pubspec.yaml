@@ -1,7 +1,7 @@
 name: finanzas_familiares
 description: "App de finanzas personales y familiares multiplataforma con soporte offline-first"
 publish_to: 'none'
-version: 1.9.9+1
+version: 1.9.10+1
 
 environment:
   sdk: ^3.9.2
