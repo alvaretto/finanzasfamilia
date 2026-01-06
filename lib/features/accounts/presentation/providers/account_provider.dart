@@ -48,6 +48,28 @@ class AccountsState {
   List<AccountModel> get activeAccounts =>
       accounts.where((a) => a.isActive).toList();
 
+  /// Cuentas activas únicas (deduplicadas por nombre y tipo)
+  List<AccountModel> get uniqueActiveAccounts {
+    final seen = <String>{};
+    final unique = <AccountModel>[];
+    
+    // Ordenar por balance descendente para mantener la de mayor balance
+    final sorted = List<AccountModel>.from(activeAccounts)
+      ..sort((a, b) => b.balance.compareTo(a.balance));
+    
+    for (final account in sorted) {
+      final key = '${account.name.trim().toLowerCase()}_${account.type.name}';
+      if (!seen.contains(key)) {
+        seen.add(key);
+        unique.add(account);
+      }
+    }
+    
+    // Ordenar alfabéticamente por nombre para consistencia en UI
+    unique.sort((a, b) => a.name.compareTo(b.name));
+    return unique;
+  }
+
   /// Cuentas por tipo
   Map<AccountType, List<AccountModel>> get accountsByType {
     final map = <AccountType, List<AccountModel>>{};
@@ -168,6 +190,9 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
       _trySyncInBackground();
 
       return true;
+    } on DuplicateAccountException catch (e) {
+      state = state.copyWith(errorMessage: e.message);
+      return false;
     } catch (e) {
       state = state.copyWith(errorMessage: 'Error al crear cuenta: $e');
       return false;
@@ -180,6 +205,9 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
       await _repository.updateAccount(account);
       _trySyncInBackground();
       return true;
+    } on DuplicateAccountException catch (e) {
+      state = state.copyWith(errorMessage: e.message);
+      return false;
     } catch (e) {
       state = state.copyWith(errorMessage: 'Error al actualizar cuenta: $e');
       return false;
@@ -219,6 +247,24 @@ class AccountsNotifier extends StateNotifier<AccountsState> {
     } catch (e) {
       state = state.copyWith(errorMessage: 'Error al actualizar balance: $e');
       return false;
+    }
+  }
+
+  /// Limpiar cuentas duplicadas
+  /// Retorna el número de duplicados eliminados
+  Future<int> cleanDuplicates() async {
+    final userId = _userId;
+    if (userId == null) return 0;
+
+    try {
+      final removed = await _repository.removeDuplicateAccounts(userId);
+      if (removed > 0) {
+        _trySyncInBackground();
+      }
+      return removed;
+    } catch (e) {
+      state = state.copyWith(errorMessage: 'Error al limpiar duplicados: $e');
+      return 0;
     }
   }
 
@@ -291,6 +337,11 @@ final totalBalanceProvider = Provider<double>((ref) {
 /// Provider de cuentas activas
 final activeAccountsProvider = Provider<List<AccountModel>>((ref) {
   return ref.watch(accountsProvider).activeAccounts;
+});
+
+/// Provider de cuentas activas únicas (sin duplicados)
+final uniqueActiveAccountsProvider = Provider<List<AccountModel>>((ref) {
+  return ref.watch(accountsProvider).uniqueActiveAccounts;
 });
 
 /// Provider de cuentas por tipo
