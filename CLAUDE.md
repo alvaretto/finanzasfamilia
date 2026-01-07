@@ -117,6 +117,7 @@ Ver [Error Tracker Guide](docs/ERROR_TRACKER_GUIDE.md) para documentacion comple
 | `/full-release` | Workflow completo de release |
 | `/build-apk` | Construir APK |
 | `/run-tests` | Ejecutar tests |
+| `/emulador` | Build APK, copiar a Descargas, instalar y mostrar en emulador |
 
 ## Hooks Automaticos
 
