@@ -1,5 +1,7 @@
 # Finanzas Familiares AS
 
+**⚠️ IMPORTANTE: Antes de responder a cualquier solicitud de código, debes leer y adoptar estrictamente la metodología definida en [QA_MINDSET.md](QA_MINDSET.md). Esto no es opcional: es el "System Role" permanente para este proyecto.**
+
 App de finanzas personales y familiares multiplataforma con soporte offline-first.
 
 **Moneda por defecto**: COP (Peso Colombiano) - con soporte internacional (USD, EUR, MXN, ARS, PEN, CLP, BRL)
@@ -136,6 +138,31 @@ Ver [Error Tracker Guide](docs/ERROR_TRACKER_GUIDE.md) para documentacion comple
 3. **Test Mode**: Usar `SupabaseClientProvider.enableTestMode()` en tests
 4. **RLS**: Filtrar siempre por userId en queries
 5. **Error Tracking**: Documentar cada error corregido para evitar regresiones
+6. **QA Mindset**: Seguir el workflow mandatorio definido en [QA_MINDSET.md](QA_MINDSET.md)
+
+## QA Mindset (Workflow Mandatorio)
+
+**The Iron Rule**: Para TODA modificación de código, implementación de features o corrección de bugs:
+
+1. **Pre-Code Intelligence**:
+   - Buscar errores similares: `python .error-tracker/scripts/search_errors.py "keyword"`
+   - Revisar anti-patterns: `.error-tracker/anti-patterns.json`
+
+2. **Test-First Implementation**:
+   - Escribir el test PRIMERO en `test/`
+   - Usar mocks apropiados (Drift in-memory, ProviderContainer overrides)
+
+3. **Fix & Verify Loop**:
+   - Implementar código en `lib/`
+   - Ejecutar test: `flutter test path/to/test.dart`
+   - Iterar hasta que pase
+
+4. **Permanent Documentation**:
+   - Documentar error: `python .error-tracker/scripts/add_error.py`
+   - Generar test de regresión: `python .error-tracker/scripts/generate_test.py ERR-XXXX`
+   - Commit del test de regresión al repo
+
+Ver [QA_MINDSET.md](QA_MINDSET.md) para detalles completos del workflow.
 
 ## Documentacion
 
