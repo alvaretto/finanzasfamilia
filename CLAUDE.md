@@ -118,6 +118,7 @@ Ver [Error Tracker Guide](docs/ERROR_TRACKER_GUIDE.md) para documentacion comple
 | `/build-apk` | Construir APK |
 | `/run-tests` | Ejecutar tests |
 | `/emulador` | Build APK, copiar a Descargas, instalar y mostrar en emulador |
+| `/push` | Commit detallado automatico y push a rama principal |
 
 ## Hooks Automaticos
 
