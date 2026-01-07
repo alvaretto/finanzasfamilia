@@ -104,6 +104,7 @@ final router = GoRouter(
 - [WIDGETS.md](WIDGETS.md) - Widgets reutilizables
 - [TRANSACTION_FLOWS.md](TRANSACTION_FLOWS.md) - Flujos de transacciones
 - [NUMERIC_KEYBOARD_PATTERN.md](NUMERIC_KEYBOARD_PATTERN.md) - Teclado numerico en Android
+- [FORM_INTERACTION_FIX.md](FORM_INTERACTION_FIX.md) - Fix de interaccion tactil en formularios
 
 ## Convenciones de Nombrado
 

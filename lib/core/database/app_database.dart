@@ -2,6 +2,11 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:uuid/uuid.dart';
+import 'package:drift/native.dart';
+
+// Importar tablas de arquitectura PUC
+import 'tables/account_puc_tables.dart';
+import '../constants/puc_seed_data.dart';
 
 part 'app_database.g.dart';
 
@@ -12,12 +17,24 @@ const _uuid = Uuid();
 // ============================================================================
 
 /// Cuentas financieras (banco, efectivo, tarjeta, etc.)
+///
+/// ARQUITECTURA PUC (v5+):
+/// - groupId: FK a AccountGroups (códigos PUC como "1105", "2105")
+/// - type: DEPRECATED - mantener para compatibilidad, migrar a groupId
 class Accounts extends Table {
   TextColumn get id => text()(); // UUID string
   TextColumn get userId => text()();
   TextColumn get familyId => text().nullable()();
   TextColumn get name => text().withLength(min: 1, max: 100)();
+
+  /// FK a AccountGroups.id (códigos PUC)
+  /// Ej: "1105" = Efectivo, "1110" = Bancos, "2105" = Tarjetas de Crédito
+  TextColumn get groupId => text().nullable().references(AccountGroups, #id, onDelete: KeyAction.restrict)();
+
+  /// DEPRECATED: Usar groupId en su lugar
+  /// Mantener por compatibilidad temporal
   TextColumn get type => text()(); // cash, bank, credit, savings, investment, wallet
+
   TextColumn get currency => text().withDefault(const Constant('COP'))();
   RealColumn get balance => real().withDefault(const Constant(0.0))();
   RealColumn get creditLimit => real().withDefault(const Constant(0.0))();
@@ -27,6 +44,7 @@ class Accounts extends Table {
   TextColumn get lastFourDigits => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   BoolColumn get includeInTotal => boolean().withDefault(const Constant(true))();
+  BoolColumn get archived => boolean().withDefault(const Constant(false))(); // v5+
   TextColumn get debtSubtype => text().nullable()(); // Subtipo de deuda (loan, payable)
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
@@ -211,6 +229,10 @@ class RecurringTransactions extends Table {
 // ============================================================================
 
 @DriftDatabase(tables: [
+  // Tablas PUC (Plan Único de Cuentas)
+  AccountClasses,
+  AccountGroups,
+  // Tablas de datos de usuario
   Accounts,
   Categories,
   Transactions,
@@ -245,10 +267,16 @@ class AppDatabase extends _$AppDatabase {
     _instance = db;
   }
 
+  /// Creates an in-memory database for testing
+  @visibleForTesting
+  factory AppDatabase.forTest() {
+    return AppDatabase(NativeDatabase.memory());
+  }
+
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'finanzas_familiares');
@@ -259,6 +287,8 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
+        // Insert PUC seed data (AccountClasses, AccountGroups)
+        await _insertPUCSeedData();
         // Insert default categories
         await _insertDefaultCategories();
         // Insert default units
@@ -289,6 +319,23 @@ class AppDatabase extends _$AppDatabase {
         // Migración v3 -> v4: Subtipo de deuda en Accounts
         if (from < 4) {
           await m.addColumn(accounts, accounts.debtSubtype);
+        }
+
+        // Migración v4 -> v5: Arquitectura PUC
+        if (from < 5) {
+          // 1. Crear tablas PUC
+          await m.createTable(accountClasses);
+          await m.createTable(accountGroups);
+
+          // 2. Insertar seed data PUC
+          await _insertPUCSeedData();
+
+          // 3. Agregar nuevas columnas a Accounts
+          await m.addColumn(accounts, accounts.groupId);
+          await m.addColumn(accounts, accounts.archived);
+
+          // 4. Migrar datos existentes: mapear type → groupId
+          await _migrateAccountTypeToGroupId();
         }
       },
     );
@@ -601,6 +648,83 @@ class AppDatabase extends _$AppDatabase {
         category: unit.$4,
         isSystem: const Value(true),
       ));
+    }
+  }
+
+  // ============================================================================
+  // MÉTODOS DE MIGRACIÓN PUC (v5)
+  // ============================================================================
+
+  /// Inserta datos semilla del Plan Único de Cuentas (PUC) colombiano
+  Future<void> _insertPUCSeedData() async {
+    // 1. Insertar AccountClasses (5 clases contables PUC)
+    for (final classSeed in accountClassesSeeds) {
+      await into(accountClasses).insert(AccountClassesCompanion.insert(
+        id: Value(classSeed.id),
+        name: classSeed.name,
+        presentationName: classSeed.presentationName,
+        description: Value(classSeed.description),
+        displayOrder: classSeed.displayOrder,
+      ));
+    }
+
+    // 2. Insertar AccountGroups (grupos PUC como 1105, 2105, etc.)
+    for (final groupSeed in accountGroupsSeeds) {
+      await into(accountGroups).insert(AccountGroupsCompanion.insert(
+        id: groupSeed.id,
+        classId: groupSeed.classId,
+        technicalName: groupSeed.technicalName,
+        friendlyName: groupSeed.friendlyName,
+        nature: groupSeed.nature,
+        expenseType: Value(groupSeed.expenseType),
+        icon: Value(groupSeed.icon),
+        color: Value(groupSeed.color),
+        displayOrder: groupSeed.displayOrder,
+      ));
+    }
+  }
+
+  /// Migra cuentas existentes de type → groupId según mapeo PUC
+  Future<void> _migrateAccountTypeToGroupId() async {
+    // Mapeo de type (antiguo) → groupId (PUC)
+    final typeToGroupId = <String, String>{
+      'cash': '1105', // Efectivo → Caja General
+      'bank': '1110', // Banco → Bancos
+      'savings': '1110', // Ahorros → Bancos
+      'wallet': '1105', // Billetera digital → Caja General (efectivo)
+      'credit': '2105', // Tarjeta de crédito → Tarjetas de Crédito
+      'investment': '1200', // Inversión → Inversiones
+      // Tipos de deuda (legacy)
+      'loan': '2120', // Préstamo → Préstamos Bancarios
+      'payable': '2335', // Cuenta por pagar → Cuentas por Pagar
+    };
+
+    // Obtener todas las cuentas existentes
+    final allAccounts = await select(accounts).get();
+
+    // Actualizar cada cuenta con su groupId correspondiente
+    for (final account in allAccounts) {
+      final accountType = account.type;
+      String? newGroupId;
+
+      // Mapeo directo desde type
+      if (typeToGroupId.containsKey(accountType)) {
+        newGroupId = typeToGroupId[accountType];
+      } else if (account.debtSubtype != null) {
+        // Si tiene debtSubtype, mapear desde ahí
+        if (account.debtSubtype == 'loan') {
+          newGroupId = '2120'; // Préstamos
+        } else if (account.debtSubtype == 'payable') {
+          newGroupId = '2335'; // Cuentas por Pagar
+        }
+      }
+
+      // Si no se pudo mapear, usar "1105" (Efectivo) como fallback
+      newGroupId ??= '1105';
+
+      // Actualizar el registro
+      await (update(accounts)..where((t) => t.id.equals(account.id)))
+          .write(AccountsCompanion(groupId: Value(newGroupId)));
     }
   }
 }

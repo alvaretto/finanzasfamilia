@@ -39,6 +39,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
+  bool _hasInitializedDefaultAccount = false; // ✅ Flag para evitar múltiples selecciones
 
   // Detalles adicionales de transacción
   TransactionDetails _transactionDetails = const TransactionDetails();
@@ -86,12 +87,19 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       return _buildNoAccountsMessage(context);
     }
 
-    // Seleccionar cuenta predeterminada según tipo de transacción
-    if (_selectedAccountId == null && accounts.isNotEmpty) {
-      _selectedAccountId = DefaultAccountSelector.selectDefaultAccount(
-        accounts: accounts,
-        transactionType: _selectedType,
-      );
+    // ✅ FIX: Seleccionar cuenta predeterminada POST-frame (evita rebuild loop)
+    if (!_hasInitializedDefaultAccount && _selectedAccountId == null && accounts.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedAccountId == null) {
+          setState(() {
+            _selectedAccountId = DefaultAccountSelector.selectDefaultAccount(
+              accounts: accounts,
+              transactionType: _selectedType,
+            );
+            _hasInitializedDefaultAccount = true;
+          });
+        }
+      });
     }
 
     return Padding(
