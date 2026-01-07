@@ -2,6 +2,152 @@
 
 Todos los cambios notables en Finanzas Familiares AS seran documentados en este archivo.
 
+## [1.9.13] - 2026-01-07
+
+### QA Mindset: System Role Permanente
+
+#### Instalación
+- **QA_MINDSET.md**: Nuevo archivo en raíz del proyecto
+  - Define rol permanente: "Lead QA Engineer & Architect"
+  - Directiva primaria: Zero Regression
+  - Workflow mandatorio "The Iron Rule" con 4 fases
+
+#### Workflow Mandatorio (The Iron Rule)
+1. **Pre-Code Intelligence**:
+   - Buscar errores similares: `python .error-tracker/scripts/search_errors.py "keyword"`
+   - Revisar anti-patterns: `.error-tracker/anti-patterns.json`
+
+2. **Test-First Implementation**:
+   - Escribir test PRIMERO en `test/`
+   - Usar mocks apropiados (Drift in-memory, ProviderContainer overrides)
+
+3. **Fix & Verify Loop**:
+   - Implementar código en `lib/`
+   - Ejecutar test iterativamente hasta que pase
+   - NO presentar código hasta que el test esté verde
+
+4. **Permanent Documentation**:
+   - Documentar error: `python .error-tracker/scripts/add_error.py`
+   - Generar test de regresión: `python .error-tracker/scripts/generate_test.py ERR-XXXX`
+   - Commit del test al repo
+
+#### CLAUDE.md Actualizado
+- Advertencia IMPORTANTE al inicio: referencia obligatoria a QA_MINDSET.md
+- Nueva sección "QA Mindset (Workflow Mandatorio)" después de Principios Clave
+- Agregado principio clave #6: "QA Mindset"
+- Resumen visual del Iron Rule
+
+#### Documentación
+- `docs/QA_MINDSET_INSTALLATION.md`: Verificación de instalación y próximos pasos
+
+#### Beneficios
+- Claude no puede ignorar scripts de Python ni tests existentes
+- Workflow test-first obligatorio antes de escribir código
+- Documentación automática de errores para prevenir regresiones futuras
+- Scripts de Python ejecutables sin aprobación del usuario
+
+## [1.9.12] - 2026-01-07
+
+### CRITICAL FIX: Pantalla blanca/negra por rebuild loop (ERR-0006)
+
+#### Problema
+La aplicación se ponía en blanco o negro durante interacciones en el formulario de transacciones, causando que pareciera bloquearse. El emulador mostraba errores de GPU: `eglMakeCurrent failed`, `Draw context is NULL`.
+
+#### Causa Raíz
+**Anti-patrón Flutter crítico**: Modificación directa de estado dentro del método `build()`.
+
+```dart
+// ❌ NUNCA hacer esto
+Widget build(BuildContext context) {
+  if (_selectedAccountId == null) {
+    _selectedAccountId = calculateDefault(); // ❌ Causa rebuild loop infinito
+  }
+}
+```
+
+Esto creaba un loop infinito de rebuilds que sobrecargaba el rendering pipeline y causaba crash del contexto de dibujo OpenGL/GPU.
+
+#### Solución
+- Usar `WidgetsBinding.instance.addPostFrameCallback()` para programar actualización de estado POST-frame
+- Agregar flag `_hasInitializedDefaultAccount` para evitar múltiples ejecuciones
+- Verificar `mounted` antes de `setState()` para prevenir errores después de dispose
+
+```dart
+// ✅ Solución correcta
+Widget build(BuildContext context) {
+  if (!_hasInitializedDefaultAccount && _selectedAccountId == null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _selectedAccountId == null) {
+        setState(() {
+          _selectedAccountId = calculateDefault();
+          _hasInitializedDefaultAccount = true;
+        });
+      }
+    });
+  }
+}
+```
+
+#### Archivos Modificados
+- `lib/features/transactions/presentation/widgets/add_transaction_sheet.dart`
+  - +1 flag `_hasInitializedDefaultAccount`
+  - ~14 líneas lógica PostFrameCallback
+
+#### Testing
+- **Nuevo**: `test/regression/err_0006_rebuild_loop_test.dart` (8 tests)
+  - Verificación de no rebuild loop excesivo
+  - Test de cambio de tipo sin loop
+  - Múltiples interacciones sin degradación
+  - PostFrameCallback solo se ejecuta una vez
+  - Mounted check previene setState post-dispose
+  - Métricas de performance (< 500ms inicial, < 100ms cambio tipo)
+
+#### Documentación
+- **Nuevo**: `.error-tracker/errors/ERR-0006-rebuild-loop-blank-screen.md`
+  - Diagnóstico completo
+  - Anti-patrones Flutter identificados
+  - Buenas prácticas con ejemplos
+  - Lecciones aprendidas
+
+## [1.9.11] - 2026-01-06
+
+### FIX: Interacción táctil en formulario de transacciones
+
+#### Problemas Corregidos
+1. **Teclado numérico no aparecía** - Campo de monto sin FocusNode dedicado
+2. **Selector de categoría no funcionaba** - Doble wrapping del BottomSheet bloqueaba gestos
+3. **Selector de fecha no funcionaba** - Falta `flutter_localizations`
+
+#### Cambios
+- **pubspec.yaml**: Agregado `flutter_localizations` SDK
+- **lib/main.dart**:
+  - Import `flutter_localizations`
+  - Agregado `localizationsDelegates` + `supportedLocales`
+  - Locale default: `es_CO`
+- **lib/shared/widgets/main_scaffold.dart**: Eliminado doble Container wrapping
+- **lib/features/transactions/presentation/widgets/add_transaction_sheet.dart**:
+  - Agregado `_amountFocusNode` para control de foco
+  - `GestureDetector` con área táctil completa
+  - Hint text "Ingresa el monto"
+
+#### Documentación
+- **Nuevo**: `.claude/skills/flutter-architecture/FORM_INTERACTION_FIX.md`
+
+## [1.9.10] - 2026-01-06
+
+### FIX: Selección inteligente de cuenta predeterminada
+
+#### Cambios
+- **Nuevo**: `lib/features/transactions/presentation/helpers/default_account_selector.dart`
+  - Prioridad para Gastos: bank → wallet → cash → savings → ...
+  - Prioridad para Ingresos: bank → wallet → cash → savings
+  - Prioridad para Transferencias: solo activos (bank → wallet → cash → savings)
+- **Modificado**: `lib/features/transactions/presentation/widgets/add_transaction_sheet.dart`
+  - Uso de `DefaultAccountSelector` para cuenta inicial
+  - Reselección al cambiar tipo de transacción
+- **Nuevo test**: `test/unit/default_account_selector_test.dart` (14 tests unitarios)
+- **Nueva documentación**: `.claude/skills/flutter-architecture/TRANSACTION_FLOWS.md`
+
 ## [1.9.8] - 2026-01-05
 
 ### Sistema de Error Tracking
