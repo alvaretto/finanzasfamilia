@@ -1,0 +1,139 @@
+{
+  "id": "ERR-0005",
+  "title": "Anti-patrón: amount: i.toDouble() en loops que generan transacciones",
+  "description": "Tests de performance fallan con 'El monto debe ser mayor a cero' porque usan índice de loop directamente sin considerar que i=0 genera amount=0",
+  "severity": "medium",
+  "status": "resolved",
+  "error_details": {
+    "message": "Invalid argument(s): El monto debe ser mayor a cero",
+    "stack_trace": "package:finanzas_familiares/features/transactions/data/repositories/transaction_repository.dart 117:7  TransactionRepository.createTransaction\ntest/performance/app_performance_test.dart 94:22  main.<fn>.<fn>",
+    "error_type": "validation",
+    "reproducibility": "always"
+  },
+  "context": {
+    "affected_files": [
+      {
+        "path": "test/performance/app_performance_test.dart",
+        "lines": [
+          98,
+          128,
+          153
+        ],
+        "severity": "high"
+      }
+    ],
+    "environment": {
+      "flutter_version": "3.24+",
+      "platform": "test",
+      "mode": "test"
+    },
+    "user_action": "Ejecutar tests de performance con loops que generan transacciones",
+    "prerequisites": "Loops que inician en i=0 y usan i directamente para calcular amounts"
+  },
+  "solution": {
+    "summary": "Triple estrategia: (1) Correcciones inmediatas con (i+1), (2) Helper test_data_generators.dart, (3) Documentación en .claude/skills/testing/",
+    "changes": [
+      {
+        "file": "test/performance/app_performance_test.dart",
+        "type": "fix",
+        "description": "Línea 98: amount: 10.0 * i → amount: 10.0 * (i + 1)",
+        "before": "amount: 10.0 * i,",
+        "after": "amount: 10.0 * (i + 1),  // Garantiza amount >= 10.0"
+      },
+      {
+        "file": "test/performance/app_performance_test.dart",
+        "type": "fix",
+        "description": "Línea 128: amount: i.toDouble() → amount: (i + 1).toDouble()",
+        "before": "amount: i.toDouble(),",
+        "after": "amount: (i + 1).toDouble(),  // Garantiza amount >= 1.0"
+      },
+      {
+        "file": "test/performance/app_performance_test.dart",
+        "type": "fix",
+        "description": "Línea 153: amount: i.toDouble() → amount: (i + 1).toDouble()",
+        "before": "amount: i.toDouble(),",
+        "after": "amount: (i + 1).toDouble(),  // Garantiza amount >= 1.0"
+      },
+      {
+        "file": "test/helpers/test_data_generators.dart",
+        "type": "new",
+        "description": "Helper centralizado para generar transacciones con montos válidos garantizados"
+      },
+      {
+        "file": ".claude/skills/testing/TEST_DATA_GENERATION.md",
+        "type": "new",
+        "description": "Guía completa de generación de datos de prueba con anti-patrones documentados"
+      },
+      {
+        "file": ".claude/skills/testing/TESTING_STRATEGY.md",
+        "type": "update",
+        "description": "Sección Test Data Generation agregada con reglas y referencias"
+      },
+      {
+        "file": "test/README.md",
+        "type": "update",
+        "description": "Sección Generación de Datos de Prueba agregada después del Overview"
+      }
+    ],
+    "root_cause": "Uso directo del índice de loop (i) como monto sin offset, generando amount=0 en primera iteración cuando i=0",
+    "prevention": "Usar helper generateTestTransaction() o agregar offset (i+1) en loops que empiezan en 0",
+    "verification": "Ejecutar flutter test test/performance/app_performance_test.dart - los 3 tests deben pasar",
+    "tested": true
+  },
+  "anti_patterns": [
+    {
+      "pattern": "amount: i.toDouble() en loop que empieza en 0",
+      "why_bad": "Genera amount=0 en primera iteración, violando validación amount > 0",
+      "correct_approach": "amount: (i + 1).toDouble() o usar helper generateTestTransaction()"
+    },
+    {
+      "pattern": "amount: 10.0 * i en loop que empieza en 0",
+      "why_bad": "Genera amount=0 cuando i=0, causando ArgumentError",
+      "correct_approach": "amount: 10.0 * (i + 1) o usar helper con baseAmount=10.0"
+    },
+    {
+      "pattern": "No validar datos de prueba antes de insertar",
+      "why_bad": "Los errores solo aparecen en runtime cuando se ejecutan los tests",
+      "correct_approach": "Usar TestDataValidators.validateTransactionList() antes de insertar"
+    }
+  ],
+  "related_tests": [
+    "test/regression/unit/transactions/err_0005_amount_zero_regression_test.dart",
+    {
+      "path": "test/regression/unit/err_0005_regression_test.dart",
+      "type": "unit",
+      "generated_at": "2026-01-07T03:10:19.383203Z"
+    }
+  ],
+  "metadata": {
+    "created_at": "2026-01-06T19:30:00Z",
+    "updated_at": "2026-01-07T03:10:19.383203Z",
+    "resolved_at": "2026-01-06T19:30:00Z",
+    "reopened_count": 0,
+    "tags": [
+      "testing",
+      "performance",
+      "data-generation",
+      "validation",
+      "anti-pattern"
+    ],
+    "related_errors": [],
+    "references": [
+      ".claude/skills/testing/TEST_DATA_GENERATION.md",
+      "test/helpers/test_data_generators.dart",
+      "lib/features/transactions/data/repositories/transaction_repository.dart:116"
+    ]
+  },
+  "detection_patterns": {
+    "error_regex": "Invalid argument\\(s\\): El monto debe ser mayor a cero",
+    "keywords": [
+      "amount: i.toDouble()",
+      "amount: 10.0 * i",
+      "for (int i = 0",
+      "createTransaction"
+    ],
+    "file_patterns": [
+      "test/**/*_test.dart"
+    ]
+  }
+}

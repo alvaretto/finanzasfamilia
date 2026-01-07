@@ -95,7 +95,7 @@ void main() {
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
-          amount: 10.0 * i,
+          amount: 10.0 * (i + 1),  // Garantiza amount >= 10.0
           type: TransactionType.expense,
           description: 'Perf tx $i',
           date: DateTime.now(),
@@ -125,7 +125,7 @@ void main() {
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
-          amount: i.toDouble(),
+          amount: (i + 1).toDouble(),  // Garantiza amount >= 1.0
           type: i % 2 == 0 ? TransactionType.expense : TransactionType.income,
           description: 'Bulk $i',
           date: DateTime.now(),
@@ -150,7 +150,7 @@ void main() {
           id: const Uuid().v4(),
           userId: userId,
           accountId: 'acc-1',
-          amount: i.toDouble(),
+          amount: (i + 1).toDouble(),  // Garantiza amount >= 1.0
           type: TransactionType.expense,
           description: 'Parallel $i',
           date: DateTime.now(),

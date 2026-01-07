@@ -46,6 +46,57 @@ test/
 
 ---
 
+## ⚠️ Generación de Datos de Prueba
+
+**IMPORTANTE**: Al crear tests que generan datos en loops, evita este anti-patrón:
+
+```dart
+// ❌ ANTI-PATRÓN: Genera amount = 0 cuando i = 0
+for (int i = 0; i < 100; i++) {
+  await repo.createTransaction(TransactionModel(
+    amount: i.toDouble(),  // ← FALLA cuando i = 0
+    ...
+  ));
+}
+```
+
+**Por qué falla**: `TransactionRepository` valida `amount > 0` (línea 116). Cuando `i = 0`, `amount = 0.0` → `ArgumentError`.
+
+**Soluciones**:
+
+```dart
+// ✅ CORRECTO: Usa offset
+for (int i = 0; i < 100; i++) {
+  amount: (i + 1).toDouble(),  // 1, 2, 3, ... (nunca 0)
+}
+
+// ✅ MEJOR: Usa helper estandarizado
+import 'helpers/test_helpers.dart';
+
+final tx = generateTestTransaction(
+  index: i,  // Puede ser 0, el helper lo maneja
+  userId: userId,
+);
+
+// ✅ ÓPTIMO: Para listas completas
+final txs = generateTestTransactionList(
+  count: 100,
+  userId: userId,
+  baseAmount: 10.0,
+);
+```
+
+**Helper disponible**: `test/helpers/test_data_generators.dart`
+
+**Funciones**:
+- `generateTestTransaction()` - Genera transacción individual con monto válido
+- `generateTestTransactionList()` - Genera lista completa de transacciones
+- `TestDataValidators` - Valida datos antes de insertar
+
+**Documentación completa**: [.claude/skills/testing/TEST_DATA_GENERATION.md](../.claude/skills/testing/TEST_DATA_GENERATION.md)
+
+---
+
 ## 🧪 Categorías de Tests
 
 ### 1. Unit Tests (`test/models/`, `test/services/`)

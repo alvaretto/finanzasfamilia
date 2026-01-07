@@ -139,3 +139,36 @@ Tests se ejecutan automaticamente en:
 - Pre-release
 
 Ver `.github/workflows/` para configuracion.
+
+## Test Data Generation
+
+Para generar datos de prueba válidos, ver [Test Data Generation Guide](./TEST_DATA_GENERATION.md).
+
+**Reglas críticas**:
+- ✅ Siempre usar `(i + 1)` cuando el loop empiece en 0
+- ✅ Preferir helper `generateTestTransaction()` para loops complejos
+- ✅ Validar datos con `TestDataValidators` antes de crear tests
+- ❌ NUNCA usar `amount: i.toDouble()` directamente en loops que inicien en 0
+
+**Helper disponible**: `test/helpers/test_data_generators.dart`
+
+**Funciones**:
+- `generateTestTransaction()` - Genera transacción individual con monto válido
+- `generateTestTransactionList()` - Genera lista completa de transacciones
+- `TestDataValidators` - Valida datos generados antes de insertar
+
+**Anti-patrón documentado**: Ver ERR-0005 en error-tracker
+
+**Ejemplo de uso**:
+```dart
+// ✅ CORRECTO: Helper garantiza amount > 0
+final txs = generateTestTransactionList(
+  count: 100,
+  userId: userId,
+  baseAmount: 10.0,
+);
+
+for (final tx in txs) {
+  await repo.createTransaction(tx);
+}
+```

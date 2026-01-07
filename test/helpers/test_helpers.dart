@@ -18,6 +18,7 @@ import '../mocks/mock_supabase.dart';
 
 // Re-exportar mocks para uso en tests
 export '../mocks/mock_supabase.dart';
+export 'test_data_generators.dart';
 
 /// Flag global para saber si el ambiente ya fue configurado
 bool _isTestEnvironmentReady = false;
