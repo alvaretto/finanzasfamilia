@@ -1,0 +1,64 @@
+{
+  "id": "ERR-0004",
+  "title": "Teclado numérico no aparece en campo de balance al crear cuenta",
+  "description": "Al crear una cuenta nueva, el campo de 'Balance actual' no mostraba el teclado numérico en Android. El usuario tenía que escribir con teclado de texto normal, lo cual era incómodo y permitía errores de entrada. El problema afectaba tanto a AddAccountSheet como a FirstAccountWizard.",
+  "error_message": "N/A - Error de UX, teclado incorrecto",
+  "stack_trace": null,
+  "root_cause": "Múltiples causas: 1) TextInputType.numberWithOptions(decimal: true) sin signed: false tiene comportamiento inconsistente en Android, 2) Sin FocusNode explícito el sistema no garantiza qué teclado mostrar al recibir foco, 3) Sin textInputAction el flujo de navegación entre campos era pobre, 4) El RegExp r'^\\d+\\.?\\d{0,2}' requería al menos un dígito (\\d+) antes del punto decimal.",
+  "affected_files": [
+    "lib/features/accounts/presentation/widgets/add_account_sheet.dart",
+    "lib/features/accounts/presentation/widgets/first_account_wizard.dart"
+  ],
+  "solution": {
+    "summary": "Implementar patrón robusto para campos numéricos en Flutter Android: FocusNodes explícitos + keyboardType con signed:false + textInputAction para navegación + RegExp permisivo.",
+    "changes": [
+      {
+        "file": "add_account_sheet.dart",
+        "before": "keyboardType: TextInputType.numberWithOptions(decimal: true), sin FocusNode",
+        "after": "FocusNodes (_nameFocusNode, _balanceFocusNode, _creditLimitFocusNode) + keyboardType con decimal:true y signed:false + textInputAction: TextInputAction.next/done + onFieldSubmitted para navegación"
+      },
+      {
+        "file": "add_account_sheet.dart:inputFormatters",
+        "before": "RegExp(r'^\\d+\\.?\\d{0,2}') - requiere al menos un dígito",
+        "after": "RegExp(r'^\\d*\\.?\\d{0,2}') - permite iniciar vacío o con punto"
+      },
+      {
+        "file": "first_account_wizard.dart",
+        "before": "keyboardType: TextInputType.numberWithOptions(decimal: true), sin FocusNode",
+        "after": "Mismo patrón: FocusNodes + keyboard con signed:false + textInputAction + onFieldSubmitted"
+      }
+    ]
+  },
+  "anti_patterns": [
+    {
+      "description": "Usar solo keyboardType sin FocusNode en ModalBottomSheet",
+      "better_approach": "Siempre agregar FocusNode explícito y disponer en dispose()"
+    },
+    {
+      "description": "TextInputType.numberWithOptions(decimal: true) sin signed: false",
+      "better_approach": "Siempre especificar signed: false para teclado numérico puro en Android"
+    },
+    {
+      "description": "Campos de formulario sin textInputAction",
+      "better_approach": "Usar TextInputAction.next para campos intermedios y TextInputAction.done para el último"
+    },
+    {
+      "description": "RegExp restrictivo que requiere dígito inicial (\\d+)",
+      "better_approach": "Usar \\d* para permitir campos vacíos y empezar con punto decimal"
+    }
+  ],
+  "status": "resolved",
+  "metadata": {
+    "created_at": "2026-01-06T19:00:00Z",
+    "updated_at": "2026-01-06T19:30:00Z",
+    "resolved_at": "2026-01-06T19:30:00Z",
+    "reopened_count": 0,
+    "tags": ["flutter", "android", "keyboard", "textfield", "ux", "modal-bottom-sheet", "focusnode"],
+    "related_errors": [],
+    "references": [],
+    "commits": []
+  },
+  "related_tests": [
+    "test/regression/numeric_keyboard_test.dart"
+  ]
+}

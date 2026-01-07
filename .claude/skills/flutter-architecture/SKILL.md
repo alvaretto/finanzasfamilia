@@ -102,8 +102,8 @@ final router = GoRouter(
 
 - [PROVIDERS.md](PROVIDERS.md) - Patrones de providers
 - [WIDGETS.md](WIDGETS.md) - Widgets reutilizables
-- [NAVIGATION.md](NAVIGATION.md) - Navegacion y rutas
-- [FORMS.md](FORMS.md) - Formularios y validacion
+- [TRANSACTION_FLOWS.md](TRANSACTION_FLOWS.md) - Flujos de transacciones
+- [NUMERIC_KEYBOARD_PATTERN.md](NUMERIC_KEYBOARD_PATTERN.md) - Teclado numerico en Android
 
 ## Convenciones de Nombrado
 

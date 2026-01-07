@@ -32,13 +32,19 @@
   },
   "anti_patterns": [],
   "status": "resolved",
-  "resolved_at": "2026-01-05T23:30:00Z",
-  "related_tests": [],
-  "tags": ["flutter", "riverpod", "async", "initialization", "ai_chat", "flutter_secure_storage"],
-  "commits": [
-    "be303146d23f8db16762632cc5163f5653acdcc8",
-    "0124b07cbe477180ce7b3e439054098f43b940de",
-    "0474bdffdb329ccae253faf7c64626965dd7fffe"
-  ],
-  "created_at": "2026-01-05T23:28:00Z"
+  "metadata": {
+    "created_at": "2026-01-05T23:28:00Z",
+    "updated_at": "2026-01-05T23:30:00Z",
+    "resolved_at": "2026-01-05T23:30:00Z",
+    "reopened_count": 0,
+    "tags": ["flutter", "riverpod", "async", "initialization", "ai_chat", "flutter_secure_storage"],
+    "related_errors": [],
+    "references": [],
+    "commits": [
+      "be303146d23f8db16762632cc5163f5653acdcc8",
+      "0124b07cbe477180ce7b3e439054098f43b940de",
+      "0474bdffdb329ccae253faf7c64626965dd7fffe"
+    ]
+  },
+  "related_tests": []
 }

@@ -31,6 +31,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _notesController = TextEditingController();
+  final _amountFocusNode = FocusNode();
 
   late TransactionType _selectedType;
   String? _selectedAccountId;
@@ -68,6 +69,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     _amountController.dispose();
     _descriptionController.dispose();
     _notesController.dispose();
+    _amountFocusNode.dispose();
     super.dispose();
   }
 
@@ -332,42 +334,64 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   }
 
   Widget _buildAmountField() {
-    return Center(
-      child: IntrinsicWidth(
-        child: TextFormField(
-          controller: _amountController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: _getTypeColor(),
+    return GestureDetector(
+      onTap: () {
+        // Asegurar que el campo de monto reciba foco al tocar
+        _amountFocusNode.requestFocus();
+      },
+      behavior: HitTestBehavior.translucent,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _amountController,
+              focusNode: _amountFocusNode,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              textAlign: TextAlign.center,
+              autofocus: false,
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _getTypeColor(),
+                  ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+              decoration: InputDecoration(
+                hintText: '0.00',
+                hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                    ),
+                prefixText: '\$ ',
+                prefixStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: _getTypeColor(),
+                    ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               ),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Ingresa el monto';
+                }
+                final amount = double.tryParse(value);
+                if (amount == null || amount <= 0) {
+                  return 'Monto inválido';
+                }
+                return null;
+              },
+            ),
+            Text(
+              'Ingresa el monto',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: _getTypeColor().withValues(alpha: 0.7),
+                  ),
+            ),
           ],
-          decoration: InputDecoration(
-            hintText: '0.00',
-            hintStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
-                ),
-            prefixText: '\$ ',
-            prefixStyle: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: _getTypeColor(),
-                ),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Ingresa el monto';
-            }
-            final amount = double.tryParse(value);
-            if (amount == null || amount <= 0) {
-              return 'Monto inválido';
-            }
-            return null;
-          },
         ),
       ),
     );

@@ -1,13 +1,15 @@
 name: finanzas_familiares
 description: "App de finanzas personales y familiares multiplataforma con soporte offline-first"
 publish_to: 'none'
-version: 1.9.10+1
+version: 1.9.11+1
 
 environment:
   sdk: ^3.9.2
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
 
   # State Management

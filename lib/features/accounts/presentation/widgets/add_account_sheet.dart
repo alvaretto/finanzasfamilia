@@ -23,6 +23,11 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
   final _bankNameController = TextEditingController();
   final _lastFourController = TextEditingController();
 
+  // FocusNodes para navegación entre campos y forzar teclado correcto
+  final _nameFocusNode = FocusNode();
+  final _balanceFocusNode = FocusNode();
+  final _creditLimitFocusNode = FocusNode();
+
   AccountType _selectedType = AccountType.bank;
   DebtSubtype? _selectedDebtSubtype;
   String _selectedCurrency = 'COP';
@@ -72,6 +77,9 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
     _creditLimitController.dispose();
     _bankNameController.dispose();
     _lastFourController.dispose();
+    _nameFocusNode.dispose();
+    _balanceFocusNode.dispose();
+    _creditLimitFocusNode.dispose();
     super.dispose();
   }
 
@@ -196,7 +204,13 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                       // Nombre
                       TextFormField(
                         controller: _nameController,
+                        focusNode: _nameFocusNode,
                         textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) {
+                          // Navegar al campo de balance cuando presione "Siguiente"
+                          _balanceFocusNode.requestFocus();
+                        },
                         decoration: const InputDecoration(
                           labelText: 'Nombre de la cuenta',
                           prefixIcon: Icon(Icons.label_outline),
@@ -219,12 +233,26 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                             flex: 2,
                             child: TextFormField(
                               controller: _balanceController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
+                              focusNode: _balanceFocusNode,
+                              // IMPORTANTE: Usar TextInputType.number para máxima
+                              // compatibilidad con Android. El inputFormatter
+                              // maneja el punto decimal.
+                              keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true,
+                                signed: false,
+                              ),
+                              textInputAction: _selectedType == AccountType.credit
+                                  ? TextInputAction.next
+                                  : TextInputAction.done,
+                              onFieldSubmitted: (_) {
+                                if (_selectedType == AccountType.credit) {
+                                  _creditLimitFocusNode.requestFocus();
+                                }
+                              },
                               inputFormatters: [
+                                // Permite números y un punto decimal con hasta 2 decimales
                                 FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d+\.?\d{0,2}')),
+                                    RegExp(r'^\d*\.?\d{0,2}')),
                               ],
                               decoration: InputDecoration(
                                 labelText: _selectedType == AccountType.credit
@@ -269,11 +297,15 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                       if (_selectedType == AccountType.credit) ...[
                         TextFormField(
                           controller: _creditLimitController,
+                          focusNode: _creditLimitFocusNode,
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                            signed: false,
+                          ),
+                          textInputAction: TextInputAction.done,
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}')),
+                                RegExp(r'^\d*\.?\d{0,2}')),
                           ],
                           decoration: const InputDecoration(
                             labelText: 'Limite de credito',

@@ -84,10 +84,16 @@ class _FirstAccountWizardState extends ConsumerState<FirstAccountWizard> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  // FocusNodes para navegación correcta entre campos
+  final _nameFocusNode = FocusNode();
+  final _balanceFocusNode = FocusNode();
+
   @override
   void dispose() {
     _nameController.dispose();
     _balanceController.dispose();
+    _nameFocusNode.dispose();
+    _balanceFocusNode.dispose();
     super.dispose();
   }
 
@@ -297,8 +303,14 @@ class _FirstAccountWizardState extends ConsumerState<FirstAccountWizard> {
             // Nombre de la cuenta
             TextFormField(
               controller: _nameController,
+              focusNode: _nameFocusNode,
               textCapitalization: TextCapitalization.words,
               autofocus: true,
+              textInputAction: TextInputAction.next,
+              onFieldSubmitted: (_) {
+                // Navegar al campo de balance
+                _balanceFocusNode.requestFocus();
+              },
               decoration: InputDecoration(
                 labelText: 'Nombre de la cuenta',
                 hintText: 'ej. ${template.name}',
@@ -316,10 +328,17 @@ class _FirstAccountWizardState extends ConsumerState<FirstAccountWizard> {
             // Balance inicial
             TextFormField(
               controller: _balanceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              focusNode: _balanceFocusNode,
+              // IMPORTANTE: Usar numberWithOptions con signed: false para
+              // máxima compatibilidad con Android
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: false,
+              ),
+              textInputAction: TextInputAction.done,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                // Permite números y un punto decimal con hasta 2 decimales
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
               decoration: InputDecoration(
                 labelText: template.type == AccountType.credit

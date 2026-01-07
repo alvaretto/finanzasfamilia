@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/theme/app_theme.dart';
@@ -104,6 +105,20 @@ class FinanzasFamiliaresApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       routerConfig: router,
+      // Localization for DatePicker and other Material widgets
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'CO'), // Español Colombia (default)
+        Locale('es', 'MX'), // Español México
+        Locale('es'),       // Español genérico
+        Locale('en', 'US'), // English US
+        Locale('pt', 'BR'), // Portugués Brasil
+      ],
+      locale: const Locale('es', 'CO'),
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
