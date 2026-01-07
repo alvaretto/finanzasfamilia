@@ -17,8 +17,8 @@ NC='\033[0m' # No Color
 ANDROID_SDK="/home/bootcamp/android-sdk"
 ADB="$ANDROID_SDK/platform-tools/adb"
 EMULATOR="$ANDROID_SDK/emulator/emulator"
-EMULATOR_NAME="Pixel_3a_API_34_extension_level_7_x86_64"
-PACKAGE_NAME="com.spaceotech.finanzas_familiares"
+EMULATOR_NAME="Pixel_6_API_34"
+PACKAGE_NAME="com.finanzasfamiliares.finanzas_familiares"
 ACTIVITY_NAME="$PACKAGE_NAME/.MainActivity"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

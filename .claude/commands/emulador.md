@@ -25,7 +25,7 @@ El script `deploy_to_emulator.sh` ejecuta todos los pasos automáticamente:
 
 3. **Verificar/Iniciar Emulador**:
    - Si el emulador ya está corriendo, lo usa
-   - Si no, inicia `Pixel_3a_API_34_extension_level_7_x86_64`
+   - Si no, inicia `Pixel_6_API_34`
    - Espera hasta 120 segundos a que esté listo
 
 4. **Instalar APK**: Instala el APK en el emulador usando `adb install -r` (mantiene datos)
