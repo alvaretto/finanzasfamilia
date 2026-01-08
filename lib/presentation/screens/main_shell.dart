@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'dashboard_screen.dart';
 import 'transactions_screen.dart';
+import 'accounts_screen.dart';
 import 'categories_screen.dart';
 import 'budgets_screen.dart';
 import 'transaction_form_screen.dart';
@@ -18,6 +19,7 @@ class MainShell extends ConsumerWidget {
   static const _screens = [
     DashboardScreen(),
     TransactionsScreen(),
+    AccountsScreen(),
     CategoriesScreen(),
     BudgetsScreen(),
   ];
@@ -46,6 +48,11 @@ class MainShell extends ConsumerWidget {
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long),
             label: 'Movimientos',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Cuentas',
           ),
           NavigationDestination(
             icon: Icon(Icons.category_outlined),

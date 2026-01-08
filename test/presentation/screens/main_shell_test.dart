@@ -38,12 +38,12 @@ void main() {
       );
     }
 
-    testWidgets('muestra NavigationBar con 4 destinos', (tester) async {
+    testWidgets('muestra NavigationBar con 5 destinos', (tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.byType(NavigationDestination), findsNWidgets(4));
+      expect(find.byType(NavigationDestination), findsNWidgets(5));
     });
 
     testWidgets('muestra etiquetas de navegación', (tester) async {
@@ -53,6 +53,7 @@ void main() {
       // Verificar que las etiquetas existen (pueden aparecer múltiples veces)
       expect(find.text('¿Cómo Voy?'), findsWidgets);
       expect(find.text('Movimientos'), findsOneWidget);
+      expect(find.text('Cuentas'), findsOneWidget);
       expect(find.text('Categorías'), findsOneWidget);
       expect(find.text('Presupuestos'), findsOneWidget);
     });
