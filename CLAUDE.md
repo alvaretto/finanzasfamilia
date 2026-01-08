@@ -3,7 +3,7 @@
 ## Proyecto
 **Nombre:** Finanzas Familiares AS - Modo Personal v1.3
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 15 completada
+**Estado:** En desarrollo - Fase 16 completada
 
 ---
 
@@ -341,10 +341,19 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 6-13 | Dashboard, Accounts, Forms, Indicators | ✅ Completado |
 | 14 | Reportes Financieros | ✅ Completado (ReportsService + ReportsScreen) |
 | 15 | Asistente IA "Fina" | ✅ Completado (UI + Provider + Service) |
+| 16 | Auth Flow (Google Sign-In) | ✅ Completado (Splash + Login + AuthProvider) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.4 (2026-01-08)
+- **FASE 16:** Auth Flow con Google Sign-In
+  - `AuthProvider`: Estado de autenticación reactivo con Riverpod
+  - `AuthService`: Sign-in con Google OAuth, email/password, signOut
+  - `SplashScreen`: Animación de inicio y verificación de sesión
+  - `LoginScreen`: UI de login con Google y modo invitado
+  - Integración de flujo de auth en main.dart
 
 ### v1.3 (2026-01-08)
 - **FASE 15:** Asistente IA "Fina"

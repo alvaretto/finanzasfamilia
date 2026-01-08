@@ -14,3 +14,7 @@ export 'account_form_screen.dart';
 
 // Asistente IA
 export 'ai_chat_screen.dart';
+
+// Auth Flow
+export 'splash_screen.dart';
+export 'login_screen.dart';

@@ -9,7 +9,7 @@ import 'data/local/database.dart';
 import 'data/local/daos/categories_dao.dart';
 import 'data/local/seeders/category_seeder.dart';
 import 'data/sync/sync.dart';
-import 'presentation/screens/main_shell.dart';
+import 'presentation/screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,7 +102,7 @@ class FinanzasFamiliaresApp extends StatelessWidget {
           indicatorColor: const Color(0xFF4CAF50).withValues(alpha: 0.3),
         ),
       ),
-      home: const MainShell(),
+      home: const SplashScreen(),
     );
   }
 }
