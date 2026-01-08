@@ -51,6 +51,29 @@
 
 **NOTA:** Si la implementación requiere code generation, Claude ejecuta `dart run build_runner build --delete-conflicting-outputs` automáticamente.
 
+## 🧪 Política de Testing (No Negociable)
+
+### Tests Fallando - Jerarquía de Acciones
+1. **ARREGLAR** el código que el test expone como roto
+2. **ARREGLAR** el test si está mal escrito
+3. **SKIP + ISSUE** si requiere investigación profunda
+4. **NUNCA ELIMINAR** un test que falla sin documentación
+
+### Cuando un test falla por "problemas de scroll/visibilidad/timing":
+- Son síntomas, no el problema. Investigar causa raíz.
+- Usar `tester.pumpAndSettle(Duration(seconds: 2))` antes de eliminar
+- Si es flaky: marcar con `skip: 'Flaky - Issue #XXX'`, no borrar
+
+### Formato obligatorio para skip:
+```dart
+testWidgets('descripción', skip: 'RAZÓN - Issue #NNN', (tester) async {});
+```
+
+### Métricas de salud del proyecto:
+- ✅ Tests pasando: objetivo 100%
+- ⚠️ Tests skipped: máximo 5% (deuda visible)
+- ❌ Tests eliminados sin issue: PROHIBIDO
+
 ### 5. Estructura de Carpetas
 ```
 lib/
