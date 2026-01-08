@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/local/database.dart';
@@ -27,7 +28,7 @@ class CategoriesNotifier extends _$CategoriesNotifier {
 /// Provider de categorías por tipo
 @riverpod
 Future<List<CategoryEntry>> categoriesByType(
-  CategoriesByTypeRef ref,
+  Ref ref,
   String type,
 ) async {
   final dao = ref.watch(categoriesDaoProvider);
@@ -36,14 +37,14 @@ Future<List<CategoryEntry>> categoriesByType(
 
 /// Provider de categorías de gastos (para el semáforo)
 @riverpod
-Future<List<CategoryEntry>> expenseCategories(ExpenseCategoriesRef ref) async {
+Future<List<CategoryEntry>> expenseCategories(Ref ref) async {
   final dao = ref.watch(categoriesDaoProvider);
   return dao.getExpenseCategories();
 }
 
 /// Provider de categorías raíz
 @riverpod
-Future<List<CategoryEntry>> rootCategories(RootCategoriesRef ref) async {
+Future<List<CategoryEntry>> rootCategories(Ref ref) async {
   final dao = ref.watch(categoriesDaoProvider);
   return dao.getRootCategories();
 }
@@ -51,7 +52,7 @@ Future<List<CategoryEntry>> rootCategories(RootCategoriesRef ref) async {
 /// Provider de subcategorías de una categoría padre
 @riverpod
 Future<List<CategoryEntry>> childCategories(
-  ChildCategoriesRef ref,
+  Ref ref,
   String parentId,
 ) async {
   final dao = ref.watch(categoriesDaoProvider);
@@ -60,7 +61,7 @@ Future<List<CategoryEntry>> childCategories(
 
 /// Stream de categorías (reactivo)
 @riverpod
-Stream<List<CategoryEntry>> categoriesStream(CategoriesStreamRef ref) {
+Stream<List<CategoryEntry>> categoriesStream(Ref ref) {
   final dao = ref.watch(categoriesDaoProvider);
   return dao.watchAllCategories();
 }

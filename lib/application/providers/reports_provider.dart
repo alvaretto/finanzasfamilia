@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/services/reports_service.dart';
@@ -7,7 +8,7 @@ part 'reports_provider.g.dart';
 
 /// Provider del servicio de reportes
 @riverpod
-ReportsService reportsService(ReportsServiceRef ref) {
+ReportsService reportsService(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   final transactionsDao = ref.watch(transactionsDaoProvider);
   final categoriesDao = ref.watch(categoriesDaoProvider);
@@ -25,7 +26,7 @@ ReportsService reportsService(ReportsServiceRef ref) {
 
 /// Provider para el Balance General
 @riverpod
-Future<BalanceSheet> balanceSheet(BalanceSheetRef ref) async {
+Future<BalanceSheet> balanceSheet(Ref ref) async {
   final service = ref.watch(reportsServiceProvider);
   return service.generateBalanceSheet();
 }
@@ -33,7 +34,7 @@ Future<BalanceSheet> balanceSheet(BalanceSheetRef ref) async {
 /// Provider para el Estado de Resultados del mes actual
 @riverpod
 Future<IncomeStatement> currentMonthIncomeStatement(
-  CurrentMonthIncomeStatementRef ref,
+  Ref ref,
 ) async {
   final service = ref.watch(reportsServiceProvider);
   final now = DateTime.now();
@@ -46,7 +47,7 @@ Future<IncomeStatement> currentMonthIncomeStatement(
 /// Provider para Estado de Resultados con período personalizado
 @riverpod
 Future<IncomeStatement> incomeStatementForPeriod(
-  IncomeStatementForPeriodRef ref, {
+  Ref ref, {
   required DateTime startDate,
   required DateTime endDate,
 }) async {
@@ -59,7 +60,7 @@ Future<IncomeStatement> incomeStatementForPeriod(
 
 /// Provider para el Resumen Mensual actual
 @riverpod
-Future<MonthlySummary> currentMonthlySummary(CurrentMonthlySummaryRef ref) async {
+Future<MonthlySummary> currentMonthlySummary(Ref ref) async {
   final service = ref.watch(reportsServiceProvider);
   final now = DateTime.now();
   return service.generateMonthlySummary(
@@ -70,7 +71,7 @@ Future<MonthlySummary> currentMonthlySummary(CurrentMonthlySummaryRef ref) async
 
 /// Provider para Flujo de Efectivo del mes actual
 @riverpod
-Future<CashFlowReport> currentMonthCashFlow(CurrentMonthCashFlowRef ref) async {
+Future<CashFlowReport> currentMonthCashFlow(Ref ref) async {
   final service = ref.watch(reportsServiceProvider);
   final now = DateTime.now();
   return service.generateCashFlowReport(

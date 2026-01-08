@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/local/database.dart';
@@ -118,7 +119,7 @@ class DashboardSummary {
 
 /// Provider del resumen del dashboard
 @riverpod
-Future<DashboardSummary> dashboardSummary(DashboardSummaryRef ref) async {
+Future<DashboardSummary> dashboardSummary(Ref ref) async {
   final db = ref.watch(appDatabaseProvider);
   final categoriesDao = ref.watch(categoriesDaoProvider);
   final transactionsDao = ref.watch(transactionsDaoProvider);
@@ -284,7 +285,7 @@ Future<DashboardSummary> dashboardSummary(DashboardSummaryRef ref) async {
 /// Provider del resumen de un mes específico
 @riverpod
 Future<MonthSummary> monthSummary(
-  MonthSummaryRef ref,
+  Ref ref,
   int month,
   int year,
 ) async {

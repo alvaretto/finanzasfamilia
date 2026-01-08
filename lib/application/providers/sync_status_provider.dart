@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'sync_status_provider.g.dart';
@@ -141,24 +142,24 @@ class SyncStatus extends _$SyncStatus {
 
 /// Provider que indica si está conectado
 @riverpod
-bool isConnected(IsConnectedRef ref) {
+bool isConnected(Ref ref) {
   return ref.watch(syncStatusProvider.select((s) => s.isConnected));
 }
 
 /// Provider que indica si está sincronizando
 @riverpod
-bool isSyncing(IsSyncingRef ref) {
+bool isSyncing(Ref ref) {
   return ref.watch(syncStatusProvider.select((s) => s.isSyncing));
 }
 
 /// Provider con los errores de sincronización
 @riverpod
-List<String> syncErrors(SyncErrorsRef ref) {
+List<String> syncErrors(Ref ref) {
   return ref.watch(syncStatusProvider.select((s) => s.errors));
 }
 
 /// Provider con la última sincronización exitosa
 @riverpod
-DateTime? lastSyncTime(LastSyncTimeRef ref) {
+DateTime? lastSyncTime(Ref ref) {
   return ref.watch(syncStatusProvider.select((s) => s.lastSyncTime));
 }

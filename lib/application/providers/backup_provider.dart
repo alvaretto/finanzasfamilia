@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../services/backup_service.dart';
@@ -47,14 +48,14 @@ class BackupState {
 
 /// Provider del directorio de backups
 @Riverpod(keepAlive: true)
-String backupDirectory(BackupDirectoryRef ref) {
+String backupDirectory(Ref ref) {
   // En producción esto vendría de path_provider
   return '/tmp/finanzas_backups';
 }
 
 /// Provider del servicio de backup
 @Riverpod(keepAlive: true)
-BackupService backupService(BackupServiceRef ref) {
+BackupService backupService(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return BackupService(db: db);
 }
@@ -143,24 +144,24 @@ class Backup extends _$Backup {
 
 /// Provider que indica si hay backup reciente
 @riverpod
-bool hasRecentBackup(HasRecentBackupRef ref) {
+bool hasRecentBackup(Ref ref) {
   return ref.watch(backupProvider.select((s) => s.hasRecentBackup));
 }
 
 /// Provider con el conteo de backups
 @riverpod
-int backupCount(BackupCountRef ref) {
+int backupCount(Ref ref) {
   return ref.watch(backupProvider.select((s) => s.backups.length));
 }
 
 /// Provider que indica si está creando backup
 @riverpod
-bool isCreatingBackup(IsCreatingBackupRef ref) {
+bool isCreatingBackup(Ref ref) {
   return ref.watch(backupProvider.select((s) => s.isCreatingBackup));
 }
 
 /// Provider con la última fecha de backup
 @riverpod
-DateTime? lastBackupTime(LastBackupTimeRef ref) {
+DateTime? lastBackupTime(Ref ref) {
   return ref.watch(backupProvider.select((s) => s.lastBackupTime));
 }

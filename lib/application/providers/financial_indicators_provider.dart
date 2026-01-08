@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'database_provider.dart';
@@ -185,7 +186,7 @@ class AvailableBalanceIndicator {
 /// Provider del indicador de cobertura de deuda
 @riverpod
 Future<DebtCoverageIndicator> debtCoverageIndicator(
-  DebtCoverageIndicatorRef ref,
+  Ref ref,
 ) async {
   final db = ref.watch(appDatabaseProvider);
 
@@ -215,7 +216,7 @@ Future<DebtCoverageIndicator> debtCoverageIndicator(
 /// Provider del saldo disponible real
 @riverpod
 Future<AvailableBalanceIndicator> availableBalanceIndicator(
-  AvailableBalanceIndicatorRef ref,
+  Ref ref,
 ) async {
   final db = ref.watch(appDatabaseProvider);
   final categoriesDao = ref.watch(categoriesDaoProvider);
@@ -267,7 +268,7 @@ Future<AvailableBalanceIndicator> availableBalanceIndicator(
 /// Provider de todos los indicadores financieros
 @riverpod
 Future<FinancialIndicatorsSummary> financialIndicatorsSummary(
-  FinancialIndicatorsSummaryRef ref,
+  Ref ref,
 ) async {
   final debtCoverage = await ref.watch(debtCoverageIndicatorProvider.future);
   final availableBalance = await ref.watch(availableBalanceIndicatorProvider.future);

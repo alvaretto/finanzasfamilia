@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -9,20 +10,20 @@ part 'database_provider.g.dart';
 
 /// Provider del cliente de Supabase
 @Riverpod(keepAlive: true)
-SupabaseClient supabaseClient(SupabaseClientRef ref) {
+SupabaseClient supabaseClient(Ref ref) {
   return Supabase.instance.client;
 }
 
 /// Provider del manager de PowerSync
 @Riverpod(keepAlive: true)
-PowerSyncDatabaseManager powerSyncManager(PowerSyncManagerRef ref) {
+PowerSyncDatabaseManager powerSyncManager(Ref ref) {
   return PowerSyncDatabaseManager.instance;
 }
 
 /// Provider de la base de datos de Drift
 /// Usa el archivo SQLite de PowerSync para operaciones locales
 @Riverpod(keepAlive: true)
-AppDatabase appDatabase(AppDatabaseRef ref) {
+AppDatabase appDatabase(Ref ref) {
   final powerSync = ref.watch(powerSyncManagerProvider);
 
   if (!powerSync.isInitialized) {
@@ -36,21 +37,21 @@ AppDatabase appDatabase(AppDatabaseRef ref) {
 
 /// Provider del DAO de categorías
 @riverpod
-CategoriesDao categoriesDao(CategoriesDaoRef ref) {
+CategoriesDao categoriesDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return CategoriesDao(db);
 }
 
 /// Provider del DAO de transacciones
 @riverpod
-TransactionsDao transactionsDao(TransactionsDaoRef ref) {
+TransactionsDao transactionsDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return TransactionsDao(db);
 }
 
 /// Provider del DAO de presupuestos
 @riverpod
-BudgetsDao budgetsDao(BudgetsDaoRef ref) {
+BudgetsDao budgetsDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return BudgetsDao(db);
 }
@@ -61,21 +62,21 @@ BudgetsDao budgetsDao(BudgetsDaoRef ref) {
 
 /// Provider del DAO de unidades de medida
 @riverpod
-MeasurementUnitsDao measurementUnitsDao(MeasurementUnitsDaoRef ref) {
+MeasurementUnitsDao measurementUnitsDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return MeasurementUnitsDao(db);
 }
 
 /// Provider del DAO de lugares
 @riverpod
-PlacesDao placesDao(PlacesDaoRef ref) {
+PlacesDao placesDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return PlacesDao(db);
 }
 
 /// Provider del DAO de métodos de pago
 @riverpod
-PaymentMethodsDao paymentMethodsDao(PaymentMethodsDaoRef ref) {
+PaymentMethodsDao paymentMethodsDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return PaymentMethodsDao(db);
 }
@@ -86,21 +87,21 @@ PaymentMethodsDao paymentMethodsDao(PaymentMethodsDaoRef ref) {
 
 /// Provider del DAO de detalles de transacción (Shopping Cart)
 @riverpod
-TransactionDetailsDao transactionDetailsDao(TransactionDetailsDaoRef ref) {
+TransactionDetailsDao transactionDetailsDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return TransactionDetailsDao(db);
 }
 
 /// Provider del DAO de asientos contables (Partida Doble)
 @riverpod
-JournalEntriesDao journalEntriesDao(JournalEntriesDaoRef ref) {
+JournalEntriesDao journalEntriesDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return JournalEntriesDao(db);
 }
 
 /// Provider del DAO de cuentas
 @riverpod
-AccountsDao accountsDao(AccountsDaoRef ref) {
+AccountsDao accountsDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return AccountsDao(db);
 }

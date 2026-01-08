@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/local/database.dart';
@@ -58,7 +59,7 @@ class CurrentMonthBudgets extends _$CurrentMonthBudgets {
 /// Provider del progreso de un presupuesto específico
 @riverpod
 Future<BudgetProgress?> budgetProgress(
-  BudgetProgressRef ref,
+  Ref ref,
   String categoryId,
 ) async {
   final budgetsDao = ref.watch(budgetsDaoProvider);
@@ -113,7 +114,7 @@ BudgetStatus _calculateStatus(double percentage) {
 
 /// Provider de todos los progresos de presupuesto del mes
 @riverpod
-Future<List<BudgetProgress>> allBudgetProgress(AllBudgetProgressRef ref) async {
+Future<List<BudgetProgress>> allBudgetProgress(Ref ref) async {
   final budgetsDao = ref.watch(budgetsDaoProvider);
   final transactionsDao = ref.watch(transactionsDaoProvider);
 

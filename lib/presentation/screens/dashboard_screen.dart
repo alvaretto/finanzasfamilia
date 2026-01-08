@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../application/providers/accounting_provider.dart';
 import '../../application/providers/dashboard_provider.dart';
 import '../../application/providers/financial_indicators_provider.dart';
 import '../widgets/traffic_light_indicator.dart';
@@ -14,6 +15,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardSummaryProvider);
+    final totalBalanceAsync = ref.watch(totalBalanceProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -30,12 +32,18 @@ class DashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(dashboardSummaryProvider),
+            onPressed: () {
+              ref.invalidate(dashboardSummaryProvider);
+              ref.invalidate(totalBalanceProvider);
+            },
           ),
         ],
       ),
       body: dashboardAsync.when(
-        data: (dashboard) => _DashboardContent(dashboard: dashboard),
+        data: (dashboard) => _DashboardContent(
+          dashboard: dashboard,
+          totalBalance: totalBalanceAsync.valueOrNull,
+        ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Column(
@@ -59,8 +67,12 @@ class DashboardScreen extends ConsumerWidget {
 
 class _DashboardContent extends StatelessWidget {
   final DashboardSummary dashboard;
+  final TotalBalance? totalBalance;
 
-  const _DashboardContent({required this.dashboard});
+  const _DashboardContent({
+    required this.dashboard,
+    this.totalBalance,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -77,11 +89,12 @@ class _DashboardContent extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Tarjeta de Patrimonio Neto
+          // Tarjeta de Patrimonio Neto (usa totalBalance si disponible)
           _NetWorthCard(
-            netWorth: dashboard.netWorth,
-            totalAssets: dashboard.totalAssets,
-            totalLiabilities: dashboard.totalLiabilities,
+            netWorth: totalBalance?.netWorth ?? dashboard.netWorth,
+            totalAssets: totalBalance?.assets ?? dashboard.totalAssets,
+            totalLiabilities: totalBalance?.liabilities ?? dashboard.totalLiabilities,
+            accountCount: totalBalance?.accountCount,
             currencyFormat: currencyFormat,
           ),
 
@@ -89,7 +102,7 @@ class _DashboardContent extends StatelessWidget {
 
           // Tarjeta de Saldo Disponible Real
           _AvailableBalanceCard(
-            availableBalance: dashboard.availableBalance,
+            availableBalance: totalBalance?.balance ?? dashboard.availableBalance,
             currencyFormat: currencyFormat,
           ),
 
@@ -129,12 +142,14 @@ class _NetWorthCard extends StatelessWidget {
   final double netWorth;
   final double totalAssets;
   final double totalLiabilities;
+  final int? accountCount;
   final NumberFormat currencyFormat;
 
   const _NetWorthCard({
     required this.netWorth,
     required this.totalAssets,
     required this.totalLiabilities,
+    this.accountCount,
     required this.currencyFormat,
   });
 
@@ -156,13 +171,23 @@ class _NetWorthCard extends StatelessWidget {
                   color: isPositive ? Colors.green : Colors.red,
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'Mis Ahorros Netos',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                const Expanded(
+                  child: Text(
+                    'Mis Ahorros Netos',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
+                if (accountCount != null)
+                  Text(
+                    '$accountCount cuentas',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),

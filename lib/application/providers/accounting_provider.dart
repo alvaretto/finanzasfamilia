@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/services/accounting_service.dart';
@@ -7,7 +8,7 @@ part 'accounting_provider.g.dart';
 
 /// Provider del servicio de contabilidad (Partida Doble)
 @riverpod
-AccountingService accountingService(AccountingServiceRef ref) {
+AccountingService accountingService(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   final transactionsDao = ref.watch(transactionsDaoProvider);
   final journalEntriesDao = ref.watch(journalEntriesDaoProvider);
@@ -23,7 +24,7 @@ AccountingService accountingService(AccountingServiceRef ref) {
 
 /// Provider para obtener todas las cuentas activas
 @riverpod
-Future<List<AccountWithCategory>> activeAccounts(ActiveAccountsRef ref) async {
+Future<List<AccountWithCategory>> activeAccounts(Ref ref) async {
   final db = ref.watch(appDatabaseProvider);
   final accountsDao = ref.watch(accountsDaoProvider);
 
@@ -49,7 +50,7 @@ Future<List<AccountWithCategory>> activeAccounts(ActiveAccountsRef ref) async {
 /// Provider para obtener cuentas por tipo de categoría
 @riverpod
 Future<List<AccountWithCategory>> accountsByType(
-  AccountsByTypeRef ref,
+  Ref ref,
   String categoryType,
 ) async {
   final db = ref.watch(appDatabaseProvider);
@@ -78,7 +79,7 @@ Future<List<AccountWithCategory>> accountsByType(
 
 /// Provider para obtener el balance total de todas las cuentas activas
 @riverpod
-Future<TotalBalance> totalBalance(TotalBalanceRef ref) async {
+Future<TotalBalance> totalBalance(Ref ref) async {
   final accountsDao = ref.watch(accountsDaoProvider);
   final accounts = await accountsDao.getActiveAccounts();
 

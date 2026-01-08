@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.1
+**Nombre:** Finanzas Familiares AS - Modo Personal v1.2
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 1.5
+**Estado:** En desarrollo - Fase 14 completada
 
 ---
 
@@ -26,7 +26,7 @@
 | Base de Datos Local | Drift | ^2.x |
 | Sincronización | PowerSync | ^1.x |
 | Backend | Supabase | - |
-| Estado | Riverpod 2.0 | ^2.x |
+| Estado | Riverpod 3.0 | ^2.6.x |
 | Inyección | flutter_riverpod | - |
 | Export Excel | excel | ^4.x |
 | Export CSV | csv | ^6.x |
@@ -38,6 +38,7 @@
 - **PROHIBIDO:** `StateProvider`, `StateNotifierProvider`
 - **PERMITIDO:** `Notifier`, `AsyncNotifier`, `Provider`, `FutureProvider`, `StreamProvider`
 - Usar `@riverpod` annotation con code generation
+- **Riverpod 3.0:** Usar `Ref` en lugar de tipos específicos (`*Ref` deprecated)
 
 #### Reglas de Drift
 - Tablas en `lib/data/local/tables/`
@@ -337,6 +338,20 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 3.5 | Accounting Engine | ✅ Completado (AccountingService + Seeders) |
 | 4 | Import/Export & Sync | ✅ Completado (42 tests) |
 | 5 | Backup Strategy | ✅ Completado (47 tests) |
+| 6-13 | Dashboard, Accounts, Forms, Indicators | ✅ Completado |
+| 14 | Reportes Financieros | ✅ Completado (ReportsService + ReportsScreen) |
+
+---
+
+## Changelog Reciente
+
+### v1.2 (2026-01-08)
+- **FASE 14:** Reportes Financieros
+  - `ReportsService`: Balance General, Estado de Resultados, Flujo de Efectivo, Resumen Mensual
+  - `ReportsScreen`: 3 tabs (Resumen, Balance, Resultados)
+  - Integración desde Dashboard con botón de acceso
+- **Migración Riverpod 3.0:** Todos los providers usan `Ref` en lugar de `*Ref`
+- **Dashboard mejorado:** Integración con `totalBalanceProvider` para datos consistentes
 
 ---
 
