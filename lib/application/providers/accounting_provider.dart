@@ -84,11 +84,14 @@ Future<TotalBalance> totalBalance(TotalBalanceRef ref) async {
 
   double totalAssets = 0;
   double totalLiabilities = 0;
+  int includedCount = 0;
 
   final db = ref.watch(appDatabaseProvider);
 
   for (final account in accounts) {
     if (!account.includeInTotal) continue;
+
+    includedCount++;
 
     final category = await (db.select(db.categories)
           ..where((c) => c.id.equals(account.categoryId)))
@@ -105,6 +108,7 @@ Future<TotalBalance> totalBalance(TotalBalanceRef ref) async {
     assets: totalAssets,
     liabilities: totalLiabilities,
     netWorth: totalAssets - totalLiabilities,
+    accountCount: includedCount,
   );
 }
 
@@ -126,10 +130,15 @@ class TotalBalance {
   final double assets;
   final double liabilities;
   final double netWorth;
+  final int accountCount;
 
   TotalBalance({
     required this.assets,
     required this.liabilities,
     required this.netWorth,
+    required this.accountCount,
   });
+
+  /// Balance neto (alias para netWorth)
+  double get balance => netWorth;
 }
