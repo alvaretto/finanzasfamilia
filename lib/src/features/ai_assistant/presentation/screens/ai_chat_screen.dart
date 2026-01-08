@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AIChatScreen extends StatefulWidget {
+import '../../domain/chat_message.dart';
+import '../providers/ai_chat_provider.dart';
+
+class AIChatScreen extends ConsumerStatefulWidget {
   const AIChatScreen({super.key});
 
   @override
-  State<AIChatScreen> createState() => _AIChatScreenState();
+  ConsumerState<AIChatScreen> createState() => _AIChatScreenState();
 }
 
-class _AIChatScreenState extends State<AIChatScreen> {
+class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  final List<_ChatMessage> _messages = [
-    _ChatMessage(
-      isUser: false,
-      content: '''Hola! Soy **Fina**, tu asistente financiero personal.
-
-Puedo ayudarte con:
-- Analisis de tus gastos
-- Consejos de ahorro
-- Preguntas sobre tus finanzas
-
-Que te gustaria saber?''',
-    ),
-  ];
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -37,55 +27,9 @@ Que te gustaria saber?''',
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    setState(() {
-      _messages.add(_ChatMessage(isUser: true, content: text));
-      _isLoading = true;
-    });
+    ref.read(aiChatProvider.notifier).sendMessage(text);
     _messageController.clear();
     _scrollToBottom();
-
-    // Simulate AI response (TODO: Connect to Edge Function)
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add(_ChatMessage(
-          isUser: false,
-          content: _getMockResponse(text),
-        ));
-        _isLoading = false;
-      });
-      _scrollToBottom();
-    });
-  }
-
-  String _getMockResponse(String query) {
-    final lower = query.toLowerCase();
-    if (lower.contains('mercado') || lower.contains('gasto')) {
-      return '''En enero 2026 gastaste **\$385,000** en mercado:
-
-| Categoria | Monto |
-|-----------|-------|
-| Frutas | \$85,000 |
-| Carnicos | \$180,000 |
-| Lacteos | \$65,000 |
-| Otros | \$55,000 |
-
-**Tip:** Tus gastos en carnicos aumentaron 15% respecto al mes pasado.''';
-    }
-    if (lower.contains('ahorro') || lower.contains('ahorrar')) {
-      return '''Basado en tus finanzas, aqui hay algunas sugerencias:
-
-1. **Reducir gastos en mecato** - Gastas ~\$45,000/mes
-2. **Optimizar domicilios** - 8 pedidos este mes
-3. **Meta de ahorro** - Podrias ahorrar \$200,000/mes
-
-Quieres que profundice en alguna de estas areas?''';
-    }
-    return '''Entiendo tu pregunta sobre "$query".
-
-Para darte una respuesta precisa, necesito acceso a tus datos financieros actuales.
-
-**Nota:** Esta es una version demo. La integracion completa con Claude estara disponible pronto.''';
   }
 
   void _scrollToBottom() {
@@ -102,6 +46,18 @@ Para darte una respuesta precisa, necesito acceso a tus datos financieros actual
 
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(aiChatProvider);
+    final messages = chatState.messages;
+    final isLoading = chatState.isLoading;
+    final isOnline = chatState.isOnline;
+
+    // Auto-scroll cuando llegan nuevos mensajes
+    ref.listen<AIChatState>(aiChatProvider, (previous, next) {
+      if (previous?.messages.length != next.messages.length) {
+        _scrollToBottom();
+      }
+    });
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
@@ -121,92 +77,125 @@ Para darte una respuesta precisa, necesito acceso a tus datos financieros actual
             ),
           ),
           // Header
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: const Icon(Icons.smart_toy, color: Colors.white),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Fina',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Asistente Financiero IA',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
+          _ChatHeader(
+            isOnline: isOnline,
+            onClose: () => Navigator.of(context).pop(),
+            onClear: () => ref.read(aiChatProvider.notifier).clearChat(),
           ),
           const Divider(height: 1),
+          // Offline banner
+          if (!isOnline) const _OfflineBanner(),
           // Messages
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(16),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
+              itemCount: messages.length + (isLoading ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == _messages.length) {
+                if (index == messages.length) {
                   return const _TypingIndicator();
                 }
-                return _MessageBubble(message: _messages[index]);
+                return _MessageBubble(message: messages[index]);
               },
             ),
           ),
           // Input
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(13),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
+          _ChatInput(
+            controller: _messageController,
+            onSend: _sendMessage,
+            isLoading: isLoading,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChatHeader extends StatelessWidget {
+  final bool isOnline;
+  final VoidCallback onClose;
+  final VoidCallback onClear;
+
+  const _ChatHeader({
+    required this.isOnline,
+    required this.onClose,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            child: const Icon(Icons.smart_toy, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Fina',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: isOnline ? Colors.green : Colors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isOnline ? 'En línea' : 'Modo offline',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Escribe tu pregunta...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _sendMessage,
-                  icon: const Icon(Icons.send),
-                ),
-              ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Limpiar chat',
+            onPressed: onClear,
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: onClose,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.orange.withAlpha(30),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off, size: 16, color: Colors.orange),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Sin conexión - Respuestas limitadas',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.orange[800],
+              ),
             ),
           ),
         ],
@@ -215,15 +204,8 @@ Para darte una respuesta precisa, necesito acceso a tus datos financieros actual
   }
 }
 
-class _ChatMessage {
-  final bool isUser;
-  final String content;
-
-  _ChatMessage({required this.isUser, required this.content});
-}
-
 class _MessageBubble extends StatelessWidget {
-  final _ChatMessage message;
+  final ChatMessage message;
 
   const _MessageBubble({required this.message});
 
@@ -239,8 +221,14 @@ class _MessageBubble extends StatelessWidget {
           if (!isUser) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: const Icon(Icons.smart_toy, size: 18, color: Colors.white),
+              backgroundColor: message.isError
+                  ? Colors.red
+                  : Theme.of(context).colorScheme.primary,
+              child: Icon(
+                message.isError ? Icons.error : Icons.smart_toy,
+                size: 18,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(width: 8),
           ],
@@ -250,7 +238,9 @@ class _MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isUser
                     ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    : message.isError
+                        ? Colors.red.withAlpha(20)
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: isUser
@@ -262,16 +252,96 @@ class _MessageBubble extends StatelessWidget {
                       data: message.content,
                       styleSheet: MarkdownStyleSheet(
                         p: Theme.of(context).textTheme.bodyMedium,
+                        h3: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                         tableHead: const TextStyle(fontWeight: FontWeight.bold),
                         tableBorder: TableBorder.all(
                           color: Colors.grey.shade300,
                           width: 1,
+                        ),
+                        tableCellsPadding: const EdgeInsets.all(8),
+                        blockquotePadding: const EdgeInsets.all(8),
+                        blockquoteDecoration: BoxDecoration(
+                          color: Colors.blue.withAlpha(20),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border(
+                            left: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 3,
+                            ),
+                          ),
                         ),
                       ),
                     ),
             ),
           ),
           if (isUser) const SizedBox(width: 8),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChatInput extends StatelessWidget {
+  final TextEditingController controller;
+  final VoidCallback onSend;
+  final bool isLoading;
+
+  const _ChatInput({
+    required this.controller,
+    required this.onSend,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(13),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              enabled: !isLoading,
+              decoration: InputDecoration(
+                hintText: isLoading ? 'Fina está escribiendo...' : 'Escribe tu pregunta...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => onSend(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton.filled(
+            onPressed: isLoading ? null : onSend,
+            icon: isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.send),
+          ),
         ],
       ),
     );
