@@ -111,7 +111,7 @@ class _TotalBalanceCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: (isPositive ? Colors.green : Colors.red).withOpacity(0.3),
+                color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -264,7 +264,7 @@ class _AccountTile extends ConsumerWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(

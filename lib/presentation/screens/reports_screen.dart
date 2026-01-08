@@ -143,7 +143,7 @@ class _MonthlySummaryTab extends ConsumerWidget {
             Card(
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.orange.withOpacity(0.2),
+                  backgroundColor: Colors.orange.withValues(alpha: 0.2),
                   child: const Icon(Icons.calendar_today, color: Colors.orange),
                 ),
                 title: const Text('Gasto Diario Promedio'),
@@ -163,7 +163,7 @@ class _MonthlySummaryTab extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.red.withOpacity(0.2),
+                    backgroundColor: Colors.red.withValues(alpha: 0.2),
                     child: const Icon(Icons.trending_up, color: Colors.red),
                   ),
                   title: const Text('Mayor Gasto'),
@@ -371,8 +371,8 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: isPositive
-          ? Colors.green.withOpacity(0.1)
-          : Colors.red.withOpacity(0.1),
+          ? Colors.green.withValues(alpha: 0.1)
+          : Colors.red.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -463,7 +463,7 @@ class _SectionHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -507,7 +507,7 @@ class _BalanceItemTile extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor:
-              (isAsset ? Colors.green : Colors.red).withOpacity(0.2),
+              (isAsset ? Colors.green : Colors.red).withValues(alpha: 0.2),
           child: Text(
             item.icon ?? '💰',
             style: const TextStyle(fontSize: 20),

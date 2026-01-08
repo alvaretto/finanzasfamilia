@@ -280,7 +280,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             categories.where((c) => c.parentId == null).toList();
 
         return DropdownButtonFormField<String>(
-          value: selectedCategoryId,
+          initialValue: selectedCategoryId,
           decoration: const InputDecoration(
             labelText: 'Categoría',
             prefixIcon: Icon(Icons.category),
@@ -378,7 +378,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     final selectedId = ref.watch(selectedProvider);
 
     return DropdownButtonFormField<String>(
-      value: selectedId,
+      initialValue: selectedId,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),

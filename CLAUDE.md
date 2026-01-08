@@ -352,6 +352,10 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
   - Integración desde Dashboard con botón de acceso
 - **Migración Riverpod 3.0:** Todos los providers usan `Ref` en lugar de `*Ref`
 - **Dashboard mejorado:** Integración con `totalBalanceProvider` para datos consistentes
+- **Deprecaciones Flutter resueltas:**
+  - `withOpacity()` → `withValues(alpha: X)` (10 instancias)
+  - `value:` → `initialValue:` en `DropdownButtonFormField` (4 instancias)
+  - Variable no usada eliminada en `reports_service.dart`
 
 ---
 

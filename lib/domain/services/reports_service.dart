@@ -134,8 +134,6 @@ class ReportsService {
     );
     final accounts = await accountsDao.getActiveAccounts();
 
-    final accountMap = {for (var a in accounts) a.id: a};
-
     // Calcular flujo por cuenta
     final flowByAccount = <String, CashFlowItem>{};
 

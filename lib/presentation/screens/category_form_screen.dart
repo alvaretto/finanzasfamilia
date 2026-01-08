@@ -335,7 +335,7 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String?>(
-              value: selectedParentId,
+              initialValue: selectedParentId,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.subdirectory_arrow_right),
                 border: OutlineInputBorder(),

@@ -171,7 +171,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
         : _balanceController.text;
 
     return Card(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
@@ -292,7 +292,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
             categories.where((c) => c.parentId == null).toList();
 
         return DropdownButtonFormField<String>(
-          value: selectedCategoryId,
+          initialValue: selectedCategoryId == '' ? null : selectedCategoryId,
           decoration: const InputDecoration(
             labelText: 'Tipo de cuenta',
             prefixIcon: Icon(Icons.category),
@@ -422,7 +422,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: color.withOpacity(0.5),
+                              color: color.withValues(alpha: 0.5),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
