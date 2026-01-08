@@ -4,3 +4,8 @@ export 'dashboard_screen.dart';
 export 'transactions_screen.dart';
 export 'categories_screen.dart';
 export 'budgets_screen.dart';
+
+// Formularios
+export 'transaction_form_screen.dart';
+export 'category_form_screen.dart';
+export 'account_form_screen.dart';

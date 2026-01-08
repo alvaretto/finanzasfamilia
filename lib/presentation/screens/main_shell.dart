@@ -5,6 +5,8 @@ import 'dashboard_screen.dart';
 import 'transactions_screen.dart';
 import 'categories_screen.dart';
 import 'budgets_screen.dart';
+import 'transaction_form_screen.dart';
+import 'account_form_screen.dart';
 
 /// Provider para el índice de navegación actual
 final currentTabProvider = StateProvider<int>((ref) => 0);
@@ -122,10 +124,11 @@ class _QuickAddSheet extends StatelessWidget {
                       subtitle: 'Registrar un gasto',
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(
+                        Navigator.push(
                           context,
-                          '/transaction/new',
-                          arguments: {'type': 'expense'},
+                          MaterialPageRoute(
+                            builder: (_) => const TransactionFormScreen(),
+                          ),
                         );
                       },
                     ),
@@ -136,10 +139,11 @@ class _QuickAddSheet extends StatelessWidget {
                       subtitle: 'Registrar un ingreso',
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(
+                        Navigator.push(
                           context,
-                          '/transaction/new',
-                          arguments: {'type': 'income'},
+                          MaterialPageRoute(
+                            builder: (_) => const TransactionFormScreen(),
+                          ),
                         );
                       },
                     ),
@@ -150,22 +154,28 @@ class _QuickAddSheet extends StatelessWidget {
                       subtitle: 'Mover dinero entre cuentas',
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(
+                        Navigator.push(
                           context,
-                          '/transaction/new',
-                          arguments: {'type': 'transfer'},
+                          MaterialPageRoute(
+                            builder: (_) => const TransactionFormScreen(),
+                          ),
                         );
                       },
                     ),
                     const Divider(height: 32),
                     _QuickActionTile(
-                      icon: Icons.shopping_cart,
-                      color: Colors.orange,
-                      title: 'Compra Detallada',
-                      subtitle: 'Registrar varios items (ej: supermercado)',
+                      icon: Icons.account_balance_wallet,
+                      color: Colors.purple,
+                      title: 'Nueva Cuenta',
+                      subtitle: 'Agregar billetera o cuenta',
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/transaction/shopping');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AccountFormScreen(),
+                          ),
+                        );
                       },
                     ),
                   ],
