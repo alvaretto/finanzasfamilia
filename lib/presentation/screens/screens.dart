@@ -11,3 +11,6 @@ export 'reports_screen.dart';
 export 'transaction_form_screen.dart';
 export 'category_form_screen.dart';
 export 'account_form_screen.dart';
+
+// Asistente IA
+export 'ai_chat_screen.dart';

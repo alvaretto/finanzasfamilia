@@ -58,12 +58,14 @@ void main() {
       expect(find.text('Presupuestos'), findsOneWidget);
     });
 
-    testWidgets('muestra FAB para nueva transacción', (tester) async {
+    testWidgets('muestra FABs para nueva transacción y asistente IA', (tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      // Debe haber 2 FABs: el de nueva transacción y el del asistente IA
+      expect(find.byType(FloatingActionButton), findsNWidgets(2));
       expect(find.text('Nuevo'), findsOneWidget);
+      expect(find.text('🤖'), findsOneWidget);
     });
 
     testWidgets('cambia de tab al tocar destino', (tester) async {
@@ -81,12 +83,12 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
-    testWidgets('abre sheet de acciones rápidas al tocar FAB', (tester) async {
+    testWidgets('abre sheet de acciones rápidas al tocar FAB Nuevo', (tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Tocar FAB
-      await tester.tap(find.byType(FloatingActionButton));
+      // Tocar FAB "Nuevo" (el extendido, no el pequeño del asistente IA)
+      await tester.tap(find.text('Nuevo'));
       await tester.pump(); // Iniciar animación
       await tester.pump(const Duration(milliseconds: 500)); // Esperar animación
 
@@ -94,6 +96,14 @@ void main() {
       expect(find.text('¿Qué quieres registrar?'), findsOneWidget);
       expect(find.text('Gasto'), findsOneWidget);
       expect(find.text('Ingreso'), findsOneWidget);
+    });
+
+    testWidgets('muestra FAB del asistente IA', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Debería mostrar el FAB del asistente IA
+      expect(find.text('🤖'), findsOneWidget);
     });
   });
 

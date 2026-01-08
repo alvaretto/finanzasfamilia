@@ -8,6 +8,7 @@ import 'categories_screen.dart';
 import 'budgets_screen.dart';
 import 'transaction_form_screen.dart';
 import 'account_form_screen.dart';
+import 'ai_chat_screen.dart';
 
 /// Provider para el índice de navegación actual
 final currentTabProvider = StateProvider<int>((ref) => 0);
@@ -66,11 +67,34 @@ class MainShell extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddTransactionSheet(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Nuevo'),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // FAB del Asistente IA
+          FloatingActionButton.small(
+            heroTag: 'ai_assistant',
+            onPressed: () => _openAIChat(context),
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+            child: const Text('🤖', style: TextStyle(fontSize: 18)),
+          ),
+          const SizedBox(height: 8),
+          // FAB principal para agregar
+          FloatingActionButton.extended(
+            heroTag: 'add_transaction',
+            onPressed: () => _showAddTransactionSheet(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Nuevo'),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _openAIChat(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AIChatScreen()),
     );
   }
 

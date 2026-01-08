@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.2
+**Nombre:** Finanzas Familiares AS - Modo Personal v1.3
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 14 completada
+**Estado:** En desarrollo - Fase 15 completada
 
 ---
 
@@ -340,10 +340,21 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 5 | Backup Strategy | ✅ Completado (47 tests) |
 | 6-13 | Dashboard, Accounts, Forms, Indicators | ✅ Completado |
 | 14 | Reportes Financieros | ✅ Completado (ReportsService + ReportsScreen) |
+| 15 | Asistente IA "Fina" | ✅ Completado (UI + Provider + Service) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.3 (2026-01-08)
+- **FASE 15:** Asistente IA "Fina"
+  - `FinancialContext`: Modelo Freezed para contexto financiero anónimo
+  - `AIAssistantService`: Invoca Supabase Edge Function `ai-chat`
+  - `FinancialContextBuilder`: Construye contexto agregado desde DAOs
+  - `AIChatNotifier`: Provider Riverpod para estado del chat
+  - `AIChatScreen`: UI completa con chat, mensajes, loading y errores
+  - FAB secundario en MainShell para acceso rápido al asistente
+  - Tests actualizados para múltiples FABs
 
 ### v1.2 (2026-01-08)
 - **FASE 14:** Reportes Financieros
