@@ -1,0 +1,212 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'dashboard_screen.dart';
+import 'transactions_screen.dart';
+import 'categories_screen.dart';
+import 'budgets_screen.dart';
+
+/// Provider para el índice de navegación actual
+final currentTabProvider = StateProvider<int>((ref) => 0);
+
+/// Shell principal de la aplicación con Bottom Navigation
+class MainShell extends ConsumerWidget {
+  const MainShell({super.key});
+
+  static const _screens = [
+    DashboardScreen(),
+    TransactionsScreen(),
+    CategoriesScreen(),
+    BudgetsScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentTab = ref.watch(currentTabProvider);
+
+    return Scaffold(
+      body: IndexedStack(
+        index: currentTab,
+        children: _screens,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentTab,
+        onDestinationSelected: (index) {
+          ref.read(currentTabProvider.notifier).state = index;
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard),
+            label: '¿Cómo Voy?',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'Movimientos',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.category_outlined),
+            selectedIcon: Icon(Icons.category),
+            label: 'Categorías',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.savings_outlined),
+            selectedIcon: Icon(Icons.savings),
+            label: 'Presupuestos',
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddTransactionSheet(context),
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo'),
+      ),
+    );
+  }
+
+  void _showAddTransactionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => const _QuickAddSheet(),
+    );
+  }
+}
+
+/// Sheet de acceso rápido para agregar transacciones
+class _QuickAddSheet extends StatelessWidget {
+  const _QuickAddSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.4,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '¿Qué quieres registrar?',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    _QuickActionTile(
+                      icon: Icons.arrow_upward,
+                      color: Colors.red,
+                      title: 'Gasto',
+                      subtitle: 'Registrar un gasto',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                          context,
+                          '/transaction/new',
+                          arguments: {'type': 'expense'},
+                        );
+                      },
+                    ),
+                    _QuickActionTile(
+                      icon: Icons.arrow_downward,
+                      color: Colors.green,
+                      title: 'Ingreso',
+                      subtitle: 'Registrar un ingreso',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                          context,
+                          '/transaction/new',
+                          arguments: {'type': 'income'},
+                        );
+                      },
+                    ),
+                    _QuickActionTile(
+                      icon: Icons.swap_horiz,
+                      color: Colors.blue,
+                      title: 'Transferencia',
+                      subtitle: 'Mover dinero entre cuentas',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                          context,
+                          '/transaction/new',
+                          arguments: {'type': 'transfer'},
+                        );
+                      },
+                    ),
+                    const Divider(height: 32),
+                    _QuickActionTile(
+                      icon: Icons.shopping_cart,
+                      color: Colors.orange,
+                      title: 'Compra Detallada',
+                      subtitle: 'Registrar varios items (ej: supermercado)',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/transaction/shopping');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _QuickActionTile({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: color.withValues(alpha: 0.2),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
+}

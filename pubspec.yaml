@@ -1,0 +1,64 @@
+name: finanzas_familiares
+description: "Finanzas Familiares AS - Modo Personal v1.1"
+publish_to: 'none'
+version: 1.1.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+
+  # State Management - Riverpod 2.0
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Local Database - Drift
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.28
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # Offline Sync - PowerSync
+  powersync: ^1.9.2
+
+  # Backend - Supabase
+  supabase_flutter: ^2.8.3
+
+  # Utilities
+  flutter_dotenv: ^5.2.1
+  uuid: ^4.5.1
+  intl: ^0.20.1
+  equatable: ^2.0.7
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  excel: ^4.0.6
+  csv: ^6.0.0
+  pdf: ^3.11.3
+  connectivity_plus: ^7.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code Generation
+  build_runner: ^2.4.13
+  drift_dev: ^2.22.1
+  riverpod_generator: ^2.6.2
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+  # Linting
+  flutter_lints: ^5.0.0
+
+  # Testing
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
