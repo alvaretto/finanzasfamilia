@@ -40,7 +40,7 @@ void main() {
 
     testWidgets('muestra NavigationBar con 4 destinos', (tester) async {
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(find.byType(NavigationDestination), findsNWidgets(4));
@@ -48,7 +48,7 @@ void main() {
 
     testWidgets('muestra etiquetas de navegación', (tester) async {
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Verificar que las etiquetas existen (pueden aparecer múltiples veces)
       expect(find.text('¿Cómo Voy?'), findsWidgets);
@@ -59,7 +59,7 @@ void main() {
 
     testWidgets('muestra FAB para nueva transacción', (tester) async {
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(FloatingActionButton), findsOneWidget);
       expect(find.text('Nuevo'), findsOneWidget);
@@ -67,14 +67,14 @@ void main() {
 
     testWidgets('cambia de tab al tocar destino', (tester) async {
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Inicialmente muestra Dashboard (¿Cómo Voy?)
       expect(find.text('¿Cómo Voy?'), findsWidgets);
 
       // Tocar en Movimientos
       await tester.tap(find.text('Movimientos'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Debería mostrar pantalla de movimientos
       expect(find.byType(NavigationBar), findsOneWidget);
@@ -82,7 +82,7 @@ void main() {
 
     testWidgets('abre sheet de acciones rápidas al tocar FAB', (tester) async {
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Tocar FAB
       await tester.tap(find.byType(FloatingActionButton));

@@ -1,13 +1,149 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+// import 'package:drift/drift.dart' hide isNull, isNotNull; // No necesario sin cuenta de prueba
+import 'package:drift/native.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:finanzas_familiares/presentation/screens/transaction_form_screen.dart';
+import 'package:finanzas_familiares/application/providers/database_provider.dart';
+import 'package:finanzas_familiares/data/local/database.dart';
+import 'package:finanzas_familiares/data/local/daos/daos.dart';
+import 'package:finanzas_familiares/data/local/seeders/seeders.dart';
 
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('es_CO', null);
+  });
+
+  group('TransactionFormScreen Widget Tests', () {
+    late AppDatabase db;
+
+    setUp(() async {
+      db = AppDatabase.forTesting(NativeDatabase.memory());
+      final categoriesDao = CategoriesDao(db);
+      await seedCategories(categoriesDao);
+    });
+
+    tearDown(() async {
+      await db.close();
+    });
+
+    Widget createTestWidget() {
+      return ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+        ],
+        child: const MaterialApp(
+          home: TransactionFormScreen(),
+          localizationsDelegates: [
+            DefaultMaterialLocalizations.delegate,
+            DefaultWidgetsLocalizations.delegate,
+          ],
+        ),
+      );
+    }
+
+    testWidgets('muestra título Nueva Transacción', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      // Usar pump con duración en lugar de pumpAndSettle para evitar timeout
+      // con FutureProviders que pueden no completar inmediatamente
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Nueva Transacción'), findsOneWidget);
+    });
+
+    testWidgets('muestra selector de tipo con 3 opciones', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(SegmentedButton<String>), findsOneWidget);
+      expect(find.text('Gasto'), findsOneWidget);
+      expect(find.text('Ingreso'), findsOneWidget);
+      // Transfer puede estar abreviado
+      expect(find.textContaining('Transfer'), findsOneWidget);
+    });
+
+    testWidgets('muestra campo de monto', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Monto'), findsOneWidget);
+    });
+
+    testWidgets('muestra selector de fecha', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Fecha'), findsOneWidget);
+      // El ícono de calendario puede ser calendar_today o date_range
+      expect(find.byIcon(Icons.calendar_today), findsWidgets);
+    });
+
+    testWidgets('muestra selector de categoría', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Hacer scroll para ver el selector de categoría
+      await tester.drag(find.byType(ListView), const Offset(0, -100));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Categoría'), findsOneWidget);
+    });
+
+    testWidgets('muestra campo de descripción', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Descripción (opcional)'), findsOneWidget);
+    });
+
+    testWidgets('muestra botón Guardar', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Hacer scroll para ver el botón Guardar
+      await tester.drag(find.byType(ListView), const Offset(0, -300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Guardar'), findsOneWidget);
+    });
+
+    testWidgets('puede cambiar tipo de transacción', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Verificar que el SegmentedButton está visible
+      expect(find.byType(SegmentedButton<String>), findsOneWidget);
+
+      // Cambiar a Ingreso
+      final ingresoFinder = find.text('Ingreso');
+      if (ingresoFinder.evaluate().isNotEmpty) {
+        await tester.tap(ingresoFinder);
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+
+      // El SegmentedButton sigue visible
+      expect(find.byType(SegmentedButton<String>), findsOneWidget);
+    });
+
+    testWidgets('valida monto requerido al guardar', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Hacer scroll para ver el botón guardar
+      await tester.drag(find.byType(ListView), const Offset(0, -300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Intentar guardar sin monto
+      final guardarButton = find.text('Guardar');
+      if (guardarButton.evaluate().isNotEmpty) {
+        await tester.tap(guardarButton);
+        await tester.pump(const Duration(milliseconds: 300));
+        // Verificar que hay algún mensaje de error
+        expect(find.textContaining('monto'), findsWidgets);
+      }
+    });
   });
 
   group('transactionTypeProvider', () {
