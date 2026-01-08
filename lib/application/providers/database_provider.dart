@@ -97,3 +97,10 @@ JournalEntriesDao journalEntriesDao(JournalEntriesDaoRef ref) {
   final db = ref.watch(appDatabaseProvider);
   return JournalEntriesDao(db);
 }
+
+/// Provider del DAO de cuentas
+@riverpod
+AccountsDao accountsDao(AccountsDaoRef ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return AccountsDao(db);
+}

@@ -4,6 +4,7 @@
 export 'categories_dao.dart';
 export 'transactions_dao.dart';
 export 'budgets_dao.dart';
+export 'accounts_dao.dart';
 
 // DAOs de catálogos (Fase 1.5)
 export 'measurement_units_dao.dart';

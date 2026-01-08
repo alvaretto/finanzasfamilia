@@ -6,3 +6,4 @@ export 'financial_indicators_provider.dart';
 export 'dashboard_provider.dart';
 export 'sync_status_provider.dart';
 export 'backup_provider.dart';
+export 'accounting_provider.dart';

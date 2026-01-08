@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
-import 'package:drift/drift.dart' hide Column;
+import 'package:drift/drift.dart' hide Column; // Para TransactionsCompanion en edición
 
 import '../../application/providers/database_provider.dart';
 import '../../application/providers/categories_provider.dart';
+import '../../application/providers/accounting_provider.dart';
 import '../../data/local/database.dart';
 
 /// Provider para el tipo de transacción seleccionado
@@ -447,26 +447,35 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     // Validaciones adicionales para transferencias
     if (transactionType == 'transfer') {
       if (fromAccountId == toAccountId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Las cuentas origen y destino deben ser diferentes'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showError('Las cuentas origen y destino deben ser diferentes');
+        return;
+      }
+      if (fromAccountId == null || toAccountId == null) {
+        _showError('Selecciona ambas cuentas para la transferencia');
         return;
       }
     }
 
-    final amount =
-        double.parse(_amountController.text.replaceAll('.', ''));
+    // Validar cuenta según tipo
+    if (transactionType == 'expense' && fromAccountId == null) {
+      _showError('Selecciona una cuenta de origen');
+      return;
+    }
+    if (transactionType == 'income' && toAccountId == null) {
+      _showError('Selecciona una cuenta de destino');
+      return;
+    }
+
+    final amount = double.parse(_amountController.text.replaceAll('.', ''));
     final description = _descriptionController.text.trim();
 
+    final accountingService = ref.read(accountingServiceProvider);
     final db = ref.read(appDatabaseProvider);
-    final transactionsDao = ref.read(transactionsDaoProvider);
 
     try {
       if (isEditing) {
-        // Actualizar transacción existente
+        // Para edición, actualizamos directamente (sin recalcular asientos)
+        // TODO: Implementar reversión y recreación de asientos para edición
         await (db.update(db.transactions)
               ..where((t) => t.id.equals(widget.transaction!.id)))
             .write(TransactionsCompanion(
@@ -484,37 +493,52 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           updatedAt: Value(DateTime.now()),
         ));
       } else {
-        // Crear nueva transacción
-        await transactionsDao.insertTransaction(TransactionsCompanion(
-          id: Value(const Uuid().v4()),
-          type: Value(transactionType),
-          amount: Value(amount),
-          description: Value(description.isEmpty ? null : description),
-          categoryId: Value(categoryId!),
-          fromAccountId: Value(
-            transactionType == 'income' ? null : fromAccountId,
-          ),
-          toAccountId: Value(
-            transactionType == 'expense' ? null : toAccountId,
-          ),
-          transactionDate: Value(selectedDate),
-          isConfirmed: const Value(true),
-          hasDetails: const Value(false),
-          itemCount: const Value(1),
-          syncStatus: const Value('pending'),
-          createdAt: Value(DateTime.now()),
-          updatedAt: Value(DateTime.now()),
-        ));
+        // NUEVO: Usar AccountingService para crear transacción con partida doble
+        switch (transactionType) {
+          case 'expense':
+            await accountingService.recordExpense(
+              categoryId: categoryId!,
+              paymentAccountId: fromAccountId!,
+              amount: amount,
+              description: description.isEmpty ? 'Gasto' : description,
+              date: selectedDate,
+            );
+            break;
+
+          case 'income':
+            await accountingService.recordIncome(
+              categoryId: categoryId!,
+              destinationAccountId: toAccountId!,
+              amount: amount,
+              description: description.isEmpty ? 'Ingreso' : description,
+              date: selectedDate,
+            );
+            break;
+
+          case 'transfer':
+            await accountingService.recordTransfer(
+              fromAccountId: fromAccountId!,
+              toAccountId: toAccountId!,
+              amount: amount,
+              description: description.isEmpty ? 'Transferencia' : description,
+              date: selectedDate,
+            );
+            break;
+        }
       }
 
       if (mounted) {
+        // Invalidar providers para refrescar datos
+        ref.invalidate(activeAccountsProvider);
+        ref.invalidate(totalBalanceProvider);
+
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               isEditing
                   ? 'Transacción actualizada'
-                  : 'Transacción registrada',
+                  : 'Transacción registrada con asientos contables',
             ),
             backgroundColor: Colors.green,
           ),
@@ -522,14 +546,18 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showError('Error: $e');
       }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   Future<void> _confirmDelete() async {
