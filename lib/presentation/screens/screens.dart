@@ -18,3 +18,4 @@ export 'ai_chat_screen.dart';
 // Auth Flow
 export 'splash_screen.dart';
 export 'login_screen.dart';
+export 'onboarding_screen.dart';

@@ -342,10 +342,20 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 14 | Reportes Financieros | ✅ Completado (ReportsService + ReportsScreen) |
 | 15 | Asistente IA "Fina" | ✅ Completado (UI + Provider + Service) |
 | 16 | Auth Flow (Google Sign-In) | ✅ Completado (Splash + Login + AuthProvider) |
+| 17 | Onboarding | ✅ Completado (OnboardingScreen + Provider) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.5 (2026-01-08)
+- **FASE 17:** Onboarding - Primera Experiencia de Usuario
+  - `OnboardingProvider`: Estado de onboarding con SharedPreferences
+  - `OnboardingService`: Gestión de pasos y completado
+  - `OnboardingScreen`: 4 páginas de bienvenida con PageView
+  - Integración en SplashScreen: verifica primera vez antes de auth
+  - 18 tests nuevos (7 provider + 11 screen)
+  - Tests totales: 341 pasando
 
 ### v1.4 (2026-01-08)
 - **FASE 16:** Auth Flow con Google Sign-In

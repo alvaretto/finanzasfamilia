@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/providers/auth_provider.dart';
+import '../../application/providers/onboarding_provider.dart';
 import 'login_screen.dart';
 import 'main_shell.dart';
+import 'onboarding_screen.dart';
 
 /// Pantalla de splash que verifica el estado de autenticación
 class SplashScreen extends ConsumerStatefulWidget {
@@ -57,6 +59,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted) return;
 
+    // Verificar si es primera vez
+    final isFirstTime = await ref.read(isFirstTimeUserProvider.future);
+
+    if (!mounted) return;
+
+    if (isFirstTime) {
+      _navigateTo(OnboardingScreen(
+        onComplete: () => _onOnboardingComplete(),
+      ));
+      return;
+    }
+
+    _navigateBasedOnAuth();
+  }
+
+  void _onOnboardingComplete() {
+    _navigateBasedOnAuth();
+  }
+
+  void _navigateBasedOnAuth() {
     final authStatus = ref.read(authStateProvider);
 
     if (authStatus == AuthStatus.authenticated) {
