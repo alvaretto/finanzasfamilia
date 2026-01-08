@@ -46,3 +46,6 @@ test_results.txt
 # Misc
 .DS_Store
 *.log
+
+# FVM Version Cache
+.fvm/

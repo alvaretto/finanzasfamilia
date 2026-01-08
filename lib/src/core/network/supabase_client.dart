@@ -22,10 +22,18 @@ class SupabaseClientProvider {
     return _client ?? Supabase.instance.client;
   }
 
+  /// Current authenticated user
+  static User? get currentUser => client.auth.currentUser;
+
+  /// Check if user is authenticated
+  static bool get isAuthenticated => currentUser != null;
+
+  /// Enable test mode (disables Supabase)
   static void enableTestMode() {
     _testMode = true;
   }
 
+  /// Disable test mode
   static void disableTestMode() {
     _testMode = false;
   }

@@ -1,27 +1,16 @@
-# Finanzas Familiares v2
+# finanzas_familiares
 
-App de finanzas personales y familiares multiplataforma con soporte offline-first.
+A new Flutter project.
 
-## Stack
+## Getting Started
 
-- **Flutter 3.24+** - Framework UI
-- **Riverpod** - State management
-- **Drift + SQLite** - Base de datos local
-- **Supabase** - Backend (Auth, DB, Sync)
-- **go_router** - Navegacion
+This project is a starting point for a Flutter application.
 
-## Quick Start
+A few resources to get you started if this is your first Flutter project:
 
-```bash
-flutter pub get
-flutter run
-```
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-## Estructura
-
-```
-lib/
-├── core/           # Infraestructura
-├── features/       # Modulos por funcionalidad
-└── shared/         # Widgets compartidos
-```
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
