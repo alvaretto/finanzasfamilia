@@ -7,3 +7,4 @@ export 'dashboard_provider.dart';
 export 'sync_status_provider.dart';
 export 'backup_provider.dart';
 export 'accounting_provider.dart';
+export 'reports_provider.dart';

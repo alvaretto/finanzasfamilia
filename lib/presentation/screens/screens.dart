@@ -5,6 +5,7 @@ export 'transactions_screen.dart';
 export 'categories_screen.dart';
 export 'budgets_screen.dart';
 export 'accounts_screen.dart';
+export 'reports_screen.dart';
 
 // Formularios
 export 'transaction_form_screen.dart';

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../application/providers/dashboard_provider.dart';
 import '../../application/providers/financial_indicators_provider.dart';
 import '../widgets/traffic_light_indicator.dart';
+import 'reports_screen.dart';
 
 /// Pantalla principal del Dashboard "¿Cómo Voy?"
 class DashboardScreen extends ConsumerWidget {
@@ -19,6 +20,14 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('¿Cómo Voy?'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.assessment),
+            tooltip: 'Reportes',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReportsScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(dashboardSummaryProvider),
