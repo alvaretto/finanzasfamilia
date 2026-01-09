@@ -33,6 +33,9 @@ releases/
 android/.gradle/
 android/local.properties
 android/*.keystore
+android/key.properties
+android/app/keystore/
+android/app/google-services.json
 ios/Pods/
 ios/.symlinks/
 ios/Flutter/Generated.xcconfig

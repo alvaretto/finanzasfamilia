@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -12,43 +17,57 @@ import 'data/sync/sync.dart';
 import 'presentation/screens/splash_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Cargar variables de entorno
-  await dotenv.load(fileName: '.env');
+    // Inicializar Firebase
+    await Firebase.initializeApp();
 
-  // Validar configuración
-  if (!EnvConfig.isValid) {
-    throw Exception(
-      'Configuración inválida. Verifica SUPABASE_URL y SUPABASE_ANON_KEY en .env',
+    // Configurar Crashlytics
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+
+    // Cargar variables de entorno
+    await dotenv.load(fileName: '.env');
+
+    // Validar configuración
+    if (!EnvConfig.isValid) {
+      throw Exception(
+        'Configuración inválida. Verifica SUPABASE_URL y SUPABASE_ANON_KEY en .env',
+      );
+    }
+
+    // Inicializar Supabase
+    await Supabase.initialize(
+      url: EnvConfig.supabaseUrl,
+      anonKey: EnvConfig.supabaseAnonKey,
     );
-  }
 
-  // Inicializar Supabase
-  await Supabase.initialize(
-    url: EnvConfig.supabaseUrl,
-    anonKey: EnvConfig.supabaseAnonKey,
-  );
+    // Inicializar PowerSync con Supabase
+    await PowerSyncDatabaseManager.instance.initialize(
+      Supabase.instance.client,
+    );
 
-  // Inicializar PowerSync con Supabase
-  await PowerSyncDatabaseManager.instance.initialize(
-    Supabase.instance.client,
-  );
+    // Inicializar base de datos local y sembrar categorías
+    final db = AppDatabase();
+    final categoriesDao = CategoriesDao(db);
+    await seedCategories(categoriesDao);
 
-  // Inicializar base de datos local y sembrar categorías
-  final db = AppDatabase();
-  final categoriesDao = CategoriesDao(db);
-  await seedCategories(categoriesDao);
-
-  runApp(
-    ProviderScope(
-      overrides: [
-        // Proveer la base de datos inicializada
-        _databaseProvider.overrideWithValue(db),
-      ],
-      child: const FinanzasFamiliaresApp(),
-    ),
-  );
+    runApp(
+      ProviderScope(
+        overrides: [
+          // Proveer la base de datos inicializada
+          _databaseProvider.overrideWithValue(db),
+        ],
+        child: const FinanzasFamiliaresApp(),
+      ),
+    );
+  }, (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  });
 }
 
 /// Provider interno para la base de datos
