@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.6
+**Nombre:** Finanzas Familiares AS - Modo Personal v1.7
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 18 completada
+**Estado:** En desarrollo - Fase 19 completada
 
 ---
 
@@ -344,10 +344,22 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 16 | Auth Flow (Google Sign-In) | ✅ Completado (Splash + Login + AuthProvider) |
 | 17 | Onboarding | ✅ Completado (OnboardingScreen + Provider) |
 | 18 | Transacciones Recurrentes | ✅ Completado (Table + DAO + Provider + Screen) |
+| 19 | Selector Categorías Jerárquico | ✅ Completado (Widget + Provider + Integración) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.7 (2026-01-08)
+- **FASE 19:** Selector de Categorías Jerárquico
+  - `HierarchicalCategorySelector`: Widget selector con árbol expandible y búsqueda
+  - `SimpleCategoryDropdown`: Dropdown simplificado para formularios rápidos
+  - `CategoryTreeNode`: Modelo para representar nodos del árbol de categorías
+  - Providers: `categoryTree`, `leafCategories`, `searchCategories`
+  - Integración en TransactionFormScreen con selección de subcategorías
+  - Corrección bug layout: `Expanded` → `Flexible` en DropdownMenuItem
+  - 15 tests nuevos (7 widget + 5 unit + 3 dropdown)
+  - Tests totales: 378 pasando
 
 ### v1.6 (2026-01-08)
 - **FASE 18:** Transacciones Recurrentes - Pagos Automáticos

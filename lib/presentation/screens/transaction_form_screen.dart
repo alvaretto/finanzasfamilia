@@ -8,6 +8,7 @@ import '../../application/providers/database_provider.dart';
 import '../../application/providers/categories_provider.dart';
 import '../../application/providers/accounting_provider.dart';
 import '../../data/local/database.dart';
+import '../widgets/hierarchical_category_selector.dart';
 
 /// Provider para el tipo de transacción seleccionado
 final transactionTypeProvider = StateProvider<String>((ref) => 'expense');
@@ -272,48 +273,14 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       _ => 'expense',
     };
 
-    final categoriesAsync = ref.watch(categoriesByTypeProvider(categoryType));
-
-    return categoriesAsync.when(
-      data: (categories) {
-        final rootCategories =
-            categories.where((c) => c.parentId == null).toList();
-
-        return DropdownButtonFormField<String>(
-          initialValue: selectedCategoryId,
-          decoration: const InputDecoration(
-            labelText: 'Categoría',
-            prefixIcon: Icon(Icons.category),
-            border: OutlineInputBorder(),
-          ),
-          items: rootCategories.map((category) {
-            return DropdownMenuItem(
-              value: category.id,
-              child: Row(
-                children: [
-                  Text(
-                    category.icon ?? '📁',
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(category.name),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            ref.read(selectedCategoryIdProvider.notifier).state = value;
-          },
-          validator: (value) {
-            if (value == null) {
-              return 'Selecciona una categoría';
-            }
-            return null;
-          },
-        );
+    // Usar selector jerárquico para mejor UX
+    return HierarchicalCategorySelector(
+      categoryType: categoryType,
+      selectedCategoryId: selectedCategoryId,
+      showOnlyLeaves: true, // Solo permitir seleccionar subcategorías
+      onCategorySelected: (category) {
+        ref.read(selectedCategoryIdProvider.notifier).state = category.id;
       },
-      loading: () => const LinearProgressIndicator(),
-      error: (_, __) => const Text('Error cargando categorías'),
     );
   }
 
@@ -388,13 +355,15 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         return DropdownMenuItem(
           value: account.id,
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 account.icon ?? '💰',
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(width: 8),
-              Expanded(child: Text(account.name)),
+              Flexible(child: Text(account.name)),
+              const SizedBox(width: 8),
               Text(
                 NumberFormat.currency(locale: 'es_CO', symbol: '\$')
                     .format(account.balance),
