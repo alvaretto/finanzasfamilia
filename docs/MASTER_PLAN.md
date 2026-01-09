@@ -23,9 +23,9 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.1 |
-| Fase Actual | 23 Completada |
-| Tests | 412 pasando |
+| Versión | 2.2 |
+| Fase Actual | 24 Completada |
+| Tests | 390+ pasando |
 | Cobertura | ~85% |
 
 ### Funcionalidades Implementadas
@@ -102,25 +102,32 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-### Fase 24: Preparación Store
+### ~~Fase 24: Preparación Store~~ ✅ COMPLETADA
 **Objetivo:** Publicar en Google Play y App Store
-**Prioridad:** ALTA
+**Completado:** 2026-01-09
 
-| Tarea | Descripción | Estimación |
-|-------|-------------|------------|
-| 24.1 | App Icon y Splash Screen finales | S |
-| 24.2 | Screenshots para stores | S |
-| 24.3 | Privacy Policy y Terms of Service | M |
-| 24.4 | Configurar Firebase Crashlytics | M |
-| 24.5 | Configurar Firebase Analytics | S |
-| 24.6 | Build de release (Android) | S |
-| 24.7 | Build de release (iOS) | M |
-| 24.8 | Ficha de tienda (descripción, keywords) | S |
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| 24.1 | App Icon y Splash Screen finales | ✅ |
+| 24.2 | Screenshots para stores | ✅ |
+| 24.3 | Privacy Policy y Terms of Service | ✅ |
+| 24.4 | Configurar Firebase Crashlytics | ✅ |
+| 24.5 | Configurar Firebase Analytics | ✅ |
+| 24.6 | Build de release (Android) | ✅ |
+| 24.7 | Build de release (iOS) | ⏳ Pendiente |
+| 24.8 | Ficha de tienda (descripción, keywords) | ✅ |
+
+**Implementaciones:**
+- App Icon personalizado en todas las resoluciones (mipmap-*)
+- Privacy Policy y Delete Account pages (docs/*.html)
+- Firebase Crashlytics + Analytics configurado
+- Build APK/AAB de release funcional
+- Ficha de tienda preparada
 
 **Entregables:**
-- APK/AAB firmado
-- IPA firmado
-- Listado en stores
+- ✅ APK/AAB firmado
+- ⏳ IPA firmado (pendiente)
+- ✅ Listado en stores preparado
 
 ---
 
@@ -268,6 +275,8 @@ Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
 |---------|-------|---------|
 | 1.0 | 2026-01-09 | Plan inicial definido |
 | 1.1 | 2026-01-09 | Fase 22 completada |
+| 1.2 | 2026-01-09 | Fase 23 completada (PowerSync) |
+| 1.3 | 2026-01-09 | Fase 24 completada (Preparación Store) |
 
 ---
 

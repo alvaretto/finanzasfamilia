@@ -349,13 +349,29 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 21 | Edición y Eliminación de Transacciones | ✅ Completado (CRUD + Reversión Asientos) |
 | 22 | Pulido UI/UX (Pre-Release) | ✅ Completado |
 | 23 | Sincronización PowerSync | ✅ Completado (ConnectivityProvider + SyncIndicator) |
-| 24 | Preparación Store | ⏳ Pendiente |
+| 24 | Preparación Store | ✅ Completado (Firebase + Release Build + Privacy) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.2 (2026-01-09)
+- **HOTFIX:** Resumen mensual no actualizaba tras crear transacción
+  - Añadido `ref.invalidate(dashboardSummaryProvider)` en transaction_form_screen.dart
+  - Añadido `ref.invalidate(dashboardSummaryProvider)` en transactions_screen.dart (delete)
+  - Fix verificado: Dashboard ahora muestra ingresos/gastos inmediatamente
+- **HOTFIX:** Error "ref after disposed" en Onboarding
+  - Movida navegación post-onboarding a OnboardingScreen
+  - SplashScreen._onOnboardingComplete() ahora vacío con guard mounted
+  - Tests actualizados con MockAuthStateNotifier
+- **FASE 24:** Preparación Store Completada
+  - App Icon personalizado (mipmap-hdpi a xxxhdpi)
+  - Privacy Policy y Delete Account pages (docs/*.html)
+  - Firebase Crashlytics configurado
+  - Build de release Android funcional
+  - Tests totales: 390+ pasando
 
 ### v2.1 (2026-01-09)
 - **FASE 23:** Sincronización PowerSync Completa
