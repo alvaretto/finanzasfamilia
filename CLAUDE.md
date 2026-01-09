@@ -361,7 +361,8 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
   - `_EditBudgetDialog`: Diálogo de edición inline
   - Confirmación de eliminación con AlertDialog
   - Semáforo visual: verde (<80%), amarillo (80-99%), rojo (>=100%)
-  - Tests totales: 378 pasando
+  - 8 tests nuevos (5 CRUD + 3 BudgetProgress)
+  - Tests totales: 386 pasando
 
 ### v1.7 (2026-01-08)
 - **FASE 19:** Selector de Categorías Jerárquico
