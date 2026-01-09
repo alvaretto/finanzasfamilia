@@ -72,7 +72,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
       final handled = await _handlePostgrestError(e, transaction);
       if (!handled) {
         // Propagar error si no fue manejado
-        throw e;
+        rethrow;
       }
     } catch (e) {
       _log('Error inesperado en upload: $e');

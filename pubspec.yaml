@@ -48,6 +48,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # App Icon Generation
+  flutter_launcher_icons: ^0.14.3
+
   # Code Generation
   build_runner: ^2.4.13
   drift_dev: ^2.22.1
@@ -63,3 +66,17 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#4CAF50"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: false
