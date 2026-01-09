@@ -17,6 +17,7 @@ import 'data/local/daos/categories_dao.dart';
 import 'data/local/seeders/accounts_seeder.dart';
 import 'data/local/seeders/category_seeder.dart';
 import 'data/sync/sync.dart';
+import 'application/services/notification_service.dart';
 import 'presentation/screens/splash_screen.dart';
 
 Future<void> main() async {
@@ -76,6 +77,12 @@ Future<void> main() async {
     await seedCategories(categoriesDao);
     await seedAccounts(accountsDao, categoriesDao);
     debugPrint('[INIT] DB local OK');
+
+    // Inicializar servicio de notificaciones
+    debugPrint('[INIT] Inicializando notificaciones...');
+    await NotificationService().initialize();
+    await NotificationService().requestPermissions();
+    debugPrint('[INIT] Notificaciones OK');
 
     runApp(
       ProviderScope(
