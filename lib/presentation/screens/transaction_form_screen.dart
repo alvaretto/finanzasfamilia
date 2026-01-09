@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../application/providers/database_provider.dart';
 import '../../application/providers/accounting_provider.dart';
+import '../../application/providers/dashboard_provider.dart';
 import '../../data/local/database.dart';
 import '../widgets/hierarchical_category_selector.dart';
 
@@ -512,6 +513,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         // Invalidar providers para refrescar datos
         ref.invalidate(activeAccountsProvider);
         ref.invalidate(totalBalanceProvider);
+        ref.invalidate(dashboardSummaryProvider);
 
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
