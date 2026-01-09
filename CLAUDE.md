@@ -347,10 +347,27 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 19 | Selector Categorías Jerárquico | ✅ Completado (Widget + Provider + Integración) |
 | 20 | Sistema de Presupuestos CRUD | ✅ Completado (Create, Edit, Delete + Semáforo) |
 | 21 | Edición y Eliminación de Transacciones | ✅ Completado (CRUD + Reversión Asientos) |
+| 22 | Pulido UI/UX (Pre-Release) | ✅ Completado |
+| 23 | Sincronización PowerSync | ⏳ Pendiente |
+| 24 | Preparación Store | ⏳ Pendiente |
+
+**Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.0 (2026-01-09)
+- **FASE 22:** Pulido UI/UX Pre-Release
+  - `splash_screen.dart`: Manejo de errores en flujo de autenticación
+  - `onboarding_screen.dart`: Loading state y error handling en _completeOnboarding
+  - `recurring_transactions_screen.dart`: Estado de error con botón Reintentar
+  - `transaction_form_screen.dart`: Loading state en botón guardar
+  - `account_form_screen.dart`: Loading state en botones guardar/eliminar
+  - Feedback háptico (`HapticFeedback.mediumImpact`) en acciones exitosas
+  - MockOnboardingService para tests con operaciones asíncronas
+  - Documentación de patrones de testing en `.claude/docs/testing_patterns.md`
+  - Tests totales: 392+ pasando
 
 ### v1.9 (2026-01-08)
 - **FASE 21:** Edición y Eliminación de Transacciones con Reversión Contable

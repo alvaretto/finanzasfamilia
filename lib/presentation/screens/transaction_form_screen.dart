@@ -45,6 +45,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _numberFormat = NumberFormat('#,##0', 'es_CO');
+  bool _isSaving = false;
 
   bool get isEditing => widget.transaction != null;
 
@@ -125,9 +126,20 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
             // Botón guardar
             FilledButton.icon(
-              onPressed: _saveTransaction,
-              icon: const Icon(Icons.save),
-              label: Text(isEditing ? 'Actualizar' : 'Guardar'),
+              onPressed: _isSaving ? null : _saveTransaction,
+              icon: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save),
+              label: Text(_isSaving
+                  ? 'Guardando...'
+                  : (isEditing ? 'Actualizar' : 'Guardar')),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(56),
               ),
@@ -404,6 +416,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   Future<void> _saveTransaction() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isSaving) return;
+
+    setState(() => _isSaving = true);
 
     final transactionType = ref.read(transactionTypeProvider);
     final selectedDate = ref.read(selectedDateProvider);
@@ -414,10 +429,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     // Validaciones adicionales para transferencias
     if (transactionType == 'transfer') {
       if (fromAccountId == toAccountId) {
+        setState(() => _isSaving = false);
         _showError('Las cuentas origen y destino deben ser diferentes');
         return;
       }
       if (fromAccountId == null || toAccountId == null) {
+        setState(() => _isSaving = false);
         _showError('Selecciona ambas cuentas para la transferencia');
         return;
       }
@@ -425,10 +442,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
     // Validar cuenta según tipo
     if (transactionType == 'expense' && fromAccountId == null) {
+      setState(() => _isSaving = false);
       _showError('Selecciona una cuenta de origen');
       return;
     }
     if (transactionType == 'income' && toAccountId == null) {
+      setState(() => _isSaving = false);
       _showError('Selecciona una cuenta de destino');
       return;
     }
@@ -487,6 +506,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       }
 
       if (mounted) {
+        // Feedback háptico de éxito
+        HapticFeedback.mediumImpact();
+
         // Invalidar providers para refrescar datos
         ref.invalidate(activeAccountsProvider);
         ref.invalidate(totalBalanceProvider);
@@ -505,6 +527,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() => _isSaving = false);
         _showError('Error: $e');
       }
     }

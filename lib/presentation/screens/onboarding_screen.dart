@@ -20,6 +20,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  bool _isLoading = false;
 
   static const _totalPages = 4;
 
@@ -85,9 +86,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  void _completeOnboarding() {
-    ref.read(onboardingServiceProvider).completeOnboarding();
-    widget.onComplete();
+  Future<void> _completeOnboarding() async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ref.read(onboardingServiceProvider).completeOnboarding();
+      if (mounted) {
+        widget.onComplete();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Error al completar. Intenta de nuevo.'),
+            action: SnackBarAction(
+              label: 'Reintentar',
+              onPressed: _completeOnboarding,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -140,8 +162,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 width: double.infinity,
                 height: 56,
                 child: FilledButton(
-                  onPressed: _nextPage,
-                  child: Text(isLastPage ? 'Comenzar' : 'Siguiente'),
+                  onPressed: _isLoading ? null : _nextPage,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(isLastPage ? 'Comenzar' : 'Siguiente'),
                 ),
               ),
             ),

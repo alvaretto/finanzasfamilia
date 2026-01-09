@@ -57,6 +57,8 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
   final _balanceController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _numberFormat = NumberFormat('#,##0', 'es_CO');
+  bool _isSaving = false;
+  bool _isDeleting = false;
 
   bool get isEditing => widget.account != null;
 
@@ -103,10 +105,19 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
         title: Text(isEditing ? 'Editar Cuenta' : 'Nueva Cuenta'),
         actions: [
           if (isEditing)
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _confirmDelete,
-            ),
+            _isDeleting
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: _confirmDelete,
+                  ),
         ],
       ),
       body: Form(
@@ -148,9 +159,20 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
 
             // Botón guardar
             FilledButton.icon(
-              onPressed: _saveAccount,
-              icon: const Icon(Icons.save),
-              label: Text(isEditing ? 'Actualizar' : 'Crear'),
+              onPressed: _isSaving ? null : _saveAccount,
+              icon: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save),
+              label: Text(_isSaving
+                  ? 'Guardando...'
+                  : (isEditing ? 'Actualizar' : 'Crear')),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(56),
               ),
@@ -474,6 +496,9 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
 
   Future<void> _saveAccount() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isSaving) return;
+
+    setState(() => _isSaving = true);
 
     final selectedIcon = ref.read(accountIconProvider);
     final selectedColor = ref.read(accountColorProvider);
@@ -520,6 +545,9 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
       }
 
       if (mounted) {
+        // Feedback háptico de éxito
+        HapticFeedback.mediumImpact();
+
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -532,6 +560,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
@@ -566,6 +595,8 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
     );
 
     if (confirmed == true && mounted) {
+      setState(() => _isDeleting = true);
+
       final db = ref.read(appDatabaseProvider);
 
       try {
@@ -584,6 +615,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
         }
       } catch (e) {
         if (mounted) {
+          setState(() => _isDeleting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('No se puede eliminar: $e'),

@@ -83,15 +83,25 @@ test/
 └── presentation/        # Tests de widgets
 ```
 
-## Fases Completadas
+## Estado del Proyecto
 
-- [x] Fase 1-5: Arquitectura base, Schema, TDD, Import/Export, Backup
-- [x] Fase 6-13: Dashboard, Cuentas, Formularios, Indicadores
-- [x] Fase 14: Reportes Financieros
-- [x] Fase 15: Asistente IA "Fina"
-- [x] Fase 16: Auth Flow (Google Sign-In)
-- [x] Fase 17: Onboarding
-- [x] Fase 18: Transacciones Recurrentes
+| Fase | Descripción | Estado |
+|------|-------------|--------|
+| 1-5 | Arquitectura, Schema, TDD, Import/Export, Backup | ✅ |
+| 6-13 | Dashboard, Cuentas, Formularios, Indicadores | ✅ |
+| 14 | Reportes Financieros | ✅ |
+| 15 | Asistente IA "Fina" | ✅ |
+| 16 | Auth Flow (Google Sign-In) | ✅ |
+| 17 | Onboarding | ✅ |
+| 18 | Transacciones Recurrentes | ✅ |
+| 19 | Selector Categorías Jerárquico | ✅ |
+| 20 | Sistema de Presupuestos CRUD | ✅ |
+| 21 | Edición/Eliminación Transacciones | ✅ |
+| 22 | Pulido UI/UX (Pre-Release) | ✅ |
+| **23** | **Sincronización PowerSync** | 🔄 |
+| 24 | Preparación Store | ⏳ |
+
+**Tests:** 392+ pasando | **Roadmap:** [MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ## Licencia
 

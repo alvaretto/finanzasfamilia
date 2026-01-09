@@ -3,7 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:finanzas_familiares/application/providers/onboarding_provider.dart';
 import 'package:finanzas_familiares/presentation/screens/onboarding_screen.dart';
+
+/// Mock del OnboardingService que se completa inmediatamente
+class MockOnboardingService extends OnboardingService {
+  @override
+  Future<void> completeOnboarding() async {
+    // Se completa inmediatamente sin esperar SharedPreferences
+    return;
+  }
+}
 
 void main() {
   setUp(() {
@@ -13,6 +23,10 @@ void main() {
   group('OnboardingScreen', () {
     Widget createTestWidget({VoidCallback? onComplete}) {
       return ProviderScope(
+        overrides: [
+          // Override del provider con el mock
+          onboardingServiceProvider.overrideWithValue(MockOnboardingService()),
+        ],
         child: MaterialApp(
           home: OnboardingScreen(
             onComplete: onComplete ?? () {},
@@ -104,7 +118,10 @@ void main() {
       }
 
       await tester.tap(find.text('Comenzar'));
-      await tester.pumpAndSettle();
+      // Esperar a que el Future asíncrono se complete
+      // No usar pumpAndSettle porque hay CircularProgressIndicator animado
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
       expect(completeCalled, isTrue);
     });
@@ -118,21 +135,29 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Omitir'));
-      await tester.pumpAndSettle();
+      // Esperar a que el Future asíncrono se complete
+      // No usar pumpAndSettle porque hay CircularProgressIndicator animado
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
       expect(completeCalled, isTrue);
     });
   });
 
   group('OnboardingPages', () {
-    testWidgets('página de características muestra íconos', (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: OnboardingScreen(onComplete: () {}),
-          ),
+    Widget createTestWidget() {
+      return ProviderScope(
+        overrides: [
+          onboardingServiceProvider.overrideWithValue(MockOnboardingService()),
+        ],
+        child: MaterialApp(
+          home: OnboardingScreen(onComplete: () {}),
         ),
       );
+    }
+
+    testWidgets('página de características muestra íconos', (tester) async {
+      await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       // Navegar a página de características
@@ -146,13 +171,7 @@ void main() {
 
     testWidgets('página de cuentas muestra ejemplos colombianos',
         (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: OnboardingScreen(onComplete: () {}),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       // Navegar a página de cuentas (3ra página)

@@ -54,24 +54,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Esperar mínimo 2 segundos para mostrar el splash
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Esperar mínimo 2 segundos para mostrar el splash
+      await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    // Verificar si es primera vez
-    final isFirstTime = await ref.read(isFirstTimeUserProvider.future);
+      // Verificar si es primera vez
+      final isFirstTime = await ref.read(isFirstTimeUserProvider.future);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (isFirstTime) {
-      _navigateTo(OnboardingScreen(
-        onComplete: () => _onOnboardingComplete(),
-      ));
-      return;
+      if (isFirstTime) {
+        _navigateTo(OnboardingScreen(
+          onComplete: () => _onOnboardingComplete(),
+        ));
+        return;
+      }
+
+      _navigateBasedOnAuth();
+    } catch (e) {
+      // En caso de error, ir directo al login
+      if (mounted) {
+        _navigateTo(const LoginScreen());
+      }
     }
-
-    _navigateBasedOnAuth();
   }
 
   void _onOnboardingComplete() {
