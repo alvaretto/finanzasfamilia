@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.7
+**Nombre:** Finanzas Familiares AS - Modo Personal v1.8
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 19 completada
+**Estado:** En desarrollo - Fase 20 completada
 
 ---
 
@@ -345,10 +345,23 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 17 | Onboarding | ✅ Completado (OnboardingScreen + Provider) |
 | 18 | Transacciones Recurrentes | ✅ Completado (Table + DAO + Provider + Screen) |
 | 19 | Selector Categorías Jerárquico | ✅ Completado (Widget + Provider + Integración) |
+| 20 | Sistema de Presupuestos CRUD | ✅ Completado (Create, Edit, Delete + Semáforo) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.8 (2026-01-08)
+- **FASE 20:** Sistema de Presupuestos CRUD Completo
+  - `BudgetsNotifier`: Provider Riverpod con CRUD completo
+  - `createBudget`: Crear presupuesto por categoría y mes
+  - `updateBudget`: Editar monto de presupuesto existente
+  - `deleteBudget`: Eliminar presupuesto con confirmación
+  - `copyFromPreviousMonth`: Copiar presupuestos del mes anterior
+  - `_EditBudgetDialog`: Diálogo de edición inline
+  - Confirmación de eliminación con AlertDialog
+  - Semáforo visual: verde (<80%), amarillo (80-99%), rojo (>=100%)
+  - Tests totales: 378 pasando
 
 ### v1.7 (2026-01-08)
 - **FASE 19:** Selector de Categorías Jerárquico

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -514,7 +515,7 @@ class _BudgetCard extends ConsumerWidget {
   }
 }
 
-class _BudgetDetailSheet extends StatelessWidget {
+class _BudgetDetailSheet extends ConsumerWidget {
   final BudgetEntry budget;
   final double spent;
   final String categoryName;
@@ -526,7 +527,7 @@ class _BudgetDetailSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currencyFormat = NumberFormat.currency(
       locale: 'es_CO',
       symbol: '\$',
@@ -589,8 +590,8 @@ class _BudgetDetailSheet extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    // TODO: Editar presupuesto
                     Navigator.pop(context);
+                    _showEditBudgetDialog(context, ref, budget);
                   },
                   icon: const Icon(Icons.edit),
                   label: const Text('Editar'),
@@ -599,10 +600,7 @@ class _BudgetDetailSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Eliminar presupuesto
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => _confirmDeleteBudget(context, ref),
                   icon: const Icon(Icons.delete, color: Colors.red),
                   label: const Text('Eliminar', style: TextStyle(color: Colors.red)),
                   style: OutlinedButton.styleFrom(
@@ -615,6 +613,212 @@ class _BudgetDetailSheet extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showEditBudgetDialog(
+    BuildContext context,
+    WidgetRef ref,
+    BudgetEntry budget,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => _EditBudgetDialog(
+        budget: budget,
+        categoryName: categoryName,
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteBudget(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar presupuesto'),
+        content: Text(
+          '¿Estás seguro de eliminar el presupuesto de "$categoryName"? '
+          'Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        await ref
+            .read(budgetsNotifierProvider(budget.month, budget.year).notifier)
+            .deleteBudget(budget.id);
+
+        if (context.mounted) {
+          Navigator.pop(context);
+          ref.invalidate(periodBudgetsProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Presupuesto eliminado'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al eliminar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+}
+
+/// Diálogo para editar presupuesto
+class _EditBudgetDialog extends ConsumerStatefulWidget {
+  final BudgetEntry budget;
+  final String categoryName;
+
+  const _EditBudgetDialog({
+    required this.budget,
+    required this.categoryName,
+  });
+
+  @override
+  ConsumerState<_EditBudgetDialog> createState() => _EditBudgetDialogState();
+}
+
+class _EditBudgetDialogState extends ConsumerState<_EditBudgetDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _amountController;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController(
+      text: widget.budget.amount.toInt().toString(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Editar Presupuesto'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Mostrar categoría (no editable)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.category, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.categoryName,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Campo de monto
+            TextFormField(
+              controller: _amountController,
+              decoration: const InputDecoration(
+                labelText: 'Monto mensual',
+                prefixText: '\$ ',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Ingresa un monto';
+                }
+                final amount = double.tryParse(value.replaceAll(',', ''));
+                if (amount == null || amount <= 0) {
+                  return 'Monto inválido';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: _updateBudget,
+          child: const Text('Guardar'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _updateBudget() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final amount = double.parse(_amountController.text.replaceAll(',', ''));
+
+    try {
+      await ref
+          .read(budgetsNotifierProvider(
+            widget.budget.month,
+            widget.budget.year,
+          ).notifier)
+          .updateBudget(
+            id: widget.budget.id,
+            amount: amount,
+          );
+
+      if (mounted) {
+        ref.invalidate(periodBudgetsProvider);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Presupuesto actualizado'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al actualizar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -762,29 +966,39 @@ class _AddBudgetDialogState extends ConsumerState<_AddBudgetDialog> {
     );
   }
 
-  void _saveBudget() {
+  Future<void> _saveBudget() async {
     if (!_formKey.currentState!.validate()) return;
 
     final amount = double.parse(_amountController.text.replaceAll(',', ''));
     final period = ref.read(budgetPeriodProvider);
 
-    // TODO: Implementar guardado de presupuesto
-    // final dao = ref.read(budgetsDaoProvider);
-    // await dao.insertBudget(BudgetsCompanion.insert(
-    //   id: const Uuid().v4(),
-    //   categoryId: _selectedCategoryId!,
-    //   amount: amount,
-    //   month: period.month,
-    //   year: period.year,
-    // ));
+    try {
+      await ref
+          .read(budgetsNotifierProvider(period.month, period.year).notifier)
+          .createBudget(
+            categoryId: _selectedCategoryId!,
+            amount: amount,
+          );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Presupuesto creado: \$${amount.toInt()} para ${period.month}/${period.year}'),
-      ),
-    );
-
-    ref.invalidate(periodBudgetsProvider);
-    Navigator.pop(context);
+      if (mounted) {
+        ref.invalidate(periodBudgetsProvider);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Presupuesto creado exitosamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al crear presupuesto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

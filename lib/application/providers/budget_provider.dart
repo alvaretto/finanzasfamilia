@@ -1,5 +1,7 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../data/local/database.dart';
 import 'database_provider.dart';
@@ -53,6 +55,109 @@ class CurrentMonthBudgets extends _$CurrentMonthBudgets {
       final now = DateTime.now();
       return dao.getBudgetsForMonth(now.month, now.year);
     });
+  }
+}
+
+/// Notifier para operaciones CRUD de presupuestos
+@riverpod
+class BudgetsNotifier extends _$BudgetsNotifier {
+  late int _month;
+  late int _year;
+
+  @override
+  Future<List<BudgetEntry>> build(int month, int year) async {
+    _month = month;
+    _year = year;
+    final dao = ref.watch(budgetsDaoProvider);
+    return dao.getBudgetsForMonth(month, year);
+  }
+
+  /// Crea un nuevo presupuesto
+  Future<void> createBudget({
+    required String categoryId,
+    required double amount,
+  }) async {
+    final dao = ref.read(budgetsDaoProvider);
+    final now = DateTime.now();
+
+    await dao.insertBudget(BudgetsCompanion.insert(
+      id: const Uuid().v4(),
+      categoryId: categoryId,
+      amount: amount,
+      month: _month,
+      year: _year,
+      isActive: const Value(true),
+      createdAt: Value(now),
+      updatedAt: Value(now),
+    ));
+
+    ref.invalidateSelf();
+  }
+
+  /// Actualiza un presupuesto existente
+  Future<void> updateBudget({
+    required String id,
+    required double amount,
+  }) async {
+    final dao = ref.read(budgetsDaoProvider);
+    final now = DateTime.now();
+
+    await dao.updateBudget(BudgetsCompanion(
+      id: Value(id),
+      amount: Value(amount),
+      updatedAt: Value(now),
+    ));
+
+    ref.invalidateSelf();
+  }
+
+  /// Elimina un presupuesto
+  Future<void> deleteBudget(String id) async {
+    final dao = ref.read(budgetsDaoProvider);
+    await dao.deleteBudget(id);
+    ref.invalidateSelf();
+  }
+
+  /// Copia presupuestos del mes anterior al mes actual
+  Future<void> copyFromPreviousMonth() async {
+    final dao = ref.read(budgetsDaoProvider);
+    final now = DateTime.now();
+
+    // Calcular mes anterior
+    int prevMonth = _month - 1;
+    int prevYear = _year;
+    if (prevMonth == 0) {
+      prevMonth = 12;
+      prevYear -= 1;
+    }
+
+    // Obtener presupuestos del mes anterior
+    final previousBudgets = await dao.getBudgetsForMonth(prevMonth, prevYear);
+
+    // Crear presupuestos para el mes actual
+    for (final budget in previousBudgets) {
+      // Verificar si ya existe presupuesto para esta categoría
+      final existing = await dao.getBudgetForCategory(
+        budget.categoryId,
+        _month,
+        _year,
+      );
+
+      if (existing == null) {
+        await dao.insertBudget(BudgetsCompanion.insert(
+          id: const Uuid().v4(),
+          categoryId: budget.categoryId,
+          amount: budget.amount,
+          month: _month,
+          year: _year,
+          isActive: const Value(true),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ));
+      }
+    }
+
+    ref.invalidateSelf();
   }
 }
 
