@@ -341,7 +341,7 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
   String _type = 'expense';
   RecurrenceFrequency _frequency = RecurrenceFrequency.monthly;
   int _dayOfExecution = 1;
-  DateTime _startDate = DateTime.now();
+  final DateTime _startDate = DateTime.now();
   bool _requiresConfirmation = false;
   bool _isLoading = false;
 
@@ -446,7 +446,7 @@ class _RecurringFormSheetState extends ConsumerState<_RecurringFormSheet> {
                 Text('Frecuencia', style: theme.textTheme.labelLarge),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<RecurrenceFrequency>(
-                  value: _frequency,
+                  initialValue: _frequency,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.repeat),
                   ),

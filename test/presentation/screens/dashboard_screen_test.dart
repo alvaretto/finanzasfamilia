@@ -224,7 +224,7 @@ class _TestTrafficLight extends StatelessWidget {
     return Container(
       width: compact ? 16 : 60,
       height: compact ? 16 : 60,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.green,
         shape: BoxShape.circle,
       ),

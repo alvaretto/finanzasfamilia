@@ -369,7 +369,7 @@ void main() {
 
   group('MonthlyFlowSummary Entity', () {
     test('calcula balance neto', () {
-      final summary = MonthlyFlowSummary(
+      const summary = MonthlyFlowSummary(
         month: 1,
         year: 2026,
         totalIncome: 8000000,
@@ -381,7 +381,7 @@ void main() {
     });
 
     test('detecta sobregasto', () {
-      final summary = MonthlyFlowSummary(
+      const summary = MonthlyFlowSummary(
         month: 1,
         year: 2026,
         totalIncome: 5000000,
@@ -393,7 +393,7 @@ void main() {
     });
 
     test('calcula tasa de ahorro', () {
-      final summary = MonthlyFlowSummary(
+      const summary = MonthlyFlowSummary(
         month: 1,
         year: 2026,
         totalIncome: 10000000,
@@ -404,7 +404,7 @@ void main() {
     });
 
     test('periodName formatea correctamente', () {
-      final summary = MonthlyFlowSummary(
+      const summary = MonthlyFlowSummary(
         month: 12,
         year: 2026,
         totalIncome: 8000000,
@@ -417,7 +417,7 @@ void main() {
 
   group('CategorySpending Entity', () {
     test('calcula porcentaje de presupuesto', () {
-      final spending = CategorySpending(
+      const spending = CategorySpending(
         categoryId: 'cat-food',
         categoryName: 'Alimentación',
         amount: 600000,
@@ -431,7 +431,7 @@ void main() {
     });
 
     test('detecta presupuesto excedido', () {
-      final spending = CategorySpending(
+      const spending = CategorySpending(
         categoryId: 'cat-food',
         categoryName: 'Alimentación',
         amount: 900000,

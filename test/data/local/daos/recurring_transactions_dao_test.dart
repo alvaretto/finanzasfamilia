@@ -22,10 +22,10 @@ void main() {
 
   group('RecurringTransactionsDao', () {
     Future<void> seedCategory() async {
-      await db.into(db.categories).insert(CategoriesCompanion(
-            id: const Value('cat-test'),
-            name: const Value('Test Category'),
-            type: const Value('expense'),
+      await db.into(db.categories).insert(const CategoriesCompanion(
+            id: Value('cat-test'),
+            name: Value('Test Category'),
+            type: Value('expense'),
           ));
     }
 

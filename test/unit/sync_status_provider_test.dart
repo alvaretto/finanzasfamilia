@@ -64,7 +64,7 @@ void main() {
 
     test('copyWith preserva valores no especificados', () {
       // Arrange
-      final original = SyncState(
+      const original = SyncState(
         isConnected: true,
         errors: ['Error 1'],
       );

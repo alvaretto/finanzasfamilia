@@ -132,7 +132,7 @@ void main() {
       }
 
       // Verificar que hay 5 backups
-      var backups = await backupService.listBackups(backupDir);
+      final backups = await backupService.listBackups(backupDir);
       expect(backups.length, equals(5));
 
       // ======================

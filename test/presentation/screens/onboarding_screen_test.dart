@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:finanzas_familiares/presentation/screens/onboarding_screen.dart';
-import 'package:finanzas_familiares/application/providers/onboarding_provider.dart';
 
 void main() {
   setUp(() {

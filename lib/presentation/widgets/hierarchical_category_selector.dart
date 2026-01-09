@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/database.dart';
-import '../../data/local/daos/categories_dao.dart';
 import '../../application/providers/categories_provider.dart';
 import '../../application/providers/database_provider.dart';
 
@@ -449,7 +448,7 @@ class SimpleCategoryDropdown extends ConsumerWidget {
           ..sort((a, b) => a.name.compareTo(b.name));
 
         return DropdownButtonFormField<String>(
-          value: selectedCategoryId,
+          initialValue: selectedCategoryId,
           decoration: InputDecoration(
             labelText: label,
             prefixIcon: const Icon(Icons.category),

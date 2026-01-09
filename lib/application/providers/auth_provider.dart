@@ -183,18 +183,4 @@ class AuthService extends _$AuthService {
   }
 }
 
-/// Provider para verificar si es la primera vez que el usuario usa la app
-@riverpod
-class IsFirstTimeUser extends _$IsFirstTimeUser {
-  @override
-  Future<bool> build() async {
-    // TODO: Implementar persistencia real con SharedPreferences
-    // Por ahora, siempre retorna false (no es primera vez)
-    return false;
-  }
-
-  Future<void> markAsNotFirstTime() async {
-    // TODO: Persistir en SharedPreferences
-    state = const AsyncData(false);
-  }
-}
+// Nota: isFirstTimeUserProvider está definido en onboarding_provider.dart

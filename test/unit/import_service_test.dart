@@ -178,7 +178,7 @@ void main() {
       // Data
       sheet.cell(CellIndex.indexByString('A2')).value = TextCellValue('tx-excel-001');
       sheet.cell(CellIndex.indexByString('B2')).value = TextCellValue('expense');
-      sheet.cell(CellIndex.indexByString('C2')).value = DoubleCellValue(100000);
+      sheet.cell(CellIndex.indexByString('C2')).value = const DoubleCellValue(100000);
       sheet.cell(CellIndex.indexByString('D2')).value = TextCellValue('Compra Excel');
       sheet.cell(CellIndex.indexByString('E2')).value = TextCellValue(expenseCategory.id);
       sheet.cell(CellIndex.indexByString('F2')).value = TextCellValue('2024-06-20');

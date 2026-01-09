@@ -92,7 +92,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isLastPage = _currentPage == _totalPages - 1;
 
     return Scaffold(

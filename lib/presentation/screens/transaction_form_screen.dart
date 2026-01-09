@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' hide Column; // Para TransactionsCompanion en edición
 
 import '../../application/providers/database_provider.dart';
-import '../../application/providers/categories_provider.dart';
 import '../../application/providers/accounting_provider.dart';
 import '../../data/local/database.dart';
 import '../widgets/hierarchical_category_selector.dart';
