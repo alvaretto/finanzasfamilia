@@ -21,6 +21,7 @@ part 'database.g.dart';
 /// - MeasurementUnits: Unidades de medida
 /// - Places: Lugares de compra/venta
 /// - PaymentMethods: Métodos de pago
+/// - RecurringTransactions: Transacciones recurrentes (servicios, suscripciones)
 @DriftDatabase(tables: [
   Categories,
   Accounts,
@@ -31,6 +32,7 @@ part 'database.g.dart';
   MeasurementUnits,
   Places,
   PaymentMethods,
+  RecurringTransactions,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -43,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2; // Incrementado por nuevas tablas
+  int get schemaVersion => 3; // v3: RecurringTransactions
 
   @override
   MigrationStrategy get migration {
@@ -64,6 +66,10 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(transactions, transactions.placeId);
           await m.addColumn(transactions, transactions.hasDetails);
           await m.addColumn(transactions, transactions.itemCount);
+        }
+        // Migración de v2 a v3: Agregar RecurringTransactions
+        if (from < 3) {
+          await m.createTable(recurringTransactions);
         }
       },
       beforeOpen: (details) async {

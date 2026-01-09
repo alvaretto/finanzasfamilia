@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.3
+**Nombre:** Finanzas Familiares AS - Modo Personal v1.6
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 16 completada
+**Estado:** En desarrollo - Fase 18 completada
 
 ---
 
@@ -343,10 +343,21 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 15 | Asistente IA "Fina" | ✅ Completado (UI + Provider + Service) |
 | 16 | Auth Flow (Google Sign-In) | ✅ Completado (Splash + Login + AuthProvider) |
 | 17 | Onboarding | ✅ Completado (OnboardingScreen + Provider) |
+| 18 | Transacciones Recurrentes | ✅ Completado (Table + DAO + Provider + Screen) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.6 (2026-01-08)
+- **FASE 18:** Transacciones Recurrentes - Pagos Automáticos
+  - `RecurringTransactionsTable`: Tabla Drift con frecuencias (daily, weekly, biweekly, monthly, bimonthly, quarterly, semiannual, yearly)
+  - `RecurringTransactionsDao`: CRUD completo + streams reactivos + getDueForExecution
+  - `RecurringTransactionsProvider`: Notifier + ExecutionService para ejecución automática
+  - `RecurringTransactionsScreen`: UI con formulario de creación, lista, estado vacío
+  - Migración de base de datos v2 → v3
+  - 22 tests nuevos (12 DAO + 10 screen)
+  - Tests totales: 363 pasando
 
 ### v1.5 (2026-01-08)
 - **FASE 17:** Onboarding - Primera Experiencia de Usuario

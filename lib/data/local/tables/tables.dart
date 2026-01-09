@@ -14,3 +14,4 @@ export 'payment_methods_table.dart';
 export 'transactions_table.dart';
 export 'transaction_details_table.dart';
 export 'journal_entries_table.dart';
+export 'recurring_transactions_table.dart';

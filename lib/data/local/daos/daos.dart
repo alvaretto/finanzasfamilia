@@ -14,3 +14,6 @@ export 'payment_methods_dao.dart';
 // DAOs transaccionales (Fase 1.5)
 export 'transaction_details_dao.dart';
 export 'journal_entries_dao.dart';
+
+// DAOs de recurrencia (Fase 18)
+export 'recurring_transactions_dao.dart';
