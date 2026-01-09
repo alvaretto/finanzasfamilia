@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../application/providers/auth_provider.dart';
 import '../../application/providers/onboarding_provider.dart';
+import 'login_screen.dart';
+import 'main_shell.dart';
 
 /// Pantalla de onboarding para nuevos usuarios
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -93,9 +96,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     try {
       await ref.read(onboardingServiceProvider).completeOnboarding();
-      if (mounted) {
-        widget.onComplete();
-      }
+
+      if (!mounted) return;
+
+      // Navegar basado en el estado de autenticación
+      _navigateBasedOnAuth();
+
+      // Notificar al parent (por compatibilidad, aunque ahora navegamos aquí)
+      widget.onComplete();
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -110,6 +118,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         );
       }
     }
+  }
+
+  void _navigateBasedOnAuth() {
+    final authStatus = ref.read(authStateProvider);
+
+    final Widget destination = authStatus == AuthStatus.authenticated
+        ? const MainShell()
+        : const LoginScreen();
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => destination,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
   }
 
   @override

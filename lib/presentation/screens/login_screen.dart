@@ -17,23 +17,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  @override
-  void initState() {
-    super.initState();
-    // Escuchar cambios de autenticación para navegación automática
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _listenToAuthChanges();
-    });
-  }
-
-  void _listenToAuthChanges() {
-    ref.listen(authStateProvider, (previous, next) {
-      if (next == AuthStatus.authenticated && mounted) {
-        _navigateToHome();
-      }
-    });
-  }
-
   void _navigateToHome() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const MainShell()),
@@ -87,6 +70,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Escuchar cambios de autenticación para navegación automática
+    ref.listen(authStateProvider, (previous, next) {
+      if (next == AuthStatus.authenticated && mounted) {
+        _navigateToHome();
+      }
+    });
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final size = MediaQuery.of(context).size;

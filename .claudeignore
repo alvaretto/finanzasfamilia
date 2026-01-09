@@ -1,3 +1,12 @@
+# Screenshots e imágenes grandes (exceden límite de 2000px de API)
+screenshots/
+assets/images/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+
 # Build artifacts
 build/
 .dart_tool/

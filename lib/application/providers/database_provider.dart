@@ -21,18 +21,12 @@ PowerSyncDatabaseManager powerSyncManager(Ref ref) {
 }
 
 /// Provider de la base de datos de Drift
-/// Usa el archivo SQLite de PowerSync para operaciones locales
+/// Se debe hacer override desde main.dart con la instancia inicializada
 @Riverpod(keepAlive: true)
 AppDatabase appDatabase(Ref ref) {
-  final powerSync = ref.watch(powerSyncManagerProvider);
-
-  if (!powerSync.isInitialized) {
-    // Si PowerSync no está inicializado, usar base de datos standalone
-    return AppDatabase();
-  }
-
-  // Usar el mismo archivo SQLite que PowerSync
-  return AppDatabase.forPowerSync(powerSync.dbPath);
+  // Este provider debe ser overrideado desde main.dart
+  // Si no se hace override, usar base de datos standalone (fallback)
+  return AppDatabase();
 }
 
 /// Provider del DAO de categorías

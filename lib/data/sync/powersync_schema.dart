@@ -10,12 +10,13 @@ import 'package:powersync/powersync.dart';
 /// Nota: Los campos boolean de SQLite se mapean como integer (0/1)
 /// Nota: Los campos DateTime se mapean como text (ISO 8601)
 /// Nota: user_id NO se incluye aquí porque PowerSync lo maneja automáticamente
+/// Schema de PowerSync - la columna 'id' es agregada automáticamente por PowerSync
 const schema = Schema([
   // =========================================================================
   // CATEGORÍAS - Taxonomía jerárquica (asset, liability, income, expense)
   // =========================================================================
   Table('categories', [
-    Column.text('id'),
+    // 'id' es automático en PowerSync - NO declarar
     Column.text('name'),
     Column.text('icon'),
     Column.text('type'), // asset, liability, income, expense
@@ -32,7 +33,6 @@ const schema = Schema([
   // CUENTAS - Billeteras y cuentas del usuario (Nequi, DaviPlata, etc.)
   // =========================================================================
   Table('accounts', [
-    Column.text('id'),
     Column.text('name'),
     Column.text('icon'),
     Column.text('category_id'),
@@ -50,7 +50,6 @@ const schema = Schema([
   // LUGARES - Donde se realizan las transacciones
   // =========================================================================
   Table('places', [
-    Column.text('id'),
     Column.text('name'),
     Column.text('icon'),
     Column.text('address'),
@@ -68,7 +67,6 @@ const schema = Schema([
   // MÉTODOS DE PAGO (cash, debit, credit, transfer, digital_wallet, other)
   // =========================================================================
   Table('payment_methods', [
-    Column.text('id'),
     Column.text('name'),
     Column.text('icon'),
     Column.text('type'), // cash, debit, credit, transfer, digital_wallet, other
@@ -83,7 +81,6 @@ const schema = Schema([
   // UNIDADES DE MEDIDA (weight, volume, length, unit, other)
   // =========================================================================
   Table('measurement_units', [
-    Column.text('id'),
     Column.text('name'),
     Column.text('abbreviation'),
     Column.text('type'), // weight, volume, length, unit, other
@@ -99,7 +96,6 @@ const schema = Schema([
   // TRANSACCIONES - Header de movimientos (income, expense, transfer)
   // =========================================================================
   Table('transactions', [
-    Column.text('id'),
     Column.text('type'), // income, expense, transfer
     Column.real('amount'),
     Column.text('description'),
@@ -120,7 +116,6 @@ const schema = Schema([
   // DETALLES DE TRANSACCIÓN - Shopping Cart / Líneas de compra
   // =========================================================================
   Table('transaction_details', [
-    Column.text('id'),
     Column.text('transaction_id'),
     Column.text('category_id'),
     Column.text('description'),
@@ -137,7 +132,6 @@ const schema = Schema([
   // PRESUPUESTOS - Límites mensuales por categoría (Semáforo)
   // =========================================================================
   Table('budgets', [
-    Column.text('id'),
     Column.text('category_id'),
     Column.real('amount'),
     Column.integer('month'), // 1-12
@@ -151,7 +145,6 @@ const schema = Schema([
   // ASIENTOS CONTABLES - Partida Doble (debit, credit)
   // =========================================================================
   Table('journal_entries', [
-    Column.text('id'),
     Column.text('transaction_id'),
     Column.text('account_id'),
     Column.text('entry_type'), // debit, credit

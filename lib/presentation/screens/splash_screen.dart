@@ -82,10 +82,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   void _onOnboardingComplete() {
-    _navigateBasedOnAuth();
+    // Este callback se llama desde OnboardingScreen después de completar.
+    // Como usamos pushReplacement para navegar a OnboardingScreen,
+    // este widget (SplashScreen) ya está disposed y no podemos usar ref.
+    // La navegación post-onboarding ahora se maneja en OnboardingScreen.
   }
 
   void _navigateBasedOnAuth() {
+    if (!mounted) return;
+
     final authStatus = ref.read(authStateProvider);
 
     if (authStatus == AuthStatus.authenticated) {
