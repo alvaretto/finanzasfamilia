@@ -10,7 +10,9 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 - **Transacciones Recurrentes**: Pagos automáticos (servicios, suscripciones)
 - **Presupuestos**: Control de gastos por categoría con semáforos visuales
 - **Reportes Financieros**: Balance General, Estado de Resultados, Flujo de Efectivo
+- **Gráficos Avanzados**: Pie chart de gastos, tendencias mensuales, comparativos
 - **Asistente IA "Fina"**: Consejos financieros personalizados
+- **Notificaciones**: Alertas de presupuesto y recordatorios
 - **Firebase Crashlytics**: Monitoreo de errores en producción
 - **Multi-plataforma**: Android, iOS
 
@@ -24,6 +26,8 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 | Estado | Riverpod 3.0 |
 | Auth | Google Sign-In + Supabase Auth |
 | Monitoreo | Firebase Crashlytics + Analytics |
+| Gráficos | fl_chart |
+| Notificaciones | flutter_local_notifications |
 | Export | Excel, CSV, PDF |
 
 ## Inicio Rápido
@@ -180,10 +184,20 @@ test/
 | 22 | Pulido UI/UX (Pre-Release) | ✅ |
 | 23 | Sincronización PowerSync | ✅ |
 | 24 | Preparación Store + Firebase | ✅ |
+| 25 | Notificaciones Locales | ✅ |
+| 26 | Gráficos Avanzados | ✅ |
 
-**Tests:** 390+ pasando | **Versión:** 1.1.0
+**Tests:** 430+ pasando | **Versión:** 1.2.0
 
 ## Changelog
+
+### v1.2.0 (2026-01-09)
+- Gráficos avanzados con fl_chart:
+  - Pie chart de gastos por categoría
+  - Line chart de tendencia mensual (ingresos vs gastos)
+  - Comparativo mes actual vs anterior
+- Pantalla de Estadísticas con 3 tabs
+- Notificaciones locales (alertas de presupuesto, recordatorios)
 
 ### v1.1.0 (2026-01-09)
 - Firebase Crashlytics y Analytics integrados

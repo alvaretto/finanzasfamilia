@@ -23,9 +23,9 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.3 |
-| Fase Actual | 25 Completada |
-| Tests | 400+ pasando |
+| Versión | 2.4 |
+| Fase Actual | 26 Completada |
+| Tests | 430+ pasando |
 | Cobertura | ~85% |
 
 ### Funcionalidades Implementadas
@@ -49,6 +49,7 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | Sincronización PowerSync | ✅ | 23 |
 | Preparación Store | ✅ | 24 |
 | Notificaciones Locales | ✅ | 25 |
+| Gráficos Avanzados | ✅ | 26 |
 
 ---
 
@@ -163,21 +164,42 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-## Roadmap Post-MVP
-
-### Fase 26: Gráficos Avanzados
+### ~~Fase 26: Gráficos Avanzados~~ ✅ COMPLETADA
 **Objetivo:** Visualización de tendencias
-**Prioridad:** MEDIA
+**Completado:** 2026-01-09
 
-| Tarea | Descripción |
-|-------|-------------|
-| 26.1 | Gráfico de gastos por categoría (pie chart animado) |
-| 26.2 | Tendencia mensual de ingresos vs gastos (line chart) |
-| 26.3 | Comparativo mes actual vs anterior |
-| 26.4 | Proyección de saldo a fin de mes |
-| 26.5 | Heat map de días con más gastos |
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| 26.1 | Gráfico de gastos por categoría (pie chart animado) | ✅ |
+| 26.2 | Tendencia mensual de ingresos vs gastos (line chart) | ✅ |
+| 26.3 | Comparativo mes actual vs anterior | ✅ |
+| 26.4 | Proyección de saldo a fin de mes | ⏳ Post-MVP |
+| 26.5 | Heat map de días con más gastos | ⏳ Post-MVP |
+
+**Implementaciones:**
+- `ChartService`: Servicio de cálculos para gráficos financieros
+  - `getExpensesByCategory()`: Agrupa gastos por categoría con porcentajes
+  - `getMonthlyTrend()`: Tendencia de ingresos vs gastos (N meses)
+  - `getMonthComparison()`: Compara mes actual vs anterior
+  - `getTopExpenseCategories()`: Top N categorías de gasto
+- Modelos: `CategoryExpenseData`, `MonthlyTrendData`, `PeriodComparison`
+- `ExpensePieChart`: Gráfico de pie interactivo con leyenda
+- `MonthlyTrendChart`: Gráfico de línea con 3 series (ingresos, gastos, balance)
+- `MonthComparisonCard`: Tarjeta comparativa con íconos de tendencia
+- `StatisticsScreen`: 3 tabs (Gastos, Tendencia, Comparar)
+- Providers: `chartService`, `currentMonthExpenses`, `monthlyTrend`, `monthComparison`
+- Botón de estadísticas en Dashboard AppBar
+- 26 tests nuevos (9 service + 11 widgets + 7 screen)
+
+**Entregables:**
+- ✅ Pie chart de gastos por categoría
+- ✅ Line chart de tendencias mensuales
+- ✅ Comparativo mes actual vs anterior
+- ✅ Pantalla de estadísticas integrada
 
 ---
+
+## Roadmap Post-MVP
 
 ### Fase 27: Metas de Ahorro
 **Objetivo:** Gamificación del ahorro
@@ -295,6 +317,8 @@ Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
 | 1.1 | 2026-01-09 | Fase 22 completada |
 | 1.2 | 2026-01-09 | Fase 23 completada (PowerSync) |
 | 1.3 | 2026-01-09 | Fase 24 completada (Preparación Store) |
+| 1.4 | 2026-01-09 | Fase 25 completada (Notificaciones) |
+| 1.5 | 2026-01-09 | Fase 26 completada (Gráficos Avanzados) |
 
 ---
 

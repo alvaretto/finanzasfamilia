@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.3
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.4
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 25 completada
+**Estado:** En desarrollo - Fase 26 completada
 
 ---
 
@@ -35,6 +35,7 @@
 | Almacenamiento | path_provider | ^2.x |
 | Notificaciones | flutter_local_notifications | ^18.0.1 |
 | Timezone | timezone | ^0.10.0 |
+| Gráficos | fl_chart | ^0.69.2 |
 
 #### Reglas de Riverpod
 - **PROHIBIDO:** `StateProvider`, `StateNotifierProvider`
@@ -353,12 +354,31 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 23 | Sincronización PowerSync | ✅ Completado (ConnectivityProvider + SyncIndicator) |
 | 24 | Preparación Store | ✅ Completado (Firebase + Release Build + Privacy) |
 | 25 | Notificaciones Locales | ✅ Completado (NotificationService + Settings Screen) |
+| 26 | Gráficos Avanzados | ✅ Completado (ChartService + StatisticsScreen) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.4 (2026-01-09)
+- **FASE 26:** Gráficos Avanzados (fl_chart)
+  - `ChartService`: Servicio de cálculos para gráficos financieros
+    - `getExpensesByCategory()`: Agrupa gastos por categoría con porcentajes
+    - `getMonthlyTrend()`: Tendencia de ingresos vs gastos (N meses)
+    - `getMonthComparison()`: Compara mes actual vs anterior
+    - `getTopExpenseCategories()`: Top N categorías de gasto
+  - Modelos de datos: `CategoryExpenseData`, `MonthlyTrendData`, `PeriodComparison`
+  - Colores Material Design predefinidos para 12 categorías
+  - `ExpensePieChart`: Gráfico de pie interactivo con leyenda
+  - `MonthlyTrendChart`: Gráfico de línea con 3 series (ingresos, gastos, balance)
+  - `MonthComparisonCard`: Tarjeta comparativa con íconos de tendencia
+  - `StatisticsScreen`: 3 tabs (Gastos, Tendencia, Comparar)
+  - Providers Riverpod: `chartService`, `currentMonthExpenses`, `monthlyTrend`, `monthComparison`
+  - Botón de estadísticas en Dashboard AppBar
+  - 26 tests nuevos (9 service + 11 widgets + 7 screen)
+  - Tests totales: 430+ pasando
 
 ### v2.3 (2026-01-09)
 - **FASE 25:** Sistema de Notificaciones Locales
