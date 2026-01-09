@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.4
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.5
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 26 completada
+**Estado:** En desarrollo - Fase 27 completada
 
 ---
 
@@ -355,12 +355,48 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 24 | Preparación Store | ✅ Completado (Firebase + Release Build + Privacy) |
 | 25 | Notificaciones Locales | ✅ Completado (NotificationService + Settings Screen) |
 | 26 | Gráficos Avanzados | ✅ Completado (ChartService + StatisticsScreen) |
+| 27 | Metas de Ahorro | ✅ Completado (SavingsGoals + Contributions + UI) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.5 (2026-01-09)
+- **FASE 27:** Metas de Ahorro (Gamificación)
+  - `SavingsGoalsTable`: Tabla Drift para metas de ahorro
+    - Campos: id, name, description, targetAmount, currentAmount, targetDate
+    - Campos adicionales: accountId, color, icon, isActive, isCompleted
+    - Timestamps: createdAt, updatedAt, completedAt
+  - `SavingsContributionsTable`: Tabla Drift para contribuciones
+    - Relación con goalId
+    - Campos: amount, note, date, createdAt
+  - `SavingsGoalsDao`: DAO completo con CRUD
+    - `getActiveGoals()`, `getCompletedGoals()`, `getGoalsInProgress()`
+    - `watchActiveGoals()`, `watchGoalsInProgress()`, `watchContributionsForGoal()`
+    - Auto-completado cuando currentAmount >= targetAmount
+    - Recalculo automático de monto al agregar/eliminar contribuciones
+  - `SavingsGoal` entity (Freezed) con propiedades calculadas:
+    - `progressPercentage`, `remainingAmount`, `daysRemaining`
+    - `dailySavingsNeeded`, `status` (SavingsGoalStatus enum)
+  - `SavingsGoalsProvider`: Riverpod AsyncNotifier
+    - `create()`, `updateGoal()`, `delete()`, `pause()`, `resume()`
+    - `addContribution()`, `deleteContribution()`
+    - `SavingsGoalsSummary`: resumen agregado de todas las metas
+  - `SavingsGoalsScreen`: UI completa con Material 3
+    - Estado vacío con ilustración
+    - Lista de metas con secciones (En Progreso, Completadas, Pausadas)
+    - Resumen de progreso total
+    - `_GoalCard`: Card con progress bar, color e icono personalizable
+    - `_GoalDetailSheet`: Bottom sheet con detalle completo
+    - `_LargeProgressIndicator`: Indicador circular grande (75%)
+    - `_ContributionDialog`: Diálogo para agregar contribuciones
+    - `_GoalFormSheet`: Formulario crear/editar con selector de color/icono
+  - Navegación desde MainShell → QuickAddSheet → "Metas de Ahorro"
+  - Database migration v3 → v4
+  - 35 tests nuevos (18 DAO + 17 screen)
+  - Tests totales: 447+ pasando
 
 ### v2.4 (2026-01-09)
 - **FASE 26:** Gráficos Avanzados (fl_chart)

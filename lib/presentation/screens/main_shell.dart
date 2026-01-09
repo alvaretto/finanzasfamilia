@@ -9,6 +9,7 @@ import 'budgets_screen.dart';
 import 'transaction_form_screen.dart';
 import 'account_form_screen.dart';
 import 'ai_chat_screen.dart';
+import 'savings_goals_screen.dart';
 
 /// Provider para el índice de navegación actual
 final currentTabProvider = StateProvider<int>((ref) => 0);
@@ -205,6 +206,21 @@ class _QuickAddSheet extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const AccountFormScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _QuickActionTile(
+                      icon: Icons.flag,
+                      color: Colors.teal,
+                      title: 'Metas de Ahorro',
+                      subtitle: 'Ver y crear metas',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SavingsGoalsScreen(),
                           ),
                         );
                       },

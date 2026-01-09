@@ -8,3 +8,4 @@ export 'sync_status_provider.dart';
 export 'backup_provider.dart';
 export 'accounting_provider.dart';
 export 'reports_provider.dart';
+export 'savings_goals_provider.dart';

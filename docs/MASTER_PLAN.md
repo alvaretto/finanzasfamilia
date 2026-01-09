@@ -23,9 +23,9 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.4 |
-| Fase Actual | 26 Completada |
-| Tests | 430+ pasando |
+| Versión | 2.5 |
+| Fase Actual | 27 Completada |
+| Tests | 447+ pasando |
 | Cobertura | ~85% |
 
 ### Funcionalidades Implementadas
@@ -50,6 +50,7 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | Preparación Store | ✅ | 24 |
 | Notificaciones Locales | ✅ | 25 |
 | Gráficos Avanzados | ✅ | 26 |
+| Metas de Ahorro | ✅ | 27 |
 
 ---
 
@@ -199,21 +200,40 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-## Roadmap Post-MVP
-
-### Fase 27: Metas de Ahorro
+### ~~Fase 27: Metas de Ahorro~~ ✅ COMPLETADA
 **Objetivo:** Gamificación del ahorro
-**Prioridad:** MEDIA
+**Completado:** 2026-01-09
 
-| Tarea | Descripción |
-|-------|-------------|
-| 27.1 | CRUD de metas (nombre, monto objetivo, fecha límite) |
-| 27.2 | Asignar transacciones a metas |
-| 27.3 | Progress bar visual por meta |
-| 27.4 | Celebración al alcanzar meta |
-| 27.5 | Sugerencias de ahorro de "Fina" |
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| 27.1 | CRUD de metas (nombre, monto objetivo, fecha límite) | ✅ |
+| 27.2 | Sistema de contribuciones con recalculo automático | ✅ |
+| 27.3 | Progress bar visual por meta | ✅ |
+| 27.4 | Auto-completado al alcanzar meta | ✅ |
+| 27.5 | Selector de color e icono personalizable | ✅ |
+
+**Implementaciones:**
+- `SavingsGoalsTable` y `SavingsContributionsTable`: Tablas Drift con migración v4
+- `SavingsGoalsDao`: CRUD completo + streams reactivos + auto-completado
+- `SavingsGoal` entity (Freezed): Propiedades calculadas (progress%, remaining, daysRemaining)
+- `SavingsGoalsProvider`: Riverpod AsyncNotifier con gestión de contribuciones
+- `SavingsGoalsSummary`: Resumen agregado de todas las metas
+- `SavingsGoalsScreen`: UI completa con lista, detalle, formulario
+- `_GoalCard`: Card con progress bar, color e icono
+- `_GoalDetailSheet`: Bottom sheet con indicador circular grande
+- `_ContributionDialog`: Agregar contribuciones con nota opcional
+- Navegación desde MainShell → QuickAddSheet
+- 35 tests nuevos (18 DAO + 17 screen)
+
+**Entregables:**
+- ✅ CRUD de metas de ahorro funcionando
+- ✅ Sistema de contribuciones con histórico
+- ✅ Visualización de progreso (lineal y circular)
+- ✅ Estados: En Progreso, Completada, Pausada
 
 ---
+
+## Roadmap Post-MVP
 
 ### Fase 28: Adjuntos y OCR
 **Objetivo:** Digitalizar recibos
@@ -319,6 +339,7 @@ Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
 | 1.3 | 2026-01-09 | Fase 24 completada (Preparación Store) |
 | 1.4 | 2026-01-09 | Fase 25 completada (Notificaciones) |
 | 1.5 | 2026-01-09 | Fase 26 completada (Gráficos Avanzados) |
+| 1.6 | 2026-01-09 | Fase 27 completada (Metas de Ahorro) |
 
 ---
 

@@ -15,3 +15,6 @@ export 'transactions_table.dart';
 export 'transaction_details_table.dart';
 export 'journal_entries_table.dart';
 export 'recurring_transactions_table.dart';
+
+// Metas de ahorro - Fase 27
+export 'savings_goals_table.dart';
