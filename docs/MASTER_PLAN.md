@@ -23,9 +23,9 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.2 |
-| Fase Actual | 24 Completada |
-| Tests | 390+ pasando |
+| Versión | 2.3 |
+| Fase Actual | 25 Completada |
+| Tests | 400+ pasando |
 | Cobertura | ~85% |
 
 ### Funcionalidades Implementadas
@@ -47,6 +47,8 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | Backup Local | ✅ | 5 |
 | Pulido UI/UX | ✅ | 22 |
 | Sincronización PowerSync | ✅ | 23 |
+| Preparación Store | ✅ | 24 |
+| Notificaciones Locales | ✅ | 25 |
 
 ---
 
@@ -131,21 +133,37 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-## Roadmap Post-MVP
-
-### Fase 25: Notificaciones
+### ~~Fase 25: Notificaciones~~ ✅ COMPLETADA
 **Objetivo:** Recordatorios proactivos
-**Prioridad:** MEDIA
+**Completado:** 2026-01-09
 
-| Tarea | Descripción |
-|-------|-------------|
-| 25.1 | Notificaciones locales (flutter_local_notifications) |
-| 25.2 | Alerta de presupuesto al 80% y 100% |
-| 25.3 | Recordatorio de transacciones recurrentes |
-| 25.4 | Recordatorio de registro diario (opcional) |
-| 25.5 | Configuración de preferencias de notificación |
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| 25.1 | Notificaciones locales (flutter_local_notifications) | ✅ |
+| 25.2 | Alerta de presupuesto al 80% y 100% | ✅ |
+| 25.3 | Recordatorio de transacciones recurrentes | ✅ |
+| 25.4 | Recordatorio de registro diario (opcional) | ✅ |
+| 25.5 | Configuración de preferencias de notificación | ✅ |
+
+**Implementaciones:**
+- `NotificationService`: Servicio singleton con flutter_local_notifications ^18.0.1
+  - Alertas de presupuesto con IDs únicos (budgetWarningId=1000, budgetExceededId=1001)
+  - Recordatorios recurrentes (recurringReminderBaseId=2000)
+  - Recordatorio diario configurable (dailyReminderBaseId=3000)
+  - Canales Android: budget_alerts, recurring_reminders, daily_reminder
+- `NotificationProvider`: Estado de configuración con Riverpod AsyncNotifier
+- `BudgetAlertProvider`: Verificador automático de umbrales de presupuesto
+- `NotificationSettingsScreen`: UI completa con switches y selector de hora
+- 11 tests nuevos (4 service + 7 screen), 3 skipped (plugin nativo)
+
+**Entregables:**
+- ✅ Alertas de presupuesto funcionando
+- ✅ Recordatorios programables
+- ✅ Configuración de preferencias en pantalla
 
 ---
+
+## Roadmap Post-MVP
 
 ### Fase 26: Gráficos Avanzados
 **Objetivo:** Visualización de tendencias

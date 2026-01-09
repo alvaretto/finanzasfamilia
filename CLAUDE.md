@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.1
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.3
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 23 completada
+**Estado:** En desarrollo - Fase 25 completada
 
 ---
 
@@ -33,6 +33,8 @@
 | Export PDF | pdf | ^3.x |
 | Conectividad | connectivity_plus | ^6.x |
 | Almacenamiento | path_provider | ^2.x |
+| Notificaciones | flutter_local_notifications | ^18.0.1 |
+| Timezone | timezone | ^0.10.0 |
 
 #### Reglas de Riverpod
 - **PROHIBIDO:** `StateProvider`, `StateNotifierProvider`
@@ -350,12 +352,34 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 22 | Pulido UI/UX (Pre-Release) | ✅ Completado |
 | 23 | Sincronización PowerSync | ✅ Completado (ConnectivityProvider + SyncIndicator) |
 | 24 | Preparación Store | ✅ Completado (Firebase + Release Build + Privacy) |
+| 25 | Notificaciones Locales | ✅ Completado (NotificationService + Settings Screen) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.3 (2026-01-09)
+- **FASE 25:** Sistema de Notificaciones Locales
+  - `NotificationService`: Servicio singleton con flutter_local_notifications
+    - Alertas de presupuesto (80% warning, 100%+ exceeded)
+    - Recordatorios de transacciones recurrentes (1 día antes)
+    - Recordatorio diario configurable (hora personalizable)
+    - IDs únicos por tipo: budget(1000+), recurring(2000+), daily(3000+)
+    - Canales Android: budget_alerts, recurring_reminders, daily_reminder
+  - `NotificationProvider`: Provider Riverpod con AsyncNotifier
+    - NotificationSettings: estado de configuración
+    - NotificationSettingsNotifier: CRUD de preferencias
+  - `BudgetAlertProvider`: Verificador automático de presupuestos
+  - `NotificationSettingsScreen`: UI de configuración completa
+    - Switch global de notificaciones
+    - Sección alertas de presupuesto
+    - Sección recordatorios (recurrentes + diario)
+    - Selector de hora para recordatorio diario
+  - Integración en main.dart: initialize + requestPermissions
+  - 11 tests nuevos (4 service + 7 screen), 3 skipped (plugin nativo)
+  - Tests totales: 400+ pasando
 
 ### v2.2 (2026-01-09)
 - **HOTFIX:** Resumen mensual no actualizaba tras crear transacción
@@ -486,4 +510,4 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 
 ---
 
-**Última actualización:** 2026-01-08
+**Última actualización:** 2026-01-09
