@@ -8,9 +8,10 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 - **Sincronización PowerSync**: Sync bidireccional con Supabase
 - **Partida Doble**: Motor contable profesional oculto tras UI simple
 - **Transacciones Recurrentes**: Pagos automáticos (servicios, suscripciones)
-- **Presupuestos**: Control de gastos por categoría con semáforos
+- **Presupuestos**: Control de gastos por categoría con semáforos visuales
 - **Reportes Financieros**: Balance General, Estado de Resultados, Flujo de Efectivo
 - **Asistente IA "Fina"**: Consejos financieros personalizados
+- **Firebase Crashlytics**: Monitoreo de errores en producción
 - **Multi-plataforma**: Android, iOS
 
 ## Stack Tecnológico
@@ -22,6 +23,8 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 | Sincronización | PowerSync + Supabase |
 | Estado | Riverpod 3.0 |
 | Auth | Google Sign-In + Supabase Auth |
+| Monitoreo | Firebase Crashlytics + Analytics |
+| Export | Excel, CSV, PDF |
 
 ## Inicio Rápido
 
@@ -46,8 +49,12 @@ cp .env.example .env
 # Ejecutar tests
 flutter test
 
-# Ejecutar app
+# Ejecutar app en modo debug
 flutter run
+
+# Build de release (Android)
+flutter build apk --release
+flutter build appbundle --release
 ```
 
 ## Configuración
@@ -75,6 +82,38 @@ POWERSYNC_URL=https://your-instance-id.powersync.journeyapps.com
 3. Configura las Sync Rules (ver `supabase/powersync/sync_rules.yaml`)
 4. Configura Client Auth con Supabase JWT
 
+### Firebase (Opcional)
+
+1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com)
+2. Agrega una app Android con package name: `app.finanzasfamiliares`
+3. Descarga `google-services.json` y colócalo en `android/app/`
+4. Habilita Crashlytics en la consola de Firebase
+
+## Build de Producción
+
+### Android
+
+```bash
+# APK universal (para instalación directa)
+flutter build apk --release
+# Output: build/app/outputs/flutter-apk/app-release.apk
+
+# App Bundle (para Google Play)
+flutter build appbundle --release
+# Output: build/app/outputs/bundle/release/app-release.aab
+```
+
+### Keystore de Producción
+
+El keystore de producción debe configurarse en `android/key.properties`:
+
+```properties
+storePassword=your-store-password
+keyPassword=your-key-password
+keyAlias=finanzas_familiares
+storeFile=keystore/finanzas-familiares.jks
+```
+
 ## Documentación
 
 | Documento | Descripción |
@@ -100,18 +139,27 @@ lib/
 ├── domain/
 │   ├── entities/        # Modelos de dominio (Freezed)
 │   ├── repositories/    # Interfaces
-│   └── services/        # Lógica de negocio
+│   └── services/        # Lógica de negocio (AccountingService)
 ├── application/
-│   └── providers/       # Riverpod providers
+│   ├── providers/       # Riverpod providers
+│   └── services/        # Export/Import services
 ├── presentation/
 │   ├── screens/         # Pantallas
 │   ├── widgets/         # Widgets reutilizables
 │   └── theme/           # Material 3 theme
 └── main.dart
 
+android/
+├── app/
+│   ├── google-services.json  # Firebase config (no en repo)
+│   ├── keystore/             # Release keystore (no en repo)
+│   └── proguard-rules.pro    # ProGuard config
+└── key.properties            # Keystore config (no en repo)
+
 test/
 ├── unit/                # Tests unitarios
 ├── data/                # Tests de DAOs
+├── integration/         # Tests de integración
 └── presentation/        # Tests de widgets
 ```
 
@@ -131,9 +179,25 @@ test/
 | 21 | Edición/Eliminación Transacciones | ✅ |
 | 22 | Pulido UI/UX (Pre-Release) | ✅ |
 | 23 | Sincronización PowerSync | ✅ |
-| **24** | **Preparación Store** | ✅ |
+| 24 | Preparación Store + Firebase | ✅ |
 
-**Tests:** 394+ pasando
+**Tests:** 390+ pasando | **Versión:** 1.1.0
+
+## Changelog
+
+### v1.1.0 (2026-01-09)
+- Firebase Crashlytics y Analytics integrados
+- Build de producción Android (APK + AAB)
+- PowerSync completamente configurado
+- Política de Privacidad y Términos de Servicio
+- Ficha de tienda para Google Play y App Store
+- App Icon personalizado
+
+### v1.0.0 (2026-01-08)
+- Release inicial con todas las funcionalidades core
+- Sistema de partida doble completo
+- Sincronización offline-first
+- 21 fases de desarrollo completadas
 
 ## Contacto
 
