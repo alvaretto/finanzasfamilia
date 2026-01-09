@@ -11,6 +11,7 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 - **Presupuestos**: Control de gastos por categoría con semáforos visuales
 - **Reportes Financieros**: Balance General, Estado de Resultados, Flujo de Efectivo
 - **Gráficos Avanzados**: Pie chart de gastos, tendencias mensuales, comparativos
+- **Metas de Ahorro**: Sistema gamificado con progreso visual y contribuciones
 - **Asistente IA "Fina"**: Consejos financieros personalizados
 - **Notificaciones**: Alertas de presupuesto y recordatorios
 - **Firebase Crashlytics**: Monitoreo de errores en producción
@@ -186,10 +187,21 @@ test/
 | 24 | Preparación Store + Firebase | ✅ |
 | 25 | Notificaciones Locales | ✅ |
 | 26 | Gráficos Avanzados | ✅ |
+| 27 | Metas de Ahorro | ✅ |
 
-**Tests:** 430+ pasando | **Versión:** 1.2.0
+**Tests:** 447+ pasando | **Versión:** 1.3.0
 
 ## Changelog
+
+### v1.3.0 (2026-01-09)
+- Sistema de Metas de Ahorro completo:
+  - CRUD de metas con nombre, monto objetivo, fecha límite
+  - Contribuciones con historial y notas
+  - Progress bar visual (lineal y circular)
+  - Personalización con colores e iconos
+  - Auto-completado al alcanzar meta
+  - Estados: En Progreso, Completada, Pausada
+- 35 tests nuevos (18 DAO + 17 screen)
 
 ### v1.2.0 (2026-01-09)
 - Gráficos avanzados con fl_chart:
