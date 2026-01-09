@@ -250,6 +250,164 @@ class AccountingService {
     return account.balance;
   }
 
+  /// Elimina una transacción y revierte todos sus efectos contables
+  /// - Revierte los cambios de balance en las cuentas afectadas
+  /// - Elimina los asientos contables
+  /// - Elimina la transacción
+  Future<void> deleteTransaction(String transactionId) async {
+    return db.transaction(() async {
+      // 1. Obtener la transacción
+      final transaction = await (db.select(db.transactions)
+            ..where((t) => t.id.equals(transactionId)))
+          .getSingleOrNull();
+
+      if (transaction == null) {
+        throw StateError('La transacción no existe: $transactionId');
+      }
+
+      // 2. Revertir cambios de balance según el tipo
+      await _revertBalanceChanges(transaction);
+
+      // 3. Eliminar asientos contables
+      await journalEntriesDao.deleteEntriesByTransaction(transactionId);
+
+      // 4. Eliminar la transacción
+      await transactionsDao.deleteTransaction(transactionId);
+    });
+  }
+
+  /// Obtiene una transacción por ID
+  Future<TransactionEntry?> getTransactionById(String transactionId) async {
+    return (db.select(db.transactions)
+          ..where((t) => t.id.equals(transactionId)))
+        .getSingleOrNull();
+  }
+
+  /// Actualiza una transacción existente
+  /// Proceso: Eliminar transacción actual y crear una nueva con los datos actualizados
+  Future<TransactionEntry> updateTransaction({
+    required String transactionId,
+    required String type,
+    required String categoryId,
+    required double amount,
+    required String description,
+    required DateTime date,
+    String? fromAccountId,
+    String? toAccountId,
+  }) async {
+    return db.transaction(() async {
+      // 1. Obtener la transacción original para verificar que existe
+      final original = await getTransactionById(transactionId);
+      if (original == null) {
+        throw StateError('La transacción no existe: $transactionId');
+      }
+
+      // 2. Revertir los efectos de la transacción original
+      await _revertBalanceChanges(original);
+
+      // 3. Eliminar asientos contables antiguos
+      await journalEntriesDao.deleteEntriesByTransaction(transactionId);
+
+      // 4. Eliminar la transacción original
+      await transactionsDao.deleteTransaction(transactionId);
+
+      // 5. Crear nueva transacción con los datos actualizados
+      switch (type) {
+        case 'expense':
+          return recordExpense(
+            categoryId: categoryId,
+            paymentAccountId: fromAccountId!,
+            amount: amount,
+            description: description,
+            date: date,
+          );
+        case 'income':
+          return recordIncome(
+            categoryId: categoryId,
+            destinationAccountId: toAccountId!,
+            amount: amount,
+            description: description,
+            date: date,
+          );
+        case 'transfer':
+          return recordTransfer(
+            fromAccountId: fromAccountId!,
+            toAccountId: toAccountId!,
+            amount: amount,
+            description: description,
+            date: date,
+          );
+        case 'liability_payment':
+          return recordLiabilityPayment(
+            liabilityAccountId: toAccountId!,
+            paymentAccountId: fromAccountId!,
+            amount: amount,
+            description: description,
+            date: date,
+          );
+        default:
+          throw ArgumentError('Tipo de transacción no soportado: $type');
+      }
+    });
+  }
+
+  /// Revierte los cambios de balance causados por una transacción
+  Future<void> _revertBalanceChanges(TransactionEntry transaction) async {
+    switch (transaction.type) {
+      case 'expense':
+        // Revertir: la cuenta de pago recupera el monto
+        if (transaction.fromAccountId != null) {
+          await _updateAccountBalance(
+            transaction.fromAccountId!,
+            transaction.amount, // Sumar (revertir resta)
+          );
+        }
+        break;
+
+      case 'income':
+        // Revertir: la cuenta destino pierde el monto
+        if (transaction.toAccountId != null) {
+          await _updateAccountBalance(
+            transaction.toAccountId!,
+            -transaction.amount, // Restar (revertir suma)
+          );
+        }
+        break;
+
+      case 'transfer':
+        // Revertir: origen recupera, destino pierde
+        if (transaction.fromAccountId != null) {
+          await _updateAccountBalance(
+            transaction.fromAccountId!,
+            transaction.amount,
+          );
+        }
+        if (transaction.toAccountId != null) {
+          await _updateAccountBalance(
+            transaction.toAccountId!,
+            -transaction.amount,
+          );
+        }
+        break;
+
+      case 'liability_payment':
+        // Revertir: pasivo aumenta (más deuda), activo recupera
+        if (transaction.toAccountId != null) {
+          await _updateAccountBalance(
+            transaction.toAccountId!,
+            -transaction.amount, // Pasivo aumenta
+          );
+        }
+        if (transaction.fromAccountId != null) {
+          await _updateAccountBalance(
+            transaction.fromAccountId!,
+            transaction.amount, // Activo recupera
+          );
+        }
+        break;
+    }
+  }
+
   // ============================================================
   // Métodos privados auxiliares
   // ============================================================

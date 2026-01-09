@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../application/providers/providers.dart';
 import '../../data/local/database.dart';
+import 'transaction_form_screen.dart';
 
 /// Provider para el filtro de tipo de transacción
 final transactionTypeFilterProvider = StateProvider<String?>((ref) => null);
@@ -459,13 +460,22 @@ class _TransactionTile extends ConsumerWidget {
   }
 }
 
-class _TransactionDetailSheet extends ConsumerWidget {
+class _TransactionDetailSheet extends ConsumerStatefulWidget {
   final TransactionEntry transaction;
 
   const _TransactionDetailSheet({required this.transaction});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_TransactionDetailSheet> createState() =>
+      _TransactionDetailSheetState();
+}
+
+class _TransactionDetailSheetState
+    extends ConsumerState<_TransactionDetailSheet> {
+  bool _isDeleting = false;
+
+  @override
+  Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesNotifierProvider);
     final currencyFormat = NumberFormat.currency(
       locale: 'es_CO',
@@ -476,7 +486,9 @@ class _TransactionDetailSheet extends ConsumerWidget {
 
     String categoryName = 'Sin categoría';
     categoriesAsync.whenData((categories) {
-      final category = categories.where((c) => c.id == transaction.categoryId).firstOrNull;
+      final category = categories
+          .where((c) => c.id == widget.transaction.categoryId)
+          .firstOrNull;
       if (category != null) {
         categoryName = category.name;
       }
@@ -492,7 +504,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _getTypeLabel(transaction.type),
+                _getTypeLabel(widget.transaction.type),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               IconButton(
@@ -504,11 +516,11 @@ class _TransactionDetailSheet extends ConsumerWidget {
           const Divider(),
           const SizedBox(height: 16),
           Text(
-            currencyFormat.format(transaction.amount),
+            currencyFormat.format(widget.transaction.amount),
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: _getTypeColor(transaction.type),
+              color: _getTypeColor(widget.transaction.type),
             ),
           ),
           const SizedBox(height: 24),
@@ -520,23 +532,21 @@ class _TransactionDetailSheet extends ConsumerWidget {
           _DetailRow(
             icon: Icons.calendar_today,
             label: 'Fecha',
-            value: dateFormat.format(transaction.transactionDate),
+            value: dateFormat.format(widget.transaction.transactionDate),
           ),
-          if (transaction.description != null && transaction.description!.isNotEmpty)
+          if (widget.transaction.description != null &&
+              widget.transaction.description!.isNotEmpty)
             _DetailRow(
               icon: Icons.description,
               label: 'Descripción',
-              value: transaction.description!,
+              value: widget.transaction.description!,
             ),
           const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Editar transacción
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => _editTransaction(context),
                   icon: const Icon(Icons.edit),
                   label: const Text('Editar'),
                 ),
@@ -544,14 +554,24 @@ class _TransactionDetailSheet extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Eliminar transacción
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                  onPressed: _isDeleting ? null : () => _confirmDelete(context),
+                  icon: _isDeleting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.delete, color: Colors.red),
+                  label: Text(
+                    _isDeleting ? 'Eliminando...' : 'Eliminar',
+                    style: TextStyle(
+                      color: _isDeleting ? Colors.grey : Colors.red,
+                    ),
+                  ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
+                    side: BorderSide(
+                      color: _isDeleting ? Colors.grey : Colors.red,
+                    ),
                   ),
                 ),
               ),
@@ -560,6 +580,79 @@ class _TransactionDetailSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  void _editTransaction(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransactionFormScreen(
+          transaction: widget.transaction,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar Transacción'),
+        content: const Text(
+          '¿Estás seguro de eliminar esta transacción?\n\n'
+          'Esta acción revertirá los cambios en los balances de las cuentas afectadas.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _deleteTransaction();
+    }
+  }
+
+  Future<void> _deleteTransaction() async {
+    setState(() => _isDeleting = true);
+
+    try {
+      final accountingService = ref.read(accountingServiceProvider);
+      await accountingService.deleteTransaction(widget.transaction.id);
+
+      // Invalidar providers para refrescar datos
+      ref.invalidate(filteredTransactionsProvider);
+      ref.invalidate(totalBalanceProvider);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transacción eliminada correctamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al eliminar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   String _getTypeLabel(String type) {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:drift/drift.dart' hide Column; // Para TransactionsCompanion en edición
 
 import '../../application/providers/database_provider.dart';
 import '../../application/providers/accounting_provider.dart';
@@ -438,28 +437,20 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     final description = _descriptionController.text.trim();
 
     final accountingService = ref.read(accountingServiceProvider);
-    final db = ref.read(appDatabaseProvider);
 
     try {
       if (isEditing) {
-        // Para edición, actualizamos directamente (sin recalcular asientos)
-        // TODO: Implementar reversión y recreación de asientos para edición
-        await (db.update(db.transactions)
-              ..where((t) => t.id.equals(widget.transaction!.id)))
-            .write(TransactionsCompanion(
-          type: Value(transactionType),
-          amount: Value(amount),
-          description: Value(description.isEmpty ? null : description),
-          categoryId: Value(categoryId!),
-          fromAccountId: Value(
-            transactionType == 'income' ? null : fromAccountId,
-          ),
-          toAccountId: Value(
-            transactionType == 'expense' ? null : toAccountId,
-          ),
-          transactionDate: Value(selectedDate),
-          updatedAt: Value(DateTime.now()),
-        ));
+        // Usar AccountingService para actualizar con reversión de asientos
+        await accountingService.updateTransaction(
+          transactionId: widget.transaction!.id,
+          type: transactionType,
+          categoryId: categoryId!,
+          amount: amount,
+          description: description.isEmpty ? 'Sin descripción' : description,
+          date: selectedDate,
+          fromAccountId: transactionType == 'income' ? null : fromAccountId,
+          toAccountId: transactionType == 'expense' ? null : toAccountId,
+        );
       } else {
         // NUEVO: Usar AccountingService para crear transacción con partida doble
         switch (transactionType) {

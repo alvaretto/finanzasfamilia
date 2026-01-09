@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.8
+**Nombre:** Finanzas Familiares AS - Modo Personal v1.9
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 20 completada
+**Estado:** En desarrollo - Fase 21 completada
 
 ---
 
@@ -346,10 +346,23 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 18 | Transacciones Recurrentes | ✅ Completado (Table + DAO + Provider + Screen) |
 | 19 | Selector Categorías Jerárquico | ✅ Completado (Widget + Provider + Integración) |
 | 20 | Sistema de Presupuestos CRUD | ✅ Completado (Create, Edit, Delete + Semáforo) |
+| 21 | Edición y Eliminación de Transacciones | ✅ Completado (CRUD + Reversión Asientos) |
 
 ---
 
 ## Changelog Reciente
+
+### v1.9 (2026-01-08)
+- **FASE 21:** Edición y Eliminación de Transacciones con Reversión Contable
+  - `AccountingService.deleteTransaction`: Elimina transacción y revierte cambios de balance
+  - `AccountingService.updateTransaction`: Actualiza transacción (delete + recreate con nuevo tipo)
+  - `AccountingService.getTransactionById`: Consulta transacción individual
+  - `_revertBalanceChanges`: Lógica de reversión para expense, income, transfer, liability_payment
+  - `TransactionsScreen`: UI con botones Editar/Eliminar en BottomSheet de detalle
+  - Confirmación de eliminación con AlertDialog y mensaje explicativo
+  - Integración con TransactionFormScreen para modo edición
+  - 10 tests nuevos (CRUD completo + reversión de balances)
+  - Tests totales: 394 pasando
 
 ### v1.8 (2026-01-08)
 - **FASE 20:** Sistema de Presupuestos CRUD Completo
