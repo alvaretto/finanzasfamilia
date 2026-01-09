@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v1.9
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.1
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 21 completada
+**Estado:** En desarrollo - Fase 23 completada
 
 ---
 
@@ -348,7 +348,7 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 20 | Sistema de Presupuestos CRUD | ✅ Completado (Create, Edit, Delete + Semáforo) |
 | 21 | Edición y Eliminación de Transacciones | ✅ Completado (CRUD + Reversión Asientos) |
 | 22 | Pulido UI/UX (Pre-Release) | ✅ Completado |
-| 23 | Sincronización PowerSync | ⏳ Pendiente |
+| 23 | Sincronización PowerSync | ✅ Completado (ConnectivityProvider + SyncIndicator) |
 | 24 | Preparación Store | ⏳ Pendiente |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
@@ -356,6 +356,20 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 ---
 
 ## Changelog Reciente
+
+### v2.1 (2026-01-09)
+- **FASE 23:** Sincronización PowerSync Completa
+  - `ConnectivityNotifier`: Provider Riverpod para monitoreo de red con `connectivity_plus`
+  - `ConnectivityStatus`: Enum con estados `online`, `offline`, `checking`
+  - `SyncStatusIndicator`: Widget visual de estado de sync (iconos cloud, spinner, colores)
+  - `_SyncDetailsSheet`: Bottom sheet con detalles de conexión, errores y botón sync
+  - `SupabaseConnector`: Mejorado con callbacks `onSyncError`, `onSyncComplete`
+  - Manejo de errores PostgrestException por código (23505, 23503, 42501)
+  - `PowerSyncDatabaseManager`: Integración con SyncStatusProvider via statusStream
+  - Prefijo `ps` para imports de PowerSync (evita conflicto con SyncStatus)
+  - Auto-sync cuando se reconecta a internet
+  - 18 tests nuevos (9 connectivity + 9 sync_indicator)
+  - Tests totales: 412 pasando
 
 ### v2.0 (2026-01-09)
 - **FASE 22:** Pulido UI/UX Pre-Release

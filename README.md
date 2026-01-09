@@ -5,6 +5,7 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 ## Características Principales
 
 - **Offline-First**: Funciona sin conexión, sincroniza cuando hay red
+- **Sincronización PowerSync**: Indicador visual de estado de sync con auto-sync
 - **Partida Doble**: Motor contable profesional oculto tras UI simple
 - **Transacciones Recurrentes**: Pagos automáticos (EDEQ, Netflix, etc.)
 - **Presupuestos**: Control de gastos por categoría con semáforos
@@ -52,7 +53,7 @@ flutter run
 | [CLAUDE.md](CLAUDE.md) | Reglas de sesión para Claude Code |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Filosofía Offline-First |
 | [docs/DATABASE.md](docs/DATABASE.md) | Esquema Drift documentado |
-| [docs/TESTING.md](docs/TESTING.md) | Tests categorizados (363+) |
+| [docs/TESTING.md](docs/TESTING.md) | Tests categorizados (412+) |
 | [docs/SYNC.md](docs/SYNC.md) | Estrategia de sincronización |
 | [docs/ERRORS.md](docs/ERRORS.md) | Errores comunes y soluciones |
 
