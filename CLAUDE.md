@@ -3,7 +3,7 @@
 ## Proyecto
 **Nombre:** Finanzas Familiares AS - Modo Personal v2.8
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 29 completada + Storage Sync
+**Estado:** Refactorización Arquitectónica - Fase R1 completada
 
 ---
 
@@ -358,12 +358,42 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 27 | Metas de Ahorro | ✅ Completado (SavingsGoals + Contributions + UI) |
 | 28 | Adjuntos y OCR | ✅ Completado (AttachmentService + OCR + StorageSync) |
 | 29 | Modo Familiar | ✅ Completado (Families + Members + Invitations + UI) |
+| R1 | Extraer lógica de negocio a services | ✅ Completado (DashboardService) |
+| R2 | Consolidar duplicación de código | ⏳ Pendiente |
+| R3 | Limpiar providers pass-through | ⏳ Pendiente |
+| R4 | Reorganizar capas (Clean Architecture) | ⏳ Pendiente |
+| R5 | Actualizar tests y documentación | ⏳ Pendiente |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.8.1 (2026-01-09)
+- **FASE R1:** Refactorización Arquitectónica - Extracción de Lógica de Negocio
+  - Creado `lib/domain/entities/dashboard/` con 7 entidades puras:
+    - `category_expense.dart`: Gasto por categoría
+    - `budget_alert.dart`: Alerta de presupuesto con status
+    - `expense_group.dart`: Grupo de gastos por categoría maestra
+    - `month_summary.dart`: Resumen mensual
+    - `dashboard_summary.dart`: Resumen completo del dashboard
+    - `indicator_status.dart`: Enum y función de cálculo
+    - `dashboard.dart`: Barrel file
+  - Creado `lib/domain/services/dashboard_service.dart`:
+    - Lógica de negocio pura sin dependencias de framework
+    - `calculateDashboardSummary()`: Cálculo completo del dashboard
+    - `calculateMonthSummary()`: Cálculo de resumen mensual
+    - Métodos privados para cálculos específicos
+  - Refactorizado `dashboard_provider.dart`: 395 → 109 líneas (-72%)
+    - Eliminados modelos embebidos (ahora en domain/entities)
+    - Eliminada lógica de negocio (ahora en DashboardService)
+    - Provider solo orquesta: obtiene datos y delega cálculos
+    - Re-export de entidades para compatibilidad
+  - Unificado `IndicatorStatus` en capa de dominio
+    - Eliminada definición duplicada en financial_indicators_provider.dart
+    - Re-export para mantener compatibilidad
+  - Tests: 465+ pasando, sin regresiones
 
 ### v2.8 (2026-01-09)
 - **FASE 28 COMPLETA:** Sincronización de Adjuntos a Supabase Storage

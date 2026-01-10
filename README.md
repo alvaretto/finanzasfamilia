@@ -26,7 +26,7 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 | Framework | Flutter 3.x |
 | Base de Datos Local | Drift (SQLite) |
 | Sincronización | PowerSync + Supabase |
-| Estado | Riverpod 3.0 |
+| Estado | Riverpod 2.6 (@riverpod) |
 | Auth | Google Sign-In + Supabase Auth |
 | Monitoreo | Firebase Crashlytics + Analytics |
 | Gráficos | fl_chart |
@@ -128,6 +128,7 @@ storeFile=keystore/finanzas-familiares.jks
 | Documento | Descripción |
 |-----------|-------------|
 | [CLAUDE.md](CLAUDE.md) | Reglas de sesión para Claude Code |
+| [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md) | Plan maestro y roadmap |
 | [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | Política de Privacidad |
 | [docs/TERMS_OF_SERVICE.md](docs/TERMS_OF_SERVICE.md) | Términos de Servicio |
 | [docs/STORE_LISTING.md](docs/STORE_LISTING.md) | Ficha de tienda (Play/App Store) |
@@ -146,11 +147,12 @@ lib/
 │   ├── remote/          # Supabase services
 │   └── sync/            # PowerSync connector
 ├── domain/
-│   ├── entities/        # Modelos de dominio (Freezed)
-│   ├── repositories/    # Interfaces
-│   └── services/        # Lógica de negocio (AccountingService)
+│   ├── entities/        # Modelos de dominio puros
+│   │   └── dashboard/   # Entidades del dashboard
+│   ├── repositories/    # Interfaces (futuro)
+│   └── services/        # Lógica de negocio (DashboardService)
 ├── application/
-│   ├── providers/       # Riverpod providers
+│   ├── providers/       # Riverpod providers (orquestación)
 │   └── services/        # Export/Import services
 ├── presentation/
 │   ├── screens/         # Pantallas
@@ -174,6 +176,8 @@ test/
 
 ## Estado del Proyecto
 
+### Fases de Features Completadas (1-29)
+
 | Fase | Descripción | Estado |
 |------|-------------|--------|
 | 1-5 | Arquitectura, Schema, TDD, Import/Export, Backup | ✅ |
@@ -193,52 +197,68 @@ test/
 | 26 | Gráficos Avanzados | ✅ |
 | 27 | Metas de Ahorro | ✅ |
 | 28 | Adjuntos y OCR | ✅ |
+| 29 | Modo Familiar | ✅ |
 
-**Tests:** 478+ pasando | **Versión:** 1.4.0
+### Fases de Refactorización (R1-R5)
+
+| Fase | Descripción | Estado |
+|------|-------------|--------|
+| R1 | Extraer lógica de negocio a services | ✅ |
+| R2 | Consolidar duplicación de código | ⏳ |
+| R3 | Limpiar providers pass-through | ⏳ |
+| R4 | Reorganizar capas (Clean Architecture) | ⏳ |
+| R5 | Actualizar tests y documentación | ⏳ |
+
+**Tests:** 465+ pasando | **Versión:** 2.8
 
 ## Changelog
 
-### v1.4.0 (2026-01-09)
-- Sistema de Adjuntos y OCR:
-  - Captura de fotos desde cámara y galería
-  - OCR con Google ML Kit para extraer texto
-  - Parser de montos colombianos ($1.234.567)
-  - Galería horizontal de adjuntos por transacción
-  - Badge visual de monto detectado
-  - Vista detallada con texto OCR completo
-- 31 tests nuevos (14 DAO + 7 service + 10 widget)
+### v2.8 (2026-01-09)
+- **Refactorización Arquitectónica - Fase R1:**
+  - Creado `lib/domain/entities/dashboard/` con entidades puras
+  - Creado `lib/domain/services/dashboard_service.dart` con lógica de negocio
+  - Refactorizado `dashboard_provider.dart`: 395 → 109 líneas (-72%)
+  - Unificado `IndicatorStatus` en capa de dominio
+  - Re-exports para mantener compatibilidad
 
-### v1.3.0 (2026-01-09)
-- Sistema de Metas de Ahorro completo:
-  - CRUD de metas con nombre, monto objetivo, fecha límite
-  - Contribuciones con historial y notas
-  - Progress bar visual (lineal y circular)
-  - Personalización con colores e iconos
+### v2.7 (2026-01-09)
+- **FASE 29:** Modo Familiar (Finanzas Compartidas)
+  - 4 tablas Drift: Families, FamilyMembers, FamilyInvitations, SharedAccounts
+  - Sistema de roles: owner, admin, member, viewer
+  - Invitaciones por código y email
+  - UI completa de gestión familiar
+  - 39 tests nuevos
+
+### v2.6 (2026-01-09)
+- **FASE 28:** Adjuntos y OCR
+  - Captura desde cámara y galería
+  - OCR con Google ML Kit
+  - Sincronización a Supabase Storage
+  - 59 tests nuevos
+
+### v2.5 (2026-01-09)
+- **FASE 27:** Metas de Ahorro
+  - CRUD de metas con contribuciones
+  - Progress bar visual
   - Auto-completado al alcanzar meta
-  - Estados: En Progreso, Completada, Pausada
-- 35 tests nuevos (18 DAO + 17 screen)
+  - 35 tests nuevos
 
-### v1.2.0 (2026-01-09)
-- Gráficos avanzados con fl_chart:
+### v2.4 (2026-01-09)
+- **FASE 26:** Gráficos Avanzados (fl_chart)
   - Pie chart de gastos por categoría
-  - Line chart de tendencia mensual (ingresos vs gastos)
+  - Line chart de tendencia mensual
   - Comparativo mes actual vs anterior
-- Pantalla de Estadísticas con 3 tabs
-- Notificaciones locales (alertas de presupuesto, recordatorios)
+  - 26 tests nuevos
 
-### v1.1.0 (2026-01-09)
-- Firebase Crashlytics y Analytics integrados
-- Build de producción Android (APK + AAB)
-- PowerSync completamente configurado
-- Política de Privacidad y Términos de Servicio
-- Ficha de tienda para Google Play y App Store
-- App Icon personalizado
+### v2.3 (2026-01-09)
+- **FASE 25:** Notificaciones Locales
+  - Alertas de presupuesto (80% y 100%)
+  - Recordatorios de pagos recurrentes
+  - Recordatorio diario configurable
 
-### v1.0.0 (2026-01-08)
-- Release inicial con todas las funcionalidades core
-- Sistema de partida doble completo
-- Sincronización offline-first
-- 21 fases de desarrollo completadas
+### v2.2-v1.0 (2026-01-08/09)
+- Fases 1-24 completadas
+- MVP funcional con todas las features core
 
 ## Contacto
 
@@ -251,4 +271,4 @@ Proyecto privado - Todos los derechos reservados.
 
 ---
 
-Desarrollado con ❤️ en Colombia
+Desarrollado con amor en Colombia

@@ -1,8 +1,8 @@
 # Plan Maestro - Finanzas Familiares AS
 
-**Versión:** 1.0
+**Versión:** 2.0
 **Fecha:** 2026-01-09
-**Objetivo:** MVP en Play Store/App Store
+**Objetivo:** Refactorización Arquitectónica + MVP en Play Store/App Store
 
 ---
 
@@ -16,6 +16,7 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 2. **Sync Transparente**: Sincroniza automáticamente cuando hay conexión
 3. **Simplicidad**: UI simple, contabilidad profesional invisible
 4. **Contexto Local**: Adaptado a Colombia (Nequi, DaviPlata, 4x1000)
+5. **Clean Architecture**: Separación clara de capas y responsabilidades
 
 ---
 
@@ -23,12 +24,12 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.7 |
-| Fase Actual | 29 Completada |
-| Tests | 517+ pasando |
+| Versión | 2.8 |
+| Fase Actual | Refactorización Arquitectónica |
+| Tests | 465+ pasando |
 | Cobertura | ~85% |
 
-### Funcionalidades Implementadas
+### Funcionalidades Implementadas (29 Fases)
 
 | Feature | Estado | Fase |
 |---------|--------|------|
@@ -56,271 +57,135 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-## Roadmap MVP
+## Roadmap de Refactorización Arquitectónica
 
-### ~~Fase 22: Pulido UI/UX (Pre-Release)~~ ✅ COMPLETADA
-**Objetivo:** App lista para usuarios reales
+### Contexto
+
+Tras completar 29 fases de desarrollo funcional, se identificaron 12 problemas arquitectónicos críticos que requieren atención antes de continuar con nuevas features. Esta refactorización mejora mantenibilidad, testabilidad y escalabilidad.
+
+### Problemas Identificados
+
+| # | Problema | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | Fat Providers (lógica de negocio en providers) | CRÍTICO | ✅ Resuelto |
+| 2 | Proliferación de providers (21 archivos) | ALTO | Pendiente |
+| 3 | Duplicación Dashboard/Charts/Reports | ALTO | Pendiente |
+| 4 | Domain depende de Data (violación Clean Arch) | MEDIO | Pendiente |
+| 5 | Riverpod: mezcla de estilos (generated vs manual) | BAJO | Pendiente |
+| 6 | Modelos mezclados en archivos de providers | ALTO | ✅ Resuelto |
+| 7 | Servicios mal ubicados (application vs domain) | MEDIO | Pendiente |
+| 8 | Providers pass-through innecesarios | BAJO | Pendiente |
+| 9 | Tests acoplados a implementación | MEDIO | Pendiente |
+| 10 | Falta de interfaces/abstracciones | MEDIO | Pendiente |
+| 11 | Imports circulares potenciales | BAJO | Pendiente |
+| 12 | Documentación técnica desactualizada | BAJO | Pendiente |
+
+---
+
+### ~~Fase R1: Extraer Lógica de Negocio~~ ✅ COMPLETADA
+**Objetivo:** Mover lógica de negocio de providers a services de dominio
 **Completado:** 2026-01-09
 
 | Tarea | Descripción | Estado |
 |-------|-------------|--------|
-| 22.1 | Revisión de estados vacíos en todas las pantallas | ✅ |
-| 22.2 | Manejo de errores con SnackBars consistentes | ✅ |
-| 22.3 | Loading states en formularios | ✅ |
-| 22.4 | Validaciones de formularios completas | ✅ |
-| 22.5 | Feedback háptico en acciones importantes | ✅ |
-| 22.6 | Error handling en splash/onboarding | ✅ |
-| 22.7 | Documentación de patrones de testing | ✅ |
+| R1.1 | Crear `lib/domain/entities/dashboard/` | ✅ |
+| R1.2 | Crear entidades: CategoryExpense, BudgetAlert, etc. | ✅ |
+| R1.3 | Crear `DashboardService` con lógica pura | ✅ |
+| R1.4 | Refactorizar `dashboard_provider.dart` | ✅ |
+| R1.5 | Unificar `IndicatorStatus` en domain | ✅ |
 
-**Entregables:**
-- ✅ App visualmente pulida
-- ✅ UX consistente en todos los flujos
-- ✅ Sin crashes ni estados rotos
+**Resultados:**
+- `dashboard_provider.dart`: 395 → 109 líneas (-72%)
+- Nuevos archivos en `lib/domain/entities/dashboard/`:
+  - `category_expense.dart`
+  - `budget_alert.dart`
+  - `expense_group.dart`
+  - `month_summary.dart`
+  - `dashboard_summary.dart`
+  - `indicator_status.dart`
+  - `dashboard.dart` (barrel)
+- Nuevo servicio: `lib/domain/services/dashboard_service.dart`
+- Tests: 465+ pasando
 
 ---
 
-### ~~Fase 23: Sincronización PowerSync~~ ✅ COMPLETADA
-**Objetivo:** Backup automático y multi-dispositivo
-**Completado:** 2026-01-09
+### Fase R2: Consolidar Duplicación
+**Objetivo:** Eliminar código duplicado entre Dashboard, Charts y Reports
+**Prioridad:** ALTA
 
 | Tarea | Descripción | Estado |
 |-------|-------------|--------|
-| 23.1 | Configurar PowerSync en Supabase | ✅ |
-| 23.2 | Implementar `SupabaseConnector` completo | ✅ |
-| 23.3 | Sync Rules por usuario | ✅ |
-| 23.4 | UI de estado de sincronización | ✅ |
-| 23.5 | Manejo de conflictos (Last-Write-Wins) | ✅ |
-| 23.6 | Tests de sincronización | ✅ |
+| R2.1 | Identificar lógica duplicada | ⏳ |
+| R2.2 | Crear servicios compartidos | ⏳ |
+| R2.3 | Refactorizar ChartService para usar DashboardService | ⏳ |
+| R2.4 | Refactorizar ReportsService para usar DashboardService | ⏳ |
+| R2.5 | Eliminar código redundante | ⏳ |
 
-**Implementaciones clave:**
-- `ConnectivityNotifier`: Monitoreo de red con `connectivity_plus`
-- `SyncStatusIndicator`: Widget visual con iconos cloud, spinner y colores
-- `_SyncDetailsSheet`: Bottom sheet con detalles de conexión y errores
-- `SupabaseConnector`: Callbacks para errores y completado de sync
-- `PowerSyncDatabaseManager`: Integración con statusStream
-- Auto-sync al reconectar a internet
-- 18 tests nuevos (9 connectivity + 9 sync_indicator)
-
-**Entregables:**
-- ✅ Datos respaldados en Supabase
-- ✅ Sync automático en background
-- ✅ Indicador visual de estado
+**Archivos a revisar:**
+- `lib/application/providers/chart_provider.dart`
+- `lib/application/services/reports_service.dart`
+- `lib/domain/services/dashboard_service.dart`
 
 ---
 
-### ~~Fase 24: Preparación Store~~ ✅ COMPLETADA
-**Objetivo:** Publicar en Google Play y App Store
-**Completado:** 2026-01-09
+### Fase R3: Limpiar Providers Pass-Through
+**Objetivo:** Eliminar providers que solo re-exponen DAOs
+**Prioridad:** MEDIA
 
 | Tarea | Descripción | Estado |
 |-------|-------------|--------|
-| 24.1 | App Icon y Splash Screen finales | ✅ |
-| 24.2 | Screenshots para stores | ✅ |
-| 24.3 | Privacy Policy y Terms of Service | ✅ |
-| 24.4 | Configurar Firebase Crashlytics | ✅ |
-| 24.5 | Configurar Firebase Analytics | ✅ |
-| 24.6 | Build de release (Android) | ✅ |
-| 24.7 | Build de release (iOS) | ⏳ Pendiente |
-| 24.8 | Ficha de tienda (descripción, keywords) | ✅ |
+| R3.1 | Identificar providers pass-through | ⏳ |
+| R3.2 | Evaluar si agregan valor | ⏳ |
+| R3.3 | Eliminar o consolidar innecesarios | ⏳ |
+| R3.4 | Actualizar imports en código cliente | ⏳ |
 
-**Implementaciones:**
-- App Icon personalizado en todas las resoluciones (mipmap-*)
-- Privacy Policy y Delete Account pages (docs/*.html)
-- Firebase Crashlytics + Analytics configurado
-- Build APK/AAB de release funcional
-- Ficha de tienda preparada
-
-**Entregables:**
-- ✅ APK/AAB firmado
-- ⏳ IPA firmado (pendiente)
-- ✅ Listado en stores preparado
+**Candidatos:**
+- Providers de DAOs que no agregan lógica
+- Providers de servicios singleton
 
 ---
 
-### ~~Fase 25: Notificaciones~~ ✅ COMPLETADA
-**Objetivo:** Recordatorios proactivos
-**Completado:** 2026-01-09
+### Fase R4: Reorganizar Capas (Clean Architecture)
+**Objetivo:** Cumplir con la regla de dependencias (Domain no depende de Data)
+**Prioridad:** MEDIA
 
 | Tarea | Descripción | Estado |
 |-------|-------------|--------|
-| 25.1 | Notificaciones locales (flutter_local_notifications) | ✅ |
-| 25.2 | Alerta de presupuesto al 80% y 100% | ✅ |
-| 25.3 | Recordatorio de transacciones recurrentes | ✅ |
-| 25.4 | Recordatorio de registro diario (opcional) | ✅ |
-| 25.5 | Configuración de preferencias de notificación | ✅ |
+| R4.1 | Crear interfaces de repositorio en domain | ⏳ |
+| R4.2 | Implementar repositorios en data | ⏳ |
+| R4.3 | Actualizar servicios para usar interfaces | ⏳ |
+| R4.4 | Mover servicios mal ubicados | ⏳ |
 
-**Implementaciones:**
-- `NotificationService`: Servicio singleton con flutter_local_notifications ^18.0.1
-  - Alertas de presupuesto con IDs únicos (budgetWarningId=1000, budgetExceededId=1001)
-  - Recordatorios recurrentes (recurringReminderBaseId=2000)
-  - Recordatorio diario configurable (dailyReminderBaseId=3000)
-  - Canales Android: budget_alerts, recurring_reminders, daily_reminder
-- `NotificationProvider`: Estado de configuración con Riverpod AsyncNotifier
-- `BudgetAlertProvider`: Verificador automático de umbrales de presupuesto
-- `NotificationSettingsScreen`: UI completa con switches y selector de hora
-- 11 tests nuevos (4 service + 7 screen), 3 skipped (plugin nativo)
+**Estructura objetivo:**
+```
+domain/
+├── entities/        # Modelos puros
+├── repositories/    # Interfaces (abstract)
+└── services/        # Lógica de negocio (usa interfaces)
 
-**Entregables:**
-- ✅ Alertas de presupuesto funcionando
-- ✅ Recordatorios programables
-- ✅ Configuración de preferencias en pantalla
+data/
+├── local/           # Drift DAOs
+├── remote/          # Supabase
+└── repositories/    # Implementaciones concretas
+```
 
 ---
 
-### ~~Fase 26: Gráficos Avanzados~~ ✅ COMPLETADA
-**Objetivo:** Visualización de tendencias
-**Completado:** 2026-01-09
+### Fase R5: Actualizar Tests y Documentación
+**Objetivo:** Tests desacoplados y documentación actualizada
+**Prioridad:** BAJA
 
 | Tarea | Descripción | Estado |
 |-------|-------------|--------|
-| 26.1 | Gráfico de gastos por categoría (pie chart animado) | ✅ |
-| 26.2 | Tendencia mensual de ingresos vs gastos (line chart) | ✅ |
-| 26.3 | Comparativo mes actual vs anterior | ✅ |
-| 26.4 | Proyección de saldo a fin de mes | ⏳ Post-MVP |
-| 26.5 | Heat map de días con más gastos | ⏳ Post-MVP |
-
-**Implementaciones:**
-- `ChartService`: Servicio de cálculos para gráficos financieros
-  - `getExpensesByCategory()`: Agrupa gastos por categoría con porcentajes
-  - `getMonthlyTrend()`: Tendencia de ingresos vs gastos (N meses)
-  - `getMonthComparison()`: Compara mes actual vs anterior
-  - `getTopExpenseCategories()`: Top N categorías de gasto
-- Modelos: `CategoryExpenseData`, `MonthlyTrendData`, `PeriodComparison`
-- `ExpensePieChart`: Gráfico de pie interactivo con leyenda
-- `MonthlyTrendChart`: Gráfico de línea con 3 series (ingresos, gastos, balance)
-- `MonthComparisonCard`: Tarjeta comparativa con íconos de tendencia
-- `StatisticsScreen`: 3 tabs (Gastos, Tendencia, Comparar)
-- Providers: `chartService`, `currentMonthExpenses`, `monthlyTrend`, `monthComparison`
-- Botón de estadísticas en Dashboard AppBar
-- 26 tests nuevos (9 service + 11 widgets + 7 screen)
-
-**Entregables:**
-- ✅ Pie chart de gastos por categoría
-- ✅ Line chart de tendencias mensuales
-- ✅ Comparativo mes actual vs anterior
-- ✅ Pantalla de estadísticas integrada
+| R5.1 | Agregar tests unitarios para DashboardService | ⏳ |
+| R5.2 | Actualizar tests existentes | ⏳ |
+| R5.3 | Actualizar CLAUDE.md con nueva arquitectura | ⏳ |
+| R5.4 | Actualizar docs/ARCHITECTURE.md | ⏳ |
+| R5.5 | Generar diagrama de dependencias actualizado | ⏳ |
 
 ---
 
-### ~~Fase 27: Metas de Ahorro~~ ✅ COMPLETADA
-**Objetivo:** Gamificación del ahorro
-**Completado:** 2026-01-09
-
-| Tarea | Descripción | Estado |
-|-------|-------------|--------|
-| 27.1 | CRUD de metas (nombre, monto objetivo, fecha límite) | ✅ |
-| 27.2 | Sistema de contribuciones con recalculo automático | ✅ |
-| 27.3 | Progress bar visual por meta | ✅ |
-| 27.4 | Auto-completado al alcanzar meta | ✅ |
-| 27.5 | Selector de color e icono personalizable | ✅ |
-
-**Implementaciones:**
-- `SavingsGoalsTable` y `SavingsContributionsTable`: Tablas Drift con migración v4
-- `SavingsGoalsDao`: CRUD completo + streams reactivos + auto-completado
-- `SavingsGoal` entity (Freezed): Propiedades calculadas (progress%, remaining, daysRemaining)
-- `SavingsGoalsProvider`: Riverpod AsyncNotifier con gestión de contribuciones
-- `SavingsGoalsSummary`: Resumen agregado de todas las metas
-- `SavingsGoalsScreen`: UI completa con lista, detalle, formulario
-- `_GoalCard`: Card con progress bar, color e icono
-- `_GoalDetailSheet`: Bottom sheet con indicador circular grande
-- `_ContributionDialog`: Agregar contribuciones con nota opcional
-- Navegación desde MainShell → QuickAddSheet
-- 35 tests nuevos (18 DAO + 17 screen)
-
-**Entregables:**
-- ✅ CRUD de metas de ahorro funcionando
-- ✅ Sistema de contribuciones con histórico
-- ✅ Visualización de progreso (lineal y circular)
-- ✅ Estados: En Progreso, Completada, Pausada
-
----
-
-### ~~Fase 28: Adjuntos y OCR~~ ✅ COMPLETADA
-**Objetivo:** Digitalizar recibos
-**Completado:** 2026-01-09
-
-| Tarea | Descripción | Estado |
-|-------|-------------|--------|
-| 28.1 | Adjuntar fotos a transacciones | ✅ |
-| 28.2 | Galería de recibos | ✅ |
-| 28.3 | OCR para extraer monto automáticamente | ✅ |
-| 28.4 | Almacenamiento local y remoto (Supabase Storage) | ✅ |
-| 28.5 | Sincronización de adjuntos a cloud | ✅ |
-
-**Implementaciones:**
-- `TransactionAttachmentsTable`: Tabla Drift con migración v5
-- `TransactionAttachmentsDao`: CRUD completo + streams reactivos
-- `AttachmentService`: Captura de cámara/galería + OCR con ML Kit
-- Parser de montos colombianos ($1.234.567)
-- `AttachmentsNotifier`: Riverpod AsyncNotifier
-- `AttachmentPicker`: Widget UI con galería horizontal
-- Badge de monto detectado por OCR
-- `_AttachmentDetailSheet`: Vista detallada con texto OCR
-- Dependencias: image_picker ^1.1.2, google_mlkit_text_recognition ^0.14.0
-- `StorageSyncService`: Sincronización con Supabase Storage
-  - `uploadAttachment()`: Sube a bucket transaction-attachments
-  - `downloadAttachment()`: Descarga desde URL remota
-  - `deleteAttachment()`: Elimina del storage
-  - `syncPendingAttachments()`: Batch sync
-- `GlobalAttachmentSync`: Notifier para sincronización global
-- `_SyncIndicator` y `_SyncStatusChip`: UI de estado de sync
-- 59 tests nuevos (14 DAO + 19 service + 26 widget)
-
-**Entregables:**
-- ✅ Captura desde cámara y galería
-- ✅ OCR extracción automática de montos
-- ✅ Galería de adjuntos por transacción
-- ✅ Almacenamiento local
-- ✅ Sincronización a Supabase Storage
-
----
-
-## Roadmap Post-MVP
-
-### ~~Fase 29: Modo Familiar~~ ✅ COMPLETADA
-**Objetivo:** Finanzas compartidas
-**Completado:** 2026-01-09
-
-| Tarea | Descripción | Estado |
-|-------|-------------|--------|
-| 29.1 | Modelo de "Familia" con miembros | ✅ |
-| 29.2 | Roles: Owner, Admin, Miembro, Viewer | ✅ |
-| 29.3 | Cuentas compartidas vs personales | ✅ |
-| 29.4 | Sistema de invitaciones (código + email) | ✅ |
-| 29.5 | UI de gestión familiar completa | ✅ |
-
-**Implementaciones:**
-- `FamiliesTable`: 4 tablas Drift con migración v6
-  - `Families`: Grupos familiares con nombre, icono, color, inviteCode
-  - `FamilyMembers`: Miembros con roles (owner, admin, member, viewer)
-  - `FamilyInvitations`: Invitaciones por email con token y expiración
-  - `SharedAccounts`: Cuentas compartidas con permisos configurables
-- `FamiliesDao`: DAO completo con CRUD
-  - Gestión de familias: create, update, delete (soft), get by ID/user
-  - Gestión de miembros: add, remove, update role, check permissions
-  - Sistema de invitaciones: create, accept, reject, cancel, get pending
-  - Cuentas compartidas: share, unshare, update permissions
-  - Streams reactivos para todas las entidades
-- `FamilyProvider`: Provider Riverpod con gestión de estado
-  - `FamilyNotifier`: Crear/editar/eliminar familias, unirse por código
-  - `SharedAccountsNotifier`: Compartir/dejar de compartir cuentas
-  - `FamilyWithMembers`: Clase con permisos calculados (isOwner, isAdmin, canInvite)
-- `FamilyScreen`: UI completa de gestión
-  - Lista de familias del usuario con cards
-  - Crear familia con selector de icono/color
-  - Unirse a familia por código de invitación
-  - FamilyDetailScreen con gestión de miembros
-  - Menú de acciones: generar código, invitar por email, editar, eliminar
-- 39 tests nuevos (19 DAO + 20 screen/model)
-
-**Entregables:**
-- ✅ CRUD completo de familias
-- ✅ Sistema de roles con permisos
-- ✅ Invitaciones por código y email
-- ✅ Cuentas compartidas configurables
-- ✅ UI de gestión familiar
-
----
+## Roadmap Post-Refactorización
 
 ### Fase 30: Widget y Accesos Rápidos
 **Objetivo:** Acceso desde home screen
@@ -331,6 +196,27 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | 30.1 | Widget de saldo total (Android/iOS) |
 | 30.2 | Quick Actions (3D Touch / Long Press) |
 | 30.3 | Shortcut para "Nueva Transacción" |
+
+### Fase 31: Internacionalización
+**Objetivo:** Soporte multi-idioma
+**Prioridad:** MEDIA
+
+| Tarea | Descripción |
+|-------|-------------|
+| 31.1 | Extraer strings a archivos de localización |
+| 31.2 | Implementar flutter_localizations |
+| 31.3 | Traducir a inglés |
+| 31.4 | Formato de moneda configurable |
+
+### Fase 32: Temas y Personalización
+**Objetivo:** Dark mode y personalización visual
+**Prioridad:** BAJA
+
+| Tarea | Descripción |
+|-------|-------------|
+| 32.1 | Implementar tema oscuro |
+| 32.2 | Selector de tema en configuración |
+| 32.3 | Colores personalizables para categorías |
 
 ---
 
@@ -345,47 +231,51 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-## Criterios de Aceptación por Fase
+## Criterios de Aceptación
 
 ### Para marcar una fase como COMPLETADA:
 
 1. **Código:** Todos los archivos implementados
-2. **Tests:** Cobertura mínima 80% para nuevos features
-3. **UI:** Sin warnings de análisis estático
+2. **Tests:** Sin regresiones (todos los tests pasan)
+3. **Análisis:** Sin warnings de análisis estático
 4. **Docs:** CLAUDE.md actualizado con changelog
 5. **Git:** Commit con mensaje descriptivo
 
 ---
 
-## Métricas de Éxito MVP
+## Métricas de Éxito
 
-| Métrica | Objetivo |
-|---------|----------|
-| Crash-free rate | > 99% |
-| App size (Android) | < 30 MB |
-| Cold start time | < 2 segundos |
-| Rating objetivo | > 4.5 estrellas |
-| Tests pasando | 100% |
+| Métrica | Objetivo | Actual |
+|---------|----------|--------|
+| Crash-free rate | > 99% | N/A |
+| App size (Android) | < 100 MB | ~100 MB |
+| Cold start time | < 2 segundos | ~1.5s |
+| Tests pasando | 100% | ✅ |
+| Líneas por provider | < 150 | ✅ (dashboard: 109) |
 
 ---
 
-## Notas Técnicas
+## Arquitectura Objetivo
 
-### PowerSync + Supabase
-
+### Flujo de Datos
 ```
-Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
-                    ↑                      ↓
-                    └──── Sync bidireccional ────┘
+UI (presentation)
+    ↓ usa
+Providers (application)
+    ↓ orquesta
+Services (domain)
+    ↓ usa interfaces de
+Repositories (domain/repositories) ← interfaces abstractas
+    ↑ implementados por
+DAOs (data/local) + Remote (data/remote)
 ```
 
-### Prioridad de Sync
-
-1. Transacciones (crítico)
-2. Cuentas y balances (crítico)
-3. Categorías (importante)
-4. Presupuestos (importante)
-5. Preferencias (bajo)
+### Regla de Dependencias
+```
+presentation → application → domain ← data
+                              ↑
+                    (domain NO depende de data)
+```
 
 ---
 
@@ -394,15 +284,9 @@ Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
 | Versión | Fecha | Cambios |
 |---------|-------|---------|
 | 1.0 | 2026-01-09 | Plan inicial definido |
-| 1.1 | 2026-01-09 | Fase 22 completada |
-| 1.2 | 2026-01-09 | Fase 23 completada (PowerSync) |
-| 1.3 | 2026-01-09 | Fase 24 completada (Preparación Store) |
-| 1.4 | 2026-01-09 | Fase 25 completada (Notificaciones) |
-| 1.5 | 2026-01-09 | Fase 26 completada (Gráficos Avanzados) |
-| 1.6 | 2026-01-09 | Fase 27 completada (Metas de Ahorro) |
-| 1.7 | 2026-01-09 | Fase 28 completada (Adjuntos y OCR) |
-| 1.8 | 2026-01-09 | Fase 29 completada (Modo Familiar) |
-| 1.9 | 2026-01-09 | Fase 28 Storage Sync completado |
+| 1.1-1.9 | 2026-01-09 | Fases 22-29 completadas |
+| 2.0 | 2026-01-09 | **Nueva visión:** Refactorización Arquitectónica |
+| 2.0.1 | 2026-01-09 | Fase R1 completada (DashboardService) |
 
 ---
 

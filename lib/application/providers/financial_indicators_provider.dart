@@ -1,21 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../domain/entities/dashboard/indicator_status.dart';
 import 'database_provider.dart';
 
+// Re-export para compatibilidad con código existente
+export '../../domain/entities/dashboard/indicator_status.dart';
+
 part 'financial_indicators_provider.g.dart';
-
-/// Estado de un indicador financiero
-enum IndicatorStatus {
-  /// Buen estado
-  good,
-
-  /// Advertencia - requiere atención
-  warning,
-
-  /// Peligro - acción necesaria
-  danger,
-}
 
 // ============================================================
 // INDICADORES DE DOMINIO (Modelos puros sin dependencia de DB)
