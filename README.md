@@ -13,6 +13,7 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 - **Gráficos Avanzados**: Pie chart de gastos, tendencias mensuales, comparativos
 - **Metas de Ahorro**: Sistema gamificado con progreso visual y contribuciones
 - **Adjuntos y OCR**: Digitalización de recibos con extracción automática de montos
+- **Modo Familiar**: Finanzas compartidas con roles y permisos (owner, admin, member, viewer)
 - **Asistente IA "Fina"**: Consejos financieros personalizados
 - **Notificaciones**: Alertas de presupuesto y recordatorios
 - **Firebase Crashlytics**: Monitoreo de errores en producción

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
@@ -11,7 +12,7 @@ part 'family_provider.g.dart';
 
 /// Provider para el DAO de familias
 @riverpod
-FamiliesDao familiesDao(FamiliesDaoRef ref) {
+FamiliesDao familiesDao(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return FamiliesDao(db);
 }
@@ -60,7 +61,7 @@ class SelectedFamilyId extends _$SelectedFamilyId {
 
 /// Provider para obtener las familias del usuario actual
 @riverpod
-Future<List<FamilyEntry>> userFamilies(UserFamiliesRef ref) async {
+Future<List<FamilyEntry>> userFamilies(Ref ref) async {
   final dao = ref.watch(familiesDaoProvider);
   final userId = ref.watch(currentUserIdProvider);
 
@@ -70,7 +71,7 @@ Future<List<FamilyEntry>> userFamilies(UserFamiliesRef ref) async {
 
 /// Provider para observar las familias del usuario
 @riverpod
-Stream<List<FamilyEntry>> watchUserFamilies(WatchUserFamiliesRef ref) {
+Stream<List<FamilyEntry>> watchUserFamilies(Ref ref) {
   final dao = ref.watch(familiesDaoProvider);
   final userId = ref.watch(currentUserIdProvider);
 
@@ -80,7 +81,7 @@ Stream<List<FamilyEntry>> watchUserFamilies(WatchUserFamiliesRef ref) {
 
 /// Provider para obtener una familia con sus miembros
 @riverpod
-Future<FamilyWithMembers?> familyWithMembers(FamilyWithMembersRef ref, String familyId) async {
+Future<FamilyWithMembers?> familyWithMembers(Ref ref, String familyId) async {
   final dao = ref.watch(familiesDaoProvider);
   final userId = ref.watch(currentUserIdProvider);
 
@@ -100,7 +101,7 @@ Future<FamilyWithMembers?> familyWithMembers(FamilyWithMembersRef ref, String fa
 
 /// Provider para observar miembros de una familia
 @riverpod
-Stream<List<FamilyMemberEntry>> watchFamilyMembers(WatchFamilyMembersRef ref, String familyId) {
+Stream<List<FamilyMemberEntry>> watchFamilyMembers(Ref ref, String familyId) {
   final dao = ref.watch(familiesDaoProvider);
   return dao.watchMembersForFamily(familyId);
 }
@@ -108,7 +109,7 @@ Stream<List<FamilyMemberEntry>> watchFamilyMembers(WatchFamilyMembersRef ref, St
 /// Provider para invitaciones pendientes del usuario
 @riverpod
 Future<List<FamilyInvitationEntry>> pendingInvitations(
-  PendingInvitationsRef ref,
+  Ref ref,
   String email,
 ) async {
   final dao = ref.watch(familiesDaoProvider);
@@ -378,7 +379,7 @@ class FamilyNotifier extends _$FamilyNotifier {
 /// Provider para cuentas compartidas de una familia
 @riverpod
 Stream<List<SharedAccountEntry>> watchSharedAccounts(
-  WatchSharedAccountsRef ref,
+  Ref ref,
   String familyId,
 ) {
   final dao = ref.watch(familiesDaoProvider);

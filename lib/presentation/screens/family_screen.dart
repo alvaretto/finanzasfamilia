@@ -663,7 +663,7 @@ class FamilyDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<FamilyMemberRole>(
-                value: selectedRole,
+                initialValue: selectedRole,
                 decoration: const InputDecoration(
                   labelText: 'Rol',
                   prefixIcon: Icon(Icons.badge),

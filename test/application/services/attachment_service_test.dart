@@ -104,7 +104,7 @@ void main() {
         (r'\$100.000', 100000.0),
       ];
 
-      for (final (pattern, expected) in patterns) {
+      for (final (_, expected) in patterns) {
         // Verificamos que el patrón contiene el monto esperado
         expect(expected > 0, isTrue);
       }

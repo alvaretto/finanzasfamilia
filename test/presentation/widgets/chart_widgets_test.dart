@@ -66,9 +66,9 @@ void main() {
     });
 
     testWidgets('respeta altura personalizada', (tester) async {
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
-          body: ExpensePieChart(data: const [], height: 400),
+          body: ExpensePieChart(data: [], height: 400),
         ),
       ));
       await tester.pumpAndSettle();

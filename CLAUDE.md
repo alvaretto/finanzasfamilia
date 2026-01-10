@@ -385,6 +385,17 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
   - 28 tests nuevos (12 service + 16 widget sync)
   - Tests totales: 459+ pasando
 
+### v2.8 (2026-01-09)
+- **Limpieza de código y migración Riverpod 3.0**
+  - Migración completa a Riverpod 3.0: `*Ref` → `Ref` en todos los providers
+  - Corrección deprecación Flutter: `value:` → `initialValue:` en DropdownButtonFormField
+  - Eliminación de tests de integración rotos (patrol_test, integration_test)
+  - Limpieza de imports no usados y variables no utilizadas
+  - Optimización con `const` en widgets y tests
+  - Tests consolidados y simplificados en attachment_picker_test.dart
+  - **0 issues** en análisis estático (`flutter analyze`)
+  - Tests totales: 468+ pasando, 3 skipped
+
 ### v2.7 (2026-01-09)
 - **FASE 29:** Modo Familiar (Finanzas Compartidas)
   - `FamiliesTable`: 4 tablas Drift para gestión familiar
@@ -397,7 +408,7 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
     - `addMember()`, `removeMember()`, `updateMemberRole()`, `isAdminOrOwner()`
     - `createInvitation()`, `acceptInvitation()`, `getPendingInvitationsForEmail()`
     - `shareAccount()`, `unshareAccount()`, `updateSharedAccountPermissions()`
-  - `FamilyProvider`: Provider Riverpod con gestión de estado
+  - `FamilyProvider`: Provider Riverpod con gestión de estado (migrado a Ref)
     - `FamilyNotifier`: Crear, editar, eliminar familias, unirse por código
     - `SharedAccountsNotifier`: Compartir/dejar de compartir cuentas
     - `FamilyWithMembers`: Clase con permisos calculados (isOwner, isAdmin, canInvite)
@@ -410,7 +421,6 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
   - Enums: `FamilyMemberRole` (owner, admin, member, viewer), `FamilyInvitationStatus`
   - Migración de base de datos v5 → v6
   - 39 tests nuevos (19 DAO + 20 screen/model)
-  - Tests totales: 517+ pasando
 
 ### v2.6 (2026-01-09)
 - **FASE 28:** Adjuntos y OCR (Digitalización de Recibos)

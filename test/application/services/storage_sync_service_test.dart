@@ -47,10 +47,10 @@ void main() {
       // En un escenario real, usaríamos un mock de SupabaseClient
       const userId = 'user-123';
       const attachmentId = 'attach-456';
-      const fileName = 'receipt.jpg';
+      // fileName se usa implícitamente en la extensión del path
 
       // El path esperado sigue el formato: userId/attachmentId.extension
-      final expectedPath = '$userId/$attachmentId.jpg';
+      const expectedPath = '$userId/$attachmentId.jpg';
 
       expect(expectedPath, equals('user-123/attach-456.jpg'));
     });
