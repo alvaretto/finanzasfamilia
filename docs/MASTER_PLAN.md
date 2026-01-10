@@ -67,18 +67,18 @@ Tras completar 29 fases de desarrollo funcional, se identificaron 12 problemas a
 
 | # | Problema | Severidad | Estado |
 |---|----------|-----------|--------|
-| 1 | Fat Providers (lógica de negocio en providers) | CRÍTICO | ✅ Resuelto |
-| 2 | Proliferación de providers (21 archivos) | ALTO | Pendiente |
-| 3 | Duplicación Dashboard/Charts/Reports | ALTO | Pendiente |
-| 4 | Domain depende de Data (violación Clean Arch) | MEDIO | Pendiente |
+| 1 | Fat Providers (lógica de negocio en providers) | CRÍTICO | ✅ Resuelto (R1, R6) |
+| 2 | Proliferación de providers (21 archivos) | ALTO | ⏳ Parcial |
+| 3 | Duplicación Dashboard/Charts/Reports | ALTO | ✅ Resuelto (R2) |
+| 4 | Domain depende de Data (violación Clean Arch) | MEDIO | ✅ Resuelto (R4) |
 | 5 | Riverpod: mezcla de estilos (generated vs manual) | BAJO | Pendiente |
-| 6 | Modelos mezclados en archivos de providers | ALTO | ✅ Resuelto |
-| 7 | Servicios mal ubicados (application vs domain) | MEDIO | Pendiente |
-| 8 | Providers pass-through innecesarios | BAJO | Pendiente |
-| 9 | Tests acoplados a implementación | MEDIO | Pendiente |
-| 10 | Falta de interfaces/abstracciones | MEDIO | Pendiente |
+| 6 | Modelos mezclados en archivos de providers | ALTO | ✅ Resuelto (R1, R6) |
+| 7 | Servicios mal ubicados (application vs domain) | MEDIO | ✅ Resuelto (R2, R6) |
+| 8 | Providers pass-through innecesarios | BAJO | ✅ Resuelto (R3) |
+| 9 | Tests acoplados a implementación | MEDIO | ✅ Resuelto (R5) |
+| 10 | Falta de interfaces/abstracciones | MEDIO | ✅ Resuelto (R4, R6) |
 | 11 | Imports circulares potenciales | BAJO | Pendiente |
-| 12 | Documentación técnica desactualizada | BAJO | Pendiente |
+| 12 | Documentación técnica desactualizada | BAJO | ✅ Resuelto (R5) |
 
 ---
 
@@ -186,6 +186,33 @@ data/
 | R5.6 | Corregir 4 dangling_library_doc_comments | ✅ |
 
 **Resultado:** 477+ tests pasando, 3 skipped (válidos), **0 issues** en `flutter analyze`
+
+---
+
+### ~~Fase R6: Extraer Servicios de Dominio~~ ✅ COMPLETADA
+**Objetivo:** Extraer lógica de negocio de "fat providers" a servicios de dominio
+**Completado:** 2026-01-10
+
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| R6.1 | Crear `FamilyService` en domain/services | ✅ |
+| R6.2 | Crear interfaces de repositorio para Family | ✅ |
+| R6.3 | Crear modelos de dominio para Family | ✅ |
+| R6.4 | Crear `RecurringTransactionService` en domain/services | ✅ |
+| R6.5 | Crear interfaces de repositorio para RecurringTransaction | ✅ |
+| R6.6 | Actualizar barrel file services.dart | ✅ |
+
+**Resultados:**
+- `FamilyService`: 4 interfaces de repositorio, 5 modelos de dominio, 3 excepciones
+- `RecurringTransactionService`: 1 interface, 2 modelos, 2 excepciones
+- Enum `RecurrenceFrequency` para frecuencias de recurrencia
+- Lógica de cálculo de fechas extraída a métodos puros
+- Tests: 468+ pasando, 3 skipped (válidos)
+
+**Deuda técnica pendiente:**
+- `attachment_provider.dart`: ~200 líneas de lógica de negocio
+- `savings_goals_provider.dart`: ~250 líneas de lógica de negocio
+- Implementación de repositorios Drift para Family y RecurringTransaction
 
 ---
 

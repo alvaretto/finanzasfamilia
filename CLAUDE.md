@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v3.1
+**Nombre:** Finanzas Familiares AS - Modo Personal v3.2
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase (Clean Architecture)
-**Estado:** Refactorización Arquitectónica - Fases R1-R5 completadas
+**Estado:** Refactorización Arquitectónica - Fases R1-R6 completadas
 
 ---
 
@@ -363,12 +363,60 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | R3 | Limpiar providers pass-through | ✅ Completado (CategoryTreeBuilder + análisis) |
 | R4 | Reorganizar capas (Clean Architecture) | ✅ Completado (Repositorios + Indicadores) |
 | R5 | Actualizar tests y documentación | ✅ Completado (Tests migrados + Docs) |
+| R6 | Extraer servicios de dominio (fat providers) | ✅ Completado (FamilyService + RecurringTransactionService) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v3.2 (2026-01-10)
+- **FASE R6:** Extracción de Servicios de Dominio desde Fat Providers
+  - **FamilyService creado en domain/services/**:
+    - Extraído de `family_provider.dart` (500+ líneas de lógica de negocio)
+    - **4 interfaces de repositorio**:
+      - `FamilyRepository`: CRUD de familias
+      - `FamilyMemberRepository`: Gestión de miembros y roles
+      - `FamilyInvitationRepository`: Invitaciones por email con token
+      - `SharedAccountRepository`: Cuentas compartidas con permisos
+    - **5 modelos de dominio**:
+      - `FamilyData`: Datos de familia (id, name, ownerId, inviteCode)
+      - `FamilyMemberData`: Miembro con rol (owner, admin, member, viewer)
+      - `FamilyInvitationData`: Invitación con expiración
+      - `SharedAccountData`: Cuenta compartida con permisos
+      - `FamilyWithMembersData`: Agregado con permisos calculados
+    - **Métodos del servicio**:
+      - `createFamily()`, `updateFamily()`, `deleteFamily()`
+      - `generateInviteCode()`, `inviteByEmail()`, `joinByCode()`
+      - `changeMemberRole()`, `removeMember()`, `leaveFamily()`
+      - `shareAccount()`, `unshareAccount()`, `updateSharedAccountPermissions()`
+    - **3 excepciones de dominio**:
+      - `FamilyNotFoundException`, `FamilyPermissionException`, `FamilyBusinessException`
+  - **RecurringTransactionService creado en domain/services/**:
+    - Extraído de `recurring_transactions_provider.dart` (400+ líneas)
+    - **Enum RecurrenceFrequency**:
+      - daily, weekly, biweekly, monthly, bimonthly, quarterly, semiannual, yearly
+    - **Interface RecurringTransactionRepository**:
+      - `getActive()`, `getDueForExecution()`, `getPendingConfirmation()`
+      - `insert()`, `update()`, `delete()`, `activate()`, `deactivate()`
+      - `markAsExecuted()`, `incrementExecutionCount()`
+      - `watchActive()`, `watchPendingConfirmation()`
+    - **Modelos de dominio**:
+      - `RecurringTransactionData`: Transacción recurrente completa
+      - `ExecutionResult`: Resultado de ejecución batch
+    - **Métodos del servicio**:
+      - `create()`: Crear nueva recurrencia con validaciones
+      - `update()`: Actualizar con recálculo de próxima ejecución
+      - `activate()`, `deactivate()`, `delete()`
+      - `executeAllDue()`: Ejecutar todas las transacciones pendientes
+      - `executeOne()`: Ejecutar transacción específica
+      - `calculateNextExecution()`: Cálculo de próxima fecha según frecuencia
+    - **Excepciones de dominio**:
+      - `RecurringTransactionException`, `RecurringTransactionNotFoundException`
+  - **Barrel file actualizado**: `lib/domain/services/services.dart`
+  - Tests: 468+ pasando, 3 skipped (válidos)
+  - `flutter analyze`: 0 issues
 
 ### v3.1 (2026-01-10)
 - **FASE R5:** Actualización de Tests y Documentación Final
