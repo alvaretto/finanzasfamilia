@@ -5,3 +5,7 @@ export 'account.dart';
 export 'transaction.dart';
 export 'budget.dart';
 export 'financial_summary.dart';
+
+// Sub-módulos
+export 'dashboard/dashboard.dart';
+export 'indicators/indicators.dart';

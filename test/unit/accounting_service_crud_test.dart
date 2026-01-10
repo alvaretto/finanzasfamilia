@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:finanzas_familiares/data/local/database.dart';
 import 'package:finanzas_familiares/data/local/daos/daos.dart';
+import 'package:finanzas_familiares/data/repositories/repositories.dart';
 import 'package:finanzas_familiares/domain/services/accounting_service.dart';
 
 /// Tests para AccountingService - CRUD de Transacciones
@@ -10,7 +11,6 @@ import 'package:finanzas_familiares/domain/services/accounting_service.dart';
 void main() {
   late AppDatabase db;
   late AccountingService accountingService;
-  late CategoriesDao categoriesDao;
   late AccountsDao accountsDao;
   late TransactionsDao transactionsDao;
   late JournalEntriesDao journalEntriesDao;
@@ -23,16 +23,23 @@ void main() {
 
   setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
-    categoriesDao = CategoriesDao(db);
     accountsDao = AccountsDao(db);
     transactionsDao = TransactionsDao(db);
     journalEntriesDao = JournalEntriesDao(db);
 
+    // Crear repositorios
+    final accountRepository = DriftAccountRepository(db);
+    final transactionRepository = DriftTransactionRepository(db);
+    final journalEntryRepository = DriftJournalEntryRepository(db);
+    final categoryRepository = DriftCategoryRepository(db);
+    final transactionExecutor = DriftTransactionExecutor(db);
+
     accountingService = AccountingService(
-      db: db,
-      transactionsDao: transactionsDao,
-      journalEntriesDao: journalEntriesDao,
-      categoriesDao: categoriesDao,
+      accountRepository: accountRepository,
+      transactionRepository: transactionRepository,
+      journalEntryRepository: journalEntryRepository,
+      categoryRepository: categoryRepository,
+      transactionExecutor: transactionExecutor,
     );
 
     // Crear categoría padre para activos (requerida por FK)

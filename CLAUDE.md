@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.9
+**Nombre:** Finanzas Familiares AS - Modo Personal v3.1
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase (Clean Architecture)
-**Estado:** Refactorización Arquitectónica - Fases R1-R3 completadas
+**Estado:** Refactorización Arquitectónica - Fases R1-R5 completadas
 
 ---
 
@@ -361,14 +361,62 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | R1 | Extraer lógica de negocio a services | ✅ Completado (DashboardService) |
 | R2 | Consolidar duplicación de código | ✅ Completado (ChartService → domain) |
 | R3 | Limpiar providers pass-through | ✅ Completado (CategoryTreeBuilder + análisis) |
-| R4 | Reorganizar capas (Clean Architecture) | ⏳ Pendiente (indicadores + modelos menores) |
-| R5 | Actualizar tests y documentación | ⏳ Pendiente |
+| R4 | Reorganizar capas (Clean Architecture) | ✅ Completado (Repositorios + Indicadores) |
+| R5 | Actualizar tests y documentación | ✅ Completado (Tests migrados + Docs) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v3.1 (2026-01-10)
+- **FASE R5:** Actualización de Tests y Documentación Final
+  - **Test de integración corregido**:
+    - `test/integration/accounting_integration_test.dart` actualizado a nueva API de repositorios
+    - Eliminada dependencia de `db:`, `transactionsDao:`, `journalEntriesDao:`, `categoriesDao:`
+    - Ahora usa: `accountRepository`, `transactionRepository`, `journalEntryRepository`, `categoryRepository`, `transactionExecutor`
+  - **Tests skipped documentados** (3 válidos en `notification_service_test.dart`):
+    - `showBudgetWarning muestra notificación de advertencia`
+    - `showBudgetExceeded muestra notificación de exceso`
+    - `scheduleRecurringReminder programa recordatorio`
+    - Razón: Plugins nativos (`flutter_local_notifications`) no funcionan en tests unitarios
+  - **Refactorización Arquitectónica R1-R5 completada**:
+    - Clean Architecture implementada con patrón Repository
+    - AccountingService desacoplado de Drift
+    - Modelos de dominio independientes del framework
+    - Tests totales: 477+ pasando, 3 skipped (válidos)
+  - 0 tests fallando, 0 warnings en análisis estático
+
+### v3.0 (2026-01-10)
+- **FASE R4:** Refactorización Arquitectónica - Implementación Clean Architecture
+  - **Interfaces de Repositorio creadas en domain/repositories/**:
+    - `account_repository.dart`: Interface + `AccountData` modelo de dominio
+    - `transaction_repository.dart`: Interface + `TransactionData` modelo de dominio
+    - `journal_entry_repository.dart`: Interface + `JournalEntryData` modelo de dominio
+    - `category_repository.dart`: Interface + `CategoryData` modelo de dominio
+    - `repositories.dart`: Barrel file para exports
+  - **Implementaciones Drift creadas en data/repositories/**:
+    - `DriftAccountRepository`: Implementación concreta con mapeo a tipos de dominio
+    - `DriftTransactionRepository`: Implementación concreta con mapeo a tipos de dominio
+    - `DriftJournalEntryRepository`: Implementación concreta con mapeo a tipos de dominio
+    - `DriftCategoryRepository`: Implementación concreta con mapeo a tipos de dominio
+    - `DriftTransactionExecutor`: Implementación de `TransactionExecutor` para atomicidad
+  - **AccountingService refactorizado para Clean Architecture**:
+    - Ya no depende de `AppDatabase` ni DAOs directamente
+    - Inyección de dependencias via constructores con interfaces de repositorio
+    - `TransactionExecutor`: Nueva interfaz para transacciones atómicas
+    - API de dominio: métodos retornan `TransactionData` (modelo de dominio)
+  - **Modelos de indicadores movidos a domain/entities/indicators/**:
+    - `DebtCoverageIndicator`, `FoodWeightIndicator`, `HealthyIndexIndicator`
+    - `FinancialCostIndicator`, `AvailableBalanceIndicator`
+    - `FinancialIndicatorsSummary`: Agregado de indicadores
+    - Re-export en barrel file `entities.dart`
+  - **Providers actualizados en accounting_provider.dart**:
+    - Providers para cada repositorio: `accountRepositoryProvider`, etc.
+    - `accountingServiceProvider`: Inyecta repositorios en vez de DAOs
+  - Tests actualizados para usar nueva API de repositorios
+  - Tests: 447+ pasando, 3 skipped
 
 ### v2.9 (2026-01-09)
 - **FASE R2-R3:** Refactorización Arquitectónica - Consolidación y Limpieza
@@ -715,4 +763,4 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 
 ---
 
-**Última actualización:** 2026-01-09
+**Última actualización:** 2026-01-10

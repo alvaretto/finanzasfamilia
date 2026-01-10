@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:finanzas_familiares/data/local/database.dart';
 import 'package:finanzas_familiares/data/local/daos/daos.dart';
 import 'package:finanzas_familiares/data/local/seeders/seeders.dart';
+import 'package:finanzas_familiares/data/repositories/repositories.dart';
 import 'package:finanzas_familiares/domain/services/accounting_service.dart';
 
 void main() {
@@ -13,7 +14,6 @@ void main() {
     late AccountingService accountingService;
     late CategoriesDao categoriesDao;
     late AccountsDao accountsDao;
-    late TransactionsDao transactionsDao;
     late JournalEntriesDao journalEntriesDao;
 
     late String testAccountId;
@@ -24,14 +24,21 @@ void main() {
       db = AppDatabase.forTesting(NativeDatabase.memory());
       categoriesDao = CategoriesDao(db);
       accountsDao = AccountsDao(db);
-      transactionsDao = TransactionsDao(db);
       journalEntriesDao = JournalEntriesDao(db);
 
+      // Crear repositorios (Clean Architecture)
+      final accountRepository = DriftAccountRepository(db);
+      final transactionRepository = DriftTransactionRepository(db);
+      final journalEntryRepository = DriftJournalEntryRepository(db);
+      final categoryRepository = DriftCategoryRepository(db);
+      final transactionExecutor = DriftTransactionExecutor(db);
+
       accountingService = AccountingService(
-        db: db,
-        transactionsDao: transactionsDao,
-        journalEntriesDao: journalEntriesDao,
-        categoriesDao: categoriesDao,
+        accountRepository: accountRepository,
+        transactionRepository: transactionRepository,
+        journalEntryRepository: journalEntryRepository,
+        categoryRepository: categoryRepository,
+        transactionExecutor: transactionExecutor,
       );
 
       // Seed categorías

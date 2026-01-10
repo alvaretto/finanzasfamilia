@@ -1,8 +1,6 @@
-import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../data/local/database.dart';
-import '../../data/local/daos/daos.dart';
+import '../repositories/repositories.dart';
 
 /// Servicio de Contabilidad - Motor de Partida Doble
 ///
@@ -12,25 +10,30 @@ import '../../data/local/daos/daos.dart';
 /// Reglas:
 /// - DÉBITO (Dr) = Lo que ENTRA o AUMENTA
 /// - CRÉDITO (Cr) = Lo que SALE o DISMINUYE
+///
+/// NOTA: Este servicio usa interfaces de repositorio (Clean Architecture).
+/// No depende de Drift ni de ninguna implementación concreta.
 class AccountingService {
-  final AppDatabase db;
-  final TransactionsDao transactionsDao;
-  final JournalEntriesDao journalEntriesDao;
-  final CategoriesDao categoriesDao;
+  final AccountRepository accountRepository;
+  final TransactionRepository transactionRepository;
+  final JournalEntryRepository journalEntryRepository;
+  final CategoryRepository categoryRepository;
+  final TransactionExecutor transactionExecutor;
 
   static const _uuid = Uuid();
 
   AccountingService({
-    required this.db,
-    required this.transactionsDao,
-    required this.journalEntriesDao,
-    required this.categoriesDao,
+    required this.accountRepository,
+    required this.transactionRepository,
+    required this.journalEntryRepository,
+    required this.categoryRepository,
+    required this.transactionExecutor,
   });
 
   /// Registra un gasto con partida doble
   /// - Débito en la categoría de gasto
   /// - Crédito en la cuenta de pago (activo)
-  Future<TransactionEntry> recordExpense({
+  Future<TransactionData> recordExpense({
     required String categoryId,
     required String paymentAccountId,
     required double amount,
@@ -43,9 +46,9 @@ class AccountingService {
     final transactionId = _uuid.v4();
     final now = DateTime.now();
 
-    return db.transaction(() async {
+    return transactionExecutor.execute(() async {
       // 1. Crear transacción
-      final transaction = await _createTransaction(
+      final transaction = _buildTransaction(
         id: transactionId,
         type: 'expense',
         amount: amount,
@@ -55,15 +58,15 @@ class AccountingService {
         date: date,
         now: now,
       );
+      await transactionRepository.insertTransaction(transaction);
 
       // 2. Crear asientos contables (Partida Doble)
-      // Gasto: Débito en categoría de gasto, Crédito en cuenta de pago
       await _createJournalEntries(
         transactionId: transactionId,
         debitId: categoryId,
-        debitIsAccount: false, // Es una categoría
+        debitIsAccount: false,
         creditId: paymentAccountId,
-        creditIsAccount: true, // Es una cuenta
+        creditIsAccount: true,
         amount: amount,
         description: description,
         date: date,
@@ -80,7 +83,7 @@ class AccountingService {
   /// Registra un ingreso con partida doble
   /// - Débito en la cuenta destino (activo)
   /// - Crédito en la categoría de ingreso
-  Future<TransactionEntry> recordIncome({
+  Future<TransactionData> recordIncome({
     required String categoryId,
     required String destinationAccountId,
     required double amount,
@@ -93,9 +96,9 @@ class AccountingService {
     final transactionId = _uuid.v4();
     final now = DateTime.now();
 
-    return db.transaction(() async {
+    return transactionExecutor.execute(() async {
       // 1. Crear transacción
-      final transaction = await _createTransaction(
+      final transaction = _buildTransaction(
         id: transactionId,
         type: 'income',
         amount: amount,
@@ -105,15 +108,15 @@ class AccountingService {
         date: date,
         now: now,
       );
+      await transactionRepository.insertTransaction(transaction);
 
       // 2. Crear asientos contables
-      // Ingreso: Débito en cuenta destino, Crédito en categoría de ingreso
       await _createJournalEntries(
         transactionId: transactionId,
         debitId: destinationAccountId,
-        debitIsAccount: true, // Es una cuenta
+        debitIsAccount: true,
         creditId: categoryId,
-        creditIsAccount: false, // Es una categoría
+        creditIsAccount: false,
         amount: amount,
         description: description,
         date: date,
@@ -130,7 +133,7 @@ class AccountingService {
   /// Registra una transferencia entre cuentas
   /// - Débito en cuenta destino (aumenta)
   /// - Crédito en cuenta origen (disminuye)
-  Future<TransactionEntry> recordTransfer({
+  Future<TransactionData> recordTransfer({
     required String fromAccountId,
     required String toAccountId,
     required double amount,
@@ -143,13 +146,11 @@ class AccountingService {
 
     final transactionId = _uuid.v4();
     final now = DateTime.now();
-
-    // Obtener categoría del sistema para transferencias
     final transferCategoryId = await _getOrCreateTransferCategory();
 
-    return db.transaction(() async {
+    return transactionExecutor.execute(() async {
       // 1. Crear transacción
-      final transaction = await _createTransaction(
+      final transaction = _buildTransaction(
         id: transactionId,
         type: 'transfer',
         amount: amount,
@@ -160,13 +161,13 @@ class AccountingService {
         date: date,
         now: now,
       );
+      await transactionRepository.insertTransaction(transaction);
 
       // 2. Crear asientos contables
-      // Transferencia: Débito en cuenta destino, Crédito en cuenta origen
       await _createJournalEntries(
         transactionId: transactionId,
         debitId: toAccountId,
-        debitIsAccount: true, // Ambas son cuentas
+        debitIsAccount: true,
         creditId: fromAccountId,
         creditIsAccount: true,
         amount: amount,
@@ -186,7 +187,7 @@ class AccountingService {
   /// Registra un pago de pasivo (ej: pago de tarjeta de crédito)
   /// - Débito en el pasivo (disminuye la deuda)
   /// - Crédito en el activo (disminuye el saldo)
-  Future<TransactionEntry> recordLiabilityPayment({
+  Future<TransactionData> recordLiabilityPayment({
     required String liabilityAccountId,
     required String paymentAccountId,
     required double amount,
@@ -199,13 +200,11 @@ class AccountingService {
 
     final transactionId = _uuid.v4();
     final now = DateTime.now();
-
-    // Obtener categoría del sistema para pagos de pasivos
     final paymentCategoryId = await _getOrCreateLiabilityPaymentCategory();
 
-    return db.transaction(() async {
+    return transactionExecutor.execute(() async {
       // 1. Crear transacción
-      final transaction = await _createTransaction(
+      final transaction = _buildTransaction(
         id: transactionId,
         type: 'liability_payment',
         amount: amount,
@@ -216,13 +215,13 @@ class AccountingService {
         date: date,
         now: now,
       );
+      await transactionRepository.insertTransaction(transaction);
 
       // 2. Crear asientos contables
-      // Pago de pasivo: Débito en pasivo, Crédito en activo
       await _createJournalEntries(
         transactionId: transactionId,
         debitId: liabilityAccountId,
-        debitIsAccount: true, // Ambas son cuentas
+        debitIsAccount: true,
         creditId: paymentAccountId,
         creditIsAccount: true,
         amount: amount,
@@ -232,35 +231,28 @@ class AccountingService {
       );
 
       // 3. Actualizar saldos
-      // El pasivo aumenta (se acerca a 0, ya que es negativo)
       await _updateAccountBalance(liabilityAccountId, amount);
-      // El activo disminuye
       await _updateAccountBalance(paymentAccountId, -amount);
 
       return transaction;
     });
   }
 
-  /// Obtiene el balance de una cuenta calculado desde asientos contables
+  /// Obtiene el balance de una cuenta.
   Future<double> getAccountBalance(String accountId) async {
-    // Obtener saldo actual de la cuenta directamente
-    final account = await (db.select(db.accounts)
-          ..where((a) => a.id.equals(accountId)))
-        .getSingle();
+    final account = await accountRepository.getAccountById(accountId);
+    if (account == null) {
+      throw StateError('La cuenta no existe: $accountId');
+    }
     return account.balance;
   }
 
-  /// Elimina una transacción y revierte todos sus efectos contables
-  /// - Revierte los cambios de balance en las cuentas afectadas
-  /// - Elimina los asientos contables
-  /// - Elimina la transacción
+  /// Elimina una transacción y revierte todos sus efectos contables.
   Future<void> deleteTransaction(String transactionId) async {
-    return db.transaction(() async {
+    return transactionExecutor.execute(() async {
       // 1. Obtener la transacción
-      final transaction = await (db.select(db.transactions)
-            ..where((t) => t.id.equals(transactionId)))
-          .getSingleOrNull();
-
+      final transaction =
+          await transactionRepository.getTransactionById(transactionId);
       if (transaction == null) {
         throw StateError('La transacción no existe: $transactionId');
       }
@@ -269,23 +261,20 @@ class AccountingService {
       await _revertBalanceChanges(transaction);
 
       // 3. Eliminar asientos contables
-      await journalEntriesDao.deleteEntriesByTransaction(transactionId);
+      await journalEntryRepository.deleteEntriesByTransaction(transactionId);
 
       // 4. Eliminar la transacción
-      await transactionsDao.deleteTransaction(transactionId);
+      await transactionRepository.deleteTransaction(transactionId);
     });
   }
 
-  /// Obtiene una transacción por ID
-  Future<TransactionEntry?> getTransactionById(String transactionId) async {
-    return (db.select(db.transactions)
-          ..where((t) => t.id.equals(transactionId)))
-        .getSingleOrNull();
+  /// Obtiene una transacción por ID.
+  Future<TransactionData?> getTransactionById(String transactionId) {
+    return transactionRepository.getTransactionById(transactionId);
   }
 
-  /// Actualiza una transacción existente
-  /// Proceso: Eliminar transacción actual y crear una nueva con los datos actualizados
-  Future<TransactionEntry> updateTransaction({
+  /// Actualiza una transacción existente.
+  Future<TransactionData> updateTransaction({
     required String transactionId,
     required String type,
     required String categoryId,
@@ -295,8 +284,8 @@ class AccountingService {
     String? fromAccountId,
     String? toAccountId,
   }) async {
-    return db.transaction(() async {
-      // 1. Obtener la transacción original para verificar que existe
+    return transactionExecutor.execute(() async {
+      // 1. Obtener la transacción original
       final original = await getTransactionById(transactionId);
       if (original == null) {
         throw StateError('La transacción no existe: $transactionId');
@@ -306,10 +295,10 @@ class AccountingService {
       await _revertBalanceChanges(original);
 
       // 3. Eliminar asientos contables antiguos
-      await journalEntriesDao.deleteEntriesByTransaction(transactionId);
+      await journalEntryRepository.deleteEntriesByTransaction(transactionId);
 
       // 4. Eliminar la transacción original
-      await transactionsDao.deleteTransaction(transactionId);
+      await transactionRepository.deleteTransaction(transactionId);
 
       // 5. Crear nueva transacción con los datos actualizados
       switch (type) {
@@ -351,63 +340,6 @@ class AccountingService {
     });
   }
 
-  /// Revierte los cambios de balance causados por una transacción
-  Future<void> _revertBalanceChanges(TransactionEntry transaction) async {
-    switch (transaction.type) {
-      case 'expense':
-        // Revertir: la cuenta de pago recupera el monto
-        if (transaction.fromAccountId != null) {
-          await _updateAccountBalance(
-            transaction.fromAccountId!,
-            transaction.amount, // Sumar (revertir resta)
-          );
-        }
-        break;
-
-      case 'income':
-        // Revertir: la cuenta destino pierde el monto
-        if (transaction.toAccountId != null) {
-          await _updateAccountBalance(
-            transaction.toAccountId!,
-            -transaction.amount, // Restar (revertir suma)
-          );
-        }
-        break;
-
-      case 'transfer':
-        // Revertir: origen recupera, destino pierde
-        if (transaction.fromAccountId != null) {
-          await _updateAccountBalance(
-            transaction.fromAccountId!,
-            transaction.amount,
-          );
-        }
-        if (transaction.toAccountId != null) {
-          await _updateAccountBalance(
-            transaction.toAccountId!,
-            -transaction.amount,
-          );
-        }
-        break;
-
-      case 'liability_payment':
-        // Revertir: pasivo aumenta (más deuda), activo recupera
-        if (transaction.toAccountId != null) {
-          await _updateAccountBalance(
-            transaction.toAccountId!,
-            -transaction.amount, // Pasivo aumenta
-          );
-        }
-        if (transaction.fromAccountId != null) {
-          await _updateAccountBalance(
-            transaction.fromAccountId!,
-            transaction.amount, // Activo recupera
-          );
-        }
-        break;
-    }
-  }
-
   // ============================================================
   // Métodos privados auxiliares
   // ============================================================
@@ -419,16 +351,13 @@ class AccountingService {
   }
 
   Future<void> _validateAccountExists(String accountId) async {
-    final account = await (db.select(db.accounts)
-          ..where((a) => a.id.equals(accountId)))
-        .getSingleOrNull();
-
-    if (account == null) {
+    final exists = await accountRepository.accountExists(accountId);
+    if (!exists) {
       throw StateError('La cuenta no existe: $accountId');
     }
   }
 
-  Future<TransactionEntry> _createTransaction({
+  TransactionData _buildTransaction({
     required String id,
     required String type,
     required double amount,
@@ -438,24 +367,19 @@ class AccountingService {
     String? toAccountId,
     required DateTime date,
     required DateTime now,
-  }) async {
-    final companion = TransactionsCompanion.insert(
+  }) {
+    return TransactionData(
       id: id,
       type: type,
       amount: amount,
-      description: Value(description),
+      description: description,
       categoryId: categoryId,
-      fromAccountId: Value(fromAccountId),
-      toAccountId: Value(toAccountId),
+      fromAccountId: fromAccountId,
+      toAccountId: toAccountId,
       transactionDate: date,
-      createdAt: Value(now),
-      updatedAt: Value(now),
+      createdAt: now,
+      updatedAt: now,
     );
-
-    await transactionsDao.insertTransaction(companion);
-
-    return (db.select(db.transactions)..where((t) => t.id.equals(id)))
-        .getSingle();
   }
 
   Future<void> _createJournalEntries({
@@ -469,74 +393,100 @@ class AccountingService {
     required DateTime date,
     required DateTime now,
   }) async {
-    final nextNumber = await journalEntriesDao.getNextEntryNumber();
+    final nextNumber = await journalEntryRepository.getNextEntryNumber();
 
     final entries = [
       // Asiento de Débito
-      JournalEntriesCompanion(
-        id: Value(_uuid.v4()),
-        transactionId: Value(transactionId),
-        accountId: debitIsAccount ? Value(debitId) : const Value(null),
-        categoryId: debitIsAccount ? const Value(null) : Value(debitId),
-        entryType: const Value('debit'),
-        amount: Value(amount),
-        description: Value(description),
-        entryNumber: Value(nextNumber),
-        entryDate: Value(date),
-        createdAt: Value(now),
-        updatedAt: Value(now),
+      JournalEntryData(
+        id: _uuid.v4(),
+        transactionId: transactionId,
+        accountId: debitIsAccount ? debitId : null,
+        categoryId: debitIsAccount ? null : debitId,
+        entryType: 'debit',
+        amount: amount,
+        description: description,
+        entryNumber: nextNumber,
+        entryDate: date,
+        createdAt: now,
+        updatedAt: now,
       ),
       // Asiento de Crédito
-      JournalEntriesCompanion(
-        id: Value(_uuid.v4()),
-        transactionId: Value(transactionId),
-        accountId: creditIsAccount ? Value(creditId) : const Value(null),
-        categoryId: creditIsAccount ? const Value(null) : Value(creditId),
-        entryType: const Value('credit'),
-        amount: Value(amount),
-        description: Value(description),
-        entryNumber: Value(nextNumber + 1),
-        entryDate: Value(date),
-        createdAt: Value(now),
-        updatedAt: Value(now),
+      JournalEntryData(
+        id: _uuid.v4(),
+        transactionId: transactionId,
+        accountId: creditIsAccount ? creditId : null,
+        categoryId: creditIsAccount ? null : creditId,
+        entryType: 'credit',
+        amount: amount,
+        description: description,
+        entryNumber: nextNumber + 1,
+        entryDate: date,
+        createdAt: now,
+        updatedAt: now,
       ),
     ];
 
-    await journalEntriesDao.insertEntries(entries);
+    await journalEntryRepository.insertEntries(entries);
   }
 
   Future<void> _updateAccountBalance(String accountId, double delta) async {
-    final account = await (db.select(db.accounts)
-          ..where((a) => a.id.equals(accountId)))
-        .getSingle();
+    final account = await accountRepository.getAccountById(accountId);
+    if (account == null) {
+      throw StateError('La cuenta no existe: $accountId');
+    }
+    await accountRepository.updateBalance(accountId, account.balance + delta);
+  }
 
-    await (db.update(db.accounts)..where((a) => a.id.equals(accountId))).write(
-      AccountsCompanion(
-        balance: Value(account.balance + delta),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+  Future<void> _revertBalanceChanges(TransactionData transaction) async {
+    switch (transaction.type) {
+      case 'expense':
+        if (transaction.fromAccountId != null) {
+          await _updateAccountBalance(transaction.fromAccountId!, transaction.amount);
+        }
+        break;
+
+      case 'income':
+        if (transaction.toAccountId != null) {
+          await _updateAccountBalance(transaction.toAccountId!, -transaction.amount);
+        }
+        break;
+
+      case 'transfer':
+        if (transaction.fromAccountId != null) {
+          await _updateAccountBalance(transaction.fromAccountId!, transaction.amount);
+        }
+        if (transaction.toAccountId != null) {
+          await _updateAccountBalance(transaction.toAccountId!, -transaction.amount);
+        }
+        break;
+
+      case 'liability_payment':
+        if (transaction.toAccountId != null) {
+          await _updateAccountBalance(transaction.toAccountId!, -transaction.amount);
+        }
+        if (transaction.fromAccountId != null) {
+          await _updateAccountBalance(transaction.fromAccountId!, transaction.amount);
+        }
+        break;
+    }
   }
 
   Future<String> _getOrCreateTransferCategory() async {
     const transferCategoryId = 'system-transfer';
 
-    final existing = await categoriesDao.getCategoryById(transferCategoryId);
+    final existing = await categoryRepository.getCategoryById(transferCategoryId);
     if (existing != null) return transferCategoryId;
 
-    // Crear categoría del sistema para transferencias
     final now = DateTime.now();
-    await db.into(db.categories).insert(
-          CategoriesCompanion.insert(
-            id: transferCategoryId,
-            name: 'Transferencias',
-            type: 'system',
-            level: const Value(0),
-            isSystem: const Value(true),
-            createdAt: Value(now),
-            updatedAt: Value(now),
-          ),
-        );
+    await categoryRepository.insertCategory(CategoryData(
+      id: transferCategoryId,
+      name: 'Transferencias',
+      type: 'system',
+      level: 0,
+      isSystem: true,
+      createdAt: now,
+      updatedAt: now,
+    ));
 
     return transferCategoryId;
   }
@@ -544,23 +494,27 @@ class AccountingService {
   Future<String> _getOrCreateLiabilityPaymentCategory() async {
     const paymentCategoryId = 'system-liability-payment';
 
-    final existing = await categoriesDao.getCategoryById(paymentCategoryId);
+    final existing = await categoryRepository.getCategoryById(paymentCategoryId);
     if (existing != null) return paymentCategoryId;
 
-    // Crear categoría del sistema para pagos de pasivos
     final now = DateTime.now();
-    await db.into(db.categories).insert(
-          CategoriesCompanion.insert(
-            id: paymentCategoryId,
-            name: 'Pagos de Pasivos',
-            type: 'system',
-            level: const Value(0),
-            isSystem: const Value(true),
-            createdAt: Value(now),
-            updatedAt: Value(now),
-          ),
-        );
+    await categoryRepository.insertCategory(CategoryData(
+      id: paymentCategoryId,
+      name: 'Pagos de Pasivos',
+      type: 'system',
+      level: 0,
+      isSystem: true,
+      createdAt: now,
+      updatedAt: now,
+    ));
 
     return paymentCategoryId;
   }
+}
+
+/// Interfaz para ejecutar operaciones en una transacción de base de datos.
+/// Permite que el dominio solicite atomicidad sin conocer la implementación.
+abstract class TransactionExecutor {
+  /// Ejecuta una función dentro de una transacción atómica.
+  Future<T> execute<T>(Future<T> Function() action);
 }

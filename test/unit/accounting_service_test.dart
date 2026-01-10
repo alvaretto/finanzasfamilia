@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:finanzas_familiares/data/local/database.dart';
 import 'package:finanzas_familiares/data/local/daos/daos.dart';
+import 'package:finanzas_familiares/data/repositories/repositories.dart';
 import 'package:finanzas_familiares/domain/services/accounting_service.dart';
 
 /// Tests para el AccountingService - Motor de Partida Doble
@@ -11,21 +12,25 @@ import 'package:finanzas_familiares/domain/services/accounting_service.dart';
 void main() {
   late AppDatabase database;
   late AccountingService accountingService;
-  late CategoriesDao categoriesDao;
-  late TransactionsDao transactionsDao;
   late JournalEntriesDao journalEntriesDao;
 
   setUp(() async {
     database = AppDatabase.forTesting(NativeDatabase.memory());
-    categoriesDao = CategoriesDao(database);
-    transactionsDao = TransactionsDao(database);
     journalEntriesDao = JournalEntriesDao(database);
 
+    // Crear repositorios
+    final accountRepository = DriftAccountRepository(database);
+    final transactionRepository = DriftTransactionRepository(database);
+    final journalEntryRepository = DriftJournalEntryRepository(database);
+    final categoryRepository = DriftCategoryRepository(database);
+    final transactionExecutor = DriftTransactionExecutor(database);
+
     accountingService = AccountingService(
-      db: database,
-      transactionsDao: transactionsDao,
-      journalEntriesDao: journalEntriesDao,
-      categoriesDao: categoriesDao,
+      accountRepository: accountRepository,
+      transactionRepository: transactionRepository,
+      journalEntryRepository: journalEntryRepository,
+      categoryRepository: categoryRepository,
+      transactionExecutor: transactionExecutor,
     );
 
     // Sembrar categorías de prueba

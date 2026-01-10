@@ -1,26 +1,71 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../data/repositories/repositories.dart';
 import '../../domain/services/accounting_service.dart';
 import 'database_provider.dart';
 
 part 'accounting_provider.g.dart';
 
+// ============================================================
+// PROVIDERS DE REPOSITORIOS
+// ============================================================
+
+/// Provider del repositorio de cuentas
+@riverpod
+DriftAccountRepository accountRepository(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftAccountRepository(db);
+}
+
+/// Provider del repositorio de transacciones
+@riverpod
+DriftTransactionRepository transactionRepository(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftTransactionRepository(db);
+}
+
+/// Provider del repositorio de asientos contables
+@riverpod
+DriftJournalEntryRepository journalEntryRepository(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftJournalEntryRepository(db);
+}
+
+/// Provider del repositorio de categorías
+@riverpod
+DriftCategoryRepository categoryRepository(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftCategoryRepository(db);
+}
+
+/// Provider del ejecutor de transacciones
+@riverpod
+DriftTransactionExecutor transactionExecutor(Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftTransactionExecutor(db);
+}
+
+// ============================================================
+// PROVIDER DEL SERVICIO DE CONTABILIDAD
+// ============================================================
+
 /// Provider del servicio de contabilidad (Partida Doble)
+/// Usa interfaces de repositorio para cumplir con Clean Architecture.
 @riverpod
 AccountingService accountingService(Ref ref) {
-  final db = ref.watch(appDatabaseProvider);
-  final transactionsDao = ref.watch(transactionsDaoProvider);
-  final journalEntriesDao = ref.watch(journalEntriesDaoProvider);
-  final categoriesDao = ref.watch(categoriesDaoProvider);
-
   return AccountingService(
-    db: db,
-    transactionsDao: transactionsDao,
-    journalEntriesDao: journalEntriesDao,
-    categoriesDao: categoriesDao,
+    accountRepository: ref.watch(accountRepositoryProvider),
+    transactionRepository: ref.watch(transactionRepositoryProvider),
+    journalEntryRepository: ref.watch(journalEntryRepositoryProvider),
+    categoryRepository: ref.watch(categoryRepositoryProvider),
+    transactionExecutor: ref.watch(transactionExecutorProvider),
   );
 }
+
+// ============================================================
+// PROVIDERS DE CONSULTAS
+// ============================================================
 
 /// Provider para obtener todas las cuentas activas
 @riverpod
@@ -112,6 +157,10 @@ Future<TotalBalance> totalBalance(Ref ref) async {
     accountCount: includedCount,
   );
 }
+
+// ============================================================
+// MODELOS DE DATOS
+// ============================================================
 
 /// Modelo para cuenta con información de categoría
 class AccountWithCategory {
