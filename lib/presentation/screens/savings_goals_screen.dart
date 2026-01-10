@@ -6,6 +6,23 @@ import 'package:intl/intl.dart';
 import '../../application/providers/savings_goals_provider.dart';
 import '../../domain/entities/savings_goal.dart';
 
+/// Mapa de códigos de iconos a IconData constantes para tree-shaking
+const Map<int, IconData> _iconMap = {
+  0xe57f: Icons.savings,
+  0xe1bc: Icons.home,
+  0xef4e: Icons.flight,
+  0xe531: Icons.phone_iphone,
+  0xe558: Icons.directions_car,
+  0xe7f1: Icons.school,
+  0xe548: Icons.laptop,
+  0xe53b: Icons.beach_access,
+  0xe1b1: Icons.fitness_center,
+  0xea12: Icons.celebration,
+};
+
+/// Obtiene el IconData constante para un código de icono
+IconData getIconFromCode(int code) => _iconMap[code] ?? Icons.savings;
+
 /// Pantalla de gestión de metas de ahorro
 class SavingsGoalsScreen extends ConsumerWidget {
   const SavingsGoalsScreen({super.key});
@@ -357,7 +374,7 @@ class _GoalCard extends ConsumerWidget {
                   CircleAvatar(
                     backgroundColor: Color(goal.color).withValues(alpha: 0.2),
                     child: Icon(
-                      IconData(goal.icon, fontFamily: 'MaterialIcons'),
+                      getIconFromCode(goal.icon),
                       color: Color(goal.color),
                     ),
                   ),
@@ -548,7 +565,7 @@ class _GoalDetailSheet extends ConsumerWidget {
                       radius: 28,
                       backgroundColor: Color(goal.color).withValues(alpha: 0.2),
                       child: Icon(
-                        IconData(goal.icon, fontFamily: 'MaterialIcons'),
+                        getIconFromCode(goal.icon),
                         color: Color(goal.color),
                         size: 28,
                       ),
@@ -1183,7 +1200,7 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
                             : null,
                       ),
                       child: Icon(
-                        IconData(iconCode, fontFamily: 'MaterialIcons'),
+                        getIconFromCode(iconCode),
                         color: isSelected ? Color(_selectedColor) : Colors.grey,
                       ),
                     ),
