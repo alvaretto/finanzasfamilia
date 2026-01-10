@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'package:finanzas_familiares/application/services/chart_service.dart';
+import 'package:finanzas_familiares/domain/services/chart_service.dart';
 import 'package:finanzas_familiares/presentation/widgets/expense_pie_chart.dart';
 import 'package:finanzas_familiares/presentation/widgets/monthly_trend_chart.dart';
 import 'package:finanzas_familiares/presentation/widgets/month_comparison_card.dart';

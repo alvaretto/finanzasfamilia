@@ -2,7 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/local/database.dart';
+import '../../domain/entities/category_tree_node.dart';
 import 'database_provider.dart';
+
+// Re-export para compatibilidad con código existente
+export '../../domain/entities/category_tree_node.dart';
 
 part 'categories_provider.g.dart';
 
@@ -66,37 +70,10 @@ Stream<List<CategoryEntry>> categoriesStream(Ref ref) {
   return dao.watchAllCategories();
 }
 
-/// Modelo para representar un nodo del árbol de categorías
-class CategoryTreeNode {
-  CategoryTreeNode({
-    required this.category,
-    this.children = const [],
-  });
-
-  final CategoryEntry category;
-  final List<CategoryTreeNode> children;
-
-  bool get hasChildren => children.isNotEmpty;
-  bool get isLeaf => children.isEmpty;
-
-  /// Obtiene la ruta completa de la categoría
-  String getPath(List<CategoryEntry> allCategories) {
-    final parts = <String>[];
-    CategoryEntry? current = category;
-
-    while (current != null) {
-      parts.insert(0, current.name);
-      if (current.parentId != null) {
-        current = allCategories
-            .where((c) => c.id == current!.parentId)
-            .firstOrNull;
-      } else {
-        current = null;
-      }
-    }
-
-    return parts.join(' > ');
-  }
+/// Provider del builder de árbol de categorías
+@riverpod
+CategoryTreeBuilder categoryTreeBuilder(Ref ref) {
+  return const CategoryTreeBuilder();
 }
 
 /// Provider que construye el árbol de categorías por tipo
@@ -106,25 +83,8 @@ Future<List<CategoryTreeNode>> categoryTree(
   String type,
 ) async {
   final categories = await ref.watch(categoriesByTypeProvider(type).future);
-  return _buildTree(categories, null);
-}
-
-/// Construye el árbol recursivamente
-List<CategoryTreeNode> _buildTree(
-  List<CategoryEntry> categories,
-  String? parentId,
-) {
-  final children = categories
-      .where((c) => c.parentId == parentId)
-      .toList()
-    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-
-  return children.map((category) {
-    return CategoryTreeNode(
-      category: category,
-      children: _buildTree(categories, category.id),
-    );
-  }).toList();
+  final builder = ref.watch(categoryTreeBuilderProvider);
+  return builder.buildTree(categories);
 }
 
 /// Provider para obtener categorías hoja (sin hijos) de un tipo
@@ -134,12 +94,8 @@ Future<List<CategoryEntry>> leafCategories(
   String type,
 ) async {
   final categories = await ref.watch(categoriesByTypeProvider(type).future);
-
-  // Filtrar solo las que no tienen hijos
-  return categories.where((c) {
-    return !categories.any((other) => other.parentId == c.id);
-  }).toList()
-    ..sort((a, b) => a.name.compareTo(b.name));
+  final builder = ref.watch(categoryTreeBuilderProvider);
+  return builder.getLeafCategories(categories);
 }
 
 /// Provider para buscar categorías por nombre
@@ -149,13 +105,7 @@ Future<List<CategoryEntry>> searchCategories(
   String type,
   String query,
 ) async {
-  if (query.isEmpty) return [];
-
   final categories = await ref.watch(categoriesByTypeProvider(type).future);
-  final lowerQuery = query.toLowerCase();
-
-  return categories
-      .where((c) => c.name.toLowerCase().contains(lowerQuery))
-      .toList()
-    ..sort((a, b) => a.name.compareTo(b.name));
+  final builder = ref.watch(categoryTreeBuilderProvider);
+  return builder.searchByName(categories, query);
 }

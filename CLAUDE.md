@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.8
-**Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** Refactorización Arquitectónica - Fase R1 completada
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.9
+**Arquitectura:** Offline-First con Drift + PowerSync + Supabase (Clean Architecture)
+**Estado:** Refactorización Arquitectónica - Fases R1-R3 completadas
 
 ---
 
@@ -359,9 +359,9 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 28 | Adjuntos y OCR | ✅ Completado (AttachmentService + OCR + StorageSync) |
 | 29 | Modo Familiar | ✅ Completado (Families + Members + Invitations + UI) |
 | R1 | Extraer lógica de negocio a services | ✅ Completado (DashboardService) |
-| R2 | Consolidar duplicación de código | ⏳ Pendiente |
-| R3 | Limpiar providers pass-through | ⏳ Pendiente |
-| R4 | Reorganizar capas (Clean Architecture) | ⏳ Pendiente |
+| R2 | Consolidar duplicación de código | ✅ Completado (ChartService → domain) |
+| R3 | Limpiar providers pass-through | ✅ Completado (CategoryTreeBuilder + análisis) |
+| R4 | Reorganizar capas (Clean Architecture) | ⏳ Pendiente (indicadores + modelos menores) |
 | R5 | Actualizar tests y documentación | ⏳ Pendiente |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
@@ -369,6 +369,36 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 ---
 
 ## Changelog Reciente
+
+### v2.9 (2026-01-09)
+- **FASE R2-R3:** Refactorización Arquitectónica - Consolidación y Limpieza
+  - **ChartService movido a domain/services/**:
+    - Antes: `lib/application/services/chart_service.dart`
+    - Ahora: `lib/domain/services/chart_service.dart`
+    - API refactorizada: funciones puras que toman datos en lugar de DAOs
+    - `calculateExpensesByCategory(transactions, categories)`: Lista plana → cálculos
+    - `calculateMonthlyTrend(transactionsByMonth, months)`: Datos por mes → tendencia
+    - `calculateMonthComparison(current, previous)`: Comparación entre períodos
+    - Modelos de datos: `CategoryExpenseData`, `MonthlyTrendData`, `PeriodComparison`
+  - **CategoryTreeNode y CategoryTreeBuilder creados en domain/entities/**:
+    - `lib/domain/entities/category_tree_node.dart`: Modelo de nodo jerárquico
+    - `CategoryTreeBuilder`: Clase pura para construir árboles de categorías
+    - Métodos: `buildTree()`, `getLeafCategories()`, `searchByName()`
+  - **chart_provider.dart simplificado**:
+    - Provider solo orquesta: obtiene datos de DAOs y delega a ChartService
+    - `chartServiceProvider`: Instancia del servicio
+    - `categoryTreeBuilderProvider`: Instancia del builder
+  - **categories_provider.dart refactorizado**:
+    - Eliminada lógica de árbol embebida
+    - Delegación a CategoryTreeBuilder para construcción
+    - Re-export de `category_tree_node.dart` para compatibilidad
+  - **Análisis de providers completado**:
+    - `database_provider.dart`: Patrón DI válido, mantener
+    - `accounting_provider.dart`: Lógica de orquestación, mantener
+    - `dashboard_provider.dart`: Buen ejemplo de patrón (orquesta + delega)
+    - `financial_indicators_provider.dart`: Modelos de dominio embebidos (deuda técnica menor)
+  - Barrel file actualizado: `lib/domain/entities/entities.dart`
+  - Tests: 574+ pasando, 3 skipped
 
 ### v2.8.1 (2026-01-09)
 - **FASE R1:** Refactorización Arquitectónica - Extracción de Lógica de Negocio

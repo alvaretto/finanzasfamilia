@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../application/services/chart_service.dart';
+import '../../domain/services/chart_service.dart';
 
 /// Widget de gráfico de línea para tendencia mensual
 class MonthlyTrendChart extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../application/services/chart_service.dart';
+import '../../domain/services/chart_service.dart';
 
 /// Widget de tarjeta comparativa entre mes actual y anterior
 class MonthComparisonCard extends StatelessWidget {
