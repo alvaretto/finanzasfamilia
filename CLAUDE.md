@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.6
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.7
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 28 completada
+**Estado:** En desarrollo - Fase 29 completada
 
 ---
 
@@ -357,12 +357,40 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 26 | Gráficos Avanzados | ✅ Completado (ChartService + StatisticsScreen) |
 | 27 | Metas de Ahorro | ✅ Completado (SavingsGoals + Contributions + UI) |
 | 28 | Adjuntos y OCR | ✅ Completado (AttachmentService + OCR + UI) |
+| 29 | Modo Familiar | ✅ Completado (Families + Members + Invitations + UI) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.7 (2026-01-09)
+- **FASE 29:** Modo Familiar (Finanzas Compartidas)
+  - `FamiliesTable`: 4 tablas Drift para gestión familiar
+    - `Families`: Grupos con nombre, icono, color, código de invitación
+    - `FamilyMembers`: Miembros con roles (owner, admin, member, viewer)
+    - `FamilyInvitations`: Invitaciones por email con token y expiración
+    - `SharedAccounts`: Cuentas compartidas con permisos configurables
+  - `FamiliesDao`: DAO completo con CRUD
+    - `getFamiliesForUser()`, `watchFamiliesForUser()`, `getFamilyById()`
+    - `addMember()`, `removeMember()`, `updateMemberRole()`, `isAdminOrOwner()`
+    - `createInvitation()`, `acceptInvitation()`, `getPendingInvitationsForEmail()`
+    - `shareAccount()`, `unshareAccount()`, `updateSharedAccountPermissions()`
+  - `FamilyProvider`: Provider Riverpod con gestión de estado
+    - `FamilyNotifier`: Crear, editar, eliminar familias, unirse por código
+    - `SharedAccountsNotifier`: Compartir/dejar de compartir cuentas
+    - `FamilyWithMembers`: Clase con permisos calculados (isOwner, isAdmin, canInvite)
+  - `FamilyScreen`: UI completa de gestión familiar
+    - Lista de familias del usuario con cards personalizables
+    - Bottom sheet para crear familia con selector de icono/color
+    - Diálogo para unirse a familia por código
+    - `FamilyDetailScreen`: Gestión de miembros y permisos
+    - Menú de acciones: generar código, invitar por email, editar, eliminar
+  - Enums: `FamilyMemberRole` (owner, admin, member, viewer), `FamilyInvitationStatus`
+  - Migración de base de datos v5 → v6
+  - 39 tests nuevos (19 DAO + 20 screen/model)
+  - Tests totales: 517+ pasando
 
 ### v2.6 (2026-01-09)
 - **FASE 28:** Adjuntos y OCR (Digitalización de Recibos)

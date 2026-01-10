@@ -25,6 +25,10 @@ part 'database.g.dart';
 /// - SavingsGoals: Metas de ahorro
 /// - SavingsContributions: Contribuciones a metas de ahorro
 /// - TransactionAttachments: Adjuntos de transacciones (recibos, facturas)
+/// - Families: Grupos familiares
+/// - FamilyMembers: Miembros de familia con roles
+/// - FamilyInvitations: Invitaciones pendientes
+/// - SharedAccounts: Cuentas compartidas en familia
 @DriftDatabase(tables: [
   Categories,
   Accounts,
@@ -39,6 +43,10 @@ part 'database.g.dart';
   SavingsGoals,
   SavingsContributions,
   TransactionAttachments,
+  Families,
+  FamilyMembers,
+  FamilyInvitations,
+  SharedAccounts,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -51,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5; // v5: TransactionAttachments
+  int get schemaVersion => 6; // v6: Families, FamilyMembers, FamilyInvitations, SharedAccounts
 
   @override
   MigrationStrategy get migration {
@@ -85,6 +93,13 @@ class AppDatabase extends _$AppDatabase {
         // Migración de v4 a v5: Agregar TransactionAttachments
         if (from < 5) {
           await m.createTable(transactionAttachments);
+        }
+        // Migración de v5 a v6: Agregar tablas de Modo Familiar
+        if (from < 6) {
+          await m.createTable(families);
+          await m.createTable(familyMembers);
+          await m.createTable(familyInvitations);
+          await m.createTable(sharedAccounts);
         }
       },
       beforeOpen: (details) async {

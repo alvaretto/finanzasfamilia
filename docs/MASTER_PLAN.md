@@ -23,9 +23,9 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.6 |
-| Fase Actual | 28 Completada |
-| Tests | 478+ pasando |
+| Versión | 2.7 |
+| Fase Actual | 29 Completada |
+| Tests | 517+ pasando |
 | Cobertura | ~85% |
 
 ### Funcionalidades Implementadas
@@ -52,6 +52,7 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | Gráficos Avanzados | ✅ | 26 |
 | Metas de Ahorro | ✅ | 27 |
 | Adjuntos y OCR | ✅ | 28 |
+| Modo Familiar | ✅ | 29 |
 
 ---
 
@@ -268,17 +269,48 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ## Roadmap Post-MVP
 
-### Fase 29: Modo Familiar
+### ~~Fase 29: Modo Familiar~~ ✅ COMPLETADA
 **Objetivo:** Finanzas compartidas
-**Prioridad:** BAJA (v2.0)
+**Completado:** 2026-01-09
 
-| Tarea | Descripción |
-|-------|-------------|
-| 29.1 | Modelo de "Familia" con miembros |
-| 29.2 | Roles: Administrador, Miembro, Viewer |
-| 29.3 | Cuentas compartidas vs personales |
-| 29.4 | Presupuestos familiares |
-| 29.5 | Dashboard consolidado |
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| 29.1 | Modelo de "Familia" con miembros | ✅ |
+| 29.2 | Roles: Owner, Admin, Miembro, Viewer | ✅ |
+| 29.3 | Cuentas compartidas vs personales | ✅ |
+| 29.4 | Sistema de invitaciones (código + email) | ✅ |
+| 29.5 | UI de gestión familiar completa | ✅ |
+
+**Implementaciones:**
+- `FamiliesTable`: 4 tablas Drift con migración v6
+  - `Families`: Grupos familiares con nombre, icono, color, inviteCode
+  - `FamilyMembers`: Miembros con roles (owner, admin, member, viewer)
+  - `FamilyInvitations`: Invitaciones por email con token y expiración
+  - `SharedAccounts`: Cuentas compartidas con permisos configurables
+- `FamiliesDao`: DAO completo con CRUD
+  - Gestión de familias: create, update, delete (soft), get by ID/user
+  - Gestión de miembros: add, remove, update role, check permissions
+  - Sistema de invitaciones: create, accept, reject, cancel, get pending
+  - Cuentas compartidas: share, unshare, update permissions
+  - Streams reactivos para todas las entidades
+- `FamilyProvider`: Provider Riverpod con gestión de estado
+  - `FamilyNotifier`: Crear/editar/eliminar familias, unirse por código
+  - `SharedAccountsNotifier`: Compartir/dejar de compartir cuentas
+  - `FamilyWithMembers`: Clase con permisos calculados (isOwner, isAdmin, canInvite)
+- `FamilyScreen`: UI completa de gestión
+  - Lista de familias del usuario con cards
+  - Crear familia con selector de icono/color
+  - Unirse a familia por código de invitación
+  - FamilyDetailScreen con gestión de miembros
+  - Menú de acciones: generar código, invitar por email, editar, eliminar
+- 39 tests nuevos (19 DAO + 20 screen/model)
+
+**Entregables:**
+- ✅ CRUD completo de familias
+- ✅ Sistema de roles con permisos
+- ✅ Invitaciones por código y email
+- ✅ Cuentas compartidas configurables
+- ✅ UI de gestión familiar
 
 ---
 

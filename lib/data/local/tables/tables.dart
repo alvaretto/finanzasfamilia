@@ -21,3 +21,6 @@ export 'savings_goals_table.dart';
 
 // Adjuntos de transacciones - Fase 28
 export 'transaction_attachments_table.dart';
+
+// Modo Familiar - Fase 29
+export 'families_table.dart';
