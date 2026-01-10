@@ -381,12 +381,16 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
     - `showBudgetExceeded muestra notificación de exceso`
     - `scheduleRecurringReminder programa recordatorio`
     - Razón: Plugins nativos (`flutter_local_notifications`) no funcionan en tests unitarios
+  - **Warnings de análisis estático corregidos**:
+    - 4 `dangling_library_doc_comments` corregidos en barrel files
+    - Cambiados `///` a `//` en archivos sin declaraciones asociadas
+    - Archivos: `repositories.dart` (data/domain), `chart_models.dart`, `indicators.dart`
   - **Refactorización Arquitectónica R1-R5 completada**:
     - Clean Architecture implementada con patrón Repository
     - AccountingService desacoplado de Drift
     - Modelos de dominio independientes del framework
     - Tests totales: 477+ pasando, 3 skipped (válidos)
-  - 0 tests fallando, 0 warnings en análisis estático
+  - **0 tests fallando, 0 issues en análisis estático** (`flutter analyze`: No issues found!)
 
 ### v3.0 (2026-01-10)
 - **FASE R4:** Refactorización Arquitectónica - Implementación Clean Architecture

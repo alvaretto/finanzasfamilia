@@ -1,4 +1,4 @@
-/// Modelos de datos para gráficos financieros
+// Modelos de datos para gráficos financieros
 
 /// Datos para gráfico de pie (gastos por categoría)
 class CategoryExpenseData {
