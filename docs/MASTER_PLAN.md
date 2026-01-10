@@ -244,7 +244,8 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | 28.1 | Adjuntar fotos a transacciones | ✅ |
 | 28.2 | Galería de recibos | ✅ |
 | 28.3 | OCR para extraer monto automáticamente | ✅ |
-| 28.4 | Almacenamiento local (Supabase Storage pendiente) | ✅ |
+| 28.4 | Almacenamiento local y remoto (Supabase Storage) | ✅ |
+| 28.5 | Sincronización de adjuntos a cloud | ✅ |
 
 **Implementaciones:**
 - `TransactionAttachmentsTable`: Tabla Drift con migración v5
@@ -256,14 +257,21 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 - Badge de monto detectado por OCR
 - `_AttachmentDetailSheet`: Vista detallada con texto OCR
 - Dependencias: image_picker ^1.1.2, google_mlkit_text_recognition ^0.14.0
-- 31 tests nuevos (14 DAO + 7 service + 10 widget)
+- `StorageSyncService`: Sincronización con Supabase Storage
+  - `uploadAttachment()`: Sube a bucket transaction-attachments
+  - `downloadAttachment()`: Descarga desde URL remota
+  - `deleteAttachment()`: Elimina del storage
+  - `syncPendingAttachments()`: Batch sync
+- `GlobalAttachmentSync`: Notifier para sincronización global
+- `_SyncIndicator` y `_SyncStatusChip`: UI de estado de sync
+- 59 tests nuevos (14 DAO + 19 service + 26 widget)
 
 **Entregables:**
 - ✅ Captura desde cámara y galería
 - ✅ OCR extracción automática de montos
 - ✅ Galería de adjuntos por transacción
 - ✅ Almacenamiento local
-- ⏳ Sincronización a Supabase Storage (pendiente)
+- ✅ Sincronización a Supabase Storage
 
 ---
 
@@ -393,6 +401,8 @@ Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
 | 1.5 | 2026-01-09 | Fase 26 completada (Gráficos Avanzados) |
 | 1.6 | 2026-01-09 | Fase 27 completada (Metas de Ahorro) |
 | 1.7 | 2026-01-09 | Fase 28 completada (Adjuntos y OCR) |
+| 1.8 | 2026-01-09 | Fase 29 completada (Modo Familiar) |
+| 1.9 | 2026-01-09 | Fase 28 Storage Sync completado |
 
 ---
 

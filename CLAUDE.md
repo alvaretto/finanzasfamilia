@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.7
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.8
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 29 completada
+**Estado:** En desarrollo - Fase 29 completada + Storage Sync
 
 ---
 
@@ -356,7 +356,7 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 25 | Notificaciones Locales | ✅ Completado (NotificationService + Settings Screen) |
 | 26 | Gráficos Avanzados | ✅ Completado (ChartService + StatisticsScreen) |
 | 27 | Metas de Ahorro | ✅ Completado (SavingsGoals + Contributions + UI) |
-| 28 | Adjuntos y OCR | ✅ Completado (AttachmentService + OCR + UI) |
+| 28 | Adjuntos y OCR | ✅ Completado (AttachmentService + OCR + StorageSync) |
 | 29 | Modo Familiar | ✅ Completado (Families + Members + Invitations + UI) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
@@ -364,6 +364,26 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 ---
 
 ## Changelog Reciente
+
+### v2.8 (2026-01-09)
+- **FASE 28 COMPLETA:** Sincronización de Adjuntos a Supabase Storage
+  - `StorageSyncService`: Servicio para sync con Supabase Storage
+    - `uploadAttachment()`: Sube a bucket transaction-attachments
+    - `downloadAttachment()`: Descarga desde URL remota
+    - `deleteAttachment()`: Elimina del storage
+    - `syncPendingAttachments()`: Sincronización batch
+  - `AttachmentsNotifier` mejorado:
+    - `syncAttachment()`: Sincroniza adjunto individual
+    - `syncAllPending()`: Sincroniza todos los pendientes de transacción
+    - `deleteAllAttachments()`: También elimina del storage remoto
+  - `GlobalAttachmentSync`: Notifier para sincronización global del sistema
+    - `AttachmentSyncState`: Estado con isSyncing, pendingCount, syncedCount
+    - `syncAllPendingAttachments()`: Sync de todos los adjuntos pendientes
+  - UI de estado de sincronización:
+    - `_SyncIndicator`: Icono cloud_done/cloud_upload con colores
+    - `_SyncStatusChip`: Chip "Sincronizado"/"Local" en detalle de adjunto
+  - 28 tests nuevos (12 service + 16 widget sync)
+  - Tests totales: 459+ pasando
 
 ### v2.7 (2026-01-09)
 - **FASE 29:** Modo Familiar (Finanzas Compartidas)
