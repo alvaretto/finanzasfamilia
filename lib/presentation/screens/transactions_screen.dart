@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../application/providers/providers.dart';
-import '../../application/providers/dashboard_provider.dart';
 import '../../data/local/database.dart';
 import 'transaction_form_screen.dart';
 

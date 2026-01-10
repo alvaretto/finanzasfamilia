@@ -261,12 +261,12 @@ class MonthlyTrendChart extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _LegendItem(color: Colors.green, label: 'Ingresos'),
+        const _LegendItem(color: Colors.green, label: 'Ingresos'),
         const SizedBox(width: 16),
-        _LegendItem(color: Colors.red, label: 'Gastos'),
+        const _LegendItem(color: Colors.red, label: 'Gastos'),
         if (showBalance) ...[
           const SizedBox(width: 16),
-          _LegendItem(color: Colors.blue, label: 'Balance', isDashed: true),
+          const _LegendItem(color: Colors.blue, label: 'Balance', isDashed: true),
         ],
       ],
     );

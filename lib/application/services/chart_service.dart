@@ -1,6 +1,5 @@
 import '../../data/local/daos/transactions_dao.dart';
 import '../../data/local/daos/categories_dao.dart';
-import '../../data/local/daos/journal_entries_dao.dart';
 
 /// Datos para gráfico de pie (gastos por categoría)
 class CategoryExpenseData {
@@ -61,7 +60,6 @@ class PeriodComparison {
 class ChartService {
   final TransactionsDao _transactionsDao;
   final CategoriesDao _categoriesDao;
-  final JournalEntriesDao _journalEntriesDao;
 
   // Colores predefinidos para categorías (Material Design)
   static const List<int> categoryColors = [
@@ -82,10 +80,8 @@ class ChartService {
   ChartService({
     required TransactionsDao transactionsDao,
     required CategoriesDao categoriesDao,
-    required JournalEntriesDao journalEntriesDao,
   })  : _transactionsDao = transactionsDao,
-        _categoriesDao = categoriesDao,
-        _journalEntriesDao = journalEntriesDao;
+        _categoriesDao = categoriesDao;
 
   /// Obtiene gastos agrupados por categoría para un mes
   Future<List<CategoryExpenseData>> getExpensesByCategory({
@@ -108,10 +104,8 @@ class ChartService {
     final Map<String, double> categoryTotals = {};
     for (final tx in expenses) {
       final categoryId = tx.categoryId;
-      if (categoryId != null) {
-        categoryTotals[categoryId] =
-            (categoryTotals[categoryId] ?? 0) + tx.amount;
-      }
+      categoryTotals[categoryId] =
+          (categoryTotals[categoryId] ?? 0) + tx.amount;
     }
 
     if (categoryTotals.isEmpty) return [];

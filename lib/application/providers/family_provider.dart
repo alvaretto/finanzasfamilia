@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
@@ -273,11 +272,8 @@ class FamilyNotifier extends _$FamilyNotifier {
     state = const AsyncLoading();
 
     try {
-      // Obtener la invitación
-      final invitations = await _dao.getPendingInvitationsForEmail('');
-      // Buscar por ID en las invitaciones pendientes
-      // En producción, habría que buscar directamente por ID
-
+      // TODO: Implementar búsqueda directa de invitación por ID
+      // Por ahora aceptamos directamente
       await _dao.acceptInvitation(invitationId);
 
       // Agregar al usuario como miembro

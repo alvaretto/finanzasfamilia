@@ -5,7 +5,6 @@ import 'package:finanzas_familiares/application/services/chart_service.dart';
 import 'package:finanzas_familiares/data/local/database.dart';
 import 'package:finanzas_familiares/data/local/daos/transactions_dao.dart';
 import 'package:finanzas_familiares/data/local/daos/categories_dao.dart';
-import 'package:finanzas_familiares/data/local/daos/journal_entries_dao.dart';
 
 void main() {
   group('ChartService', () {
@@ -13,17 +12,14 @@ void main() {
     late ChartService service;
     late TransactionsDao transactionsDao;
     late CategoriesDao categoriesDao;
-    late JournalEntriesDao journalEntriesDao;
 
     setUp(() async {
       db = AppDatabase.forTesting(NativeDatabase.memory());
       transactionsDao = TransactionsDao(db);
       categoriesDao = CategoriesDao(db);
-      journalEntriesDao = JournalEntriesDao(db);
       service = ChartService(
         transactionsDao: transactionsDao,
         categoriesDao: categoriesDao,
-        journalEntriesDao: journalEntriesDao,
       );
     });
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/providers/attachment_provider.dart';
-import '../../application/services/attachment_service.dart';
 
 /// Widget para capturar y mostrar adjuntos de una transacción
 class AttachmentPicker extends ConsumerStatefulWidget {

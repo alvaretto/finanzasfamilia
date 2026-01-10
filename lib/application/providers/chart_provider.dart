@@ -4,7 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../services/chart_service.dart';
 import '../../data/local/daos/transactions_dao.dart';
 import '../../data/local/daos/categories_dao.dart';
-import '../../data/local/daos/journal_entries_dao.dart';
 import 'database_provider.dart';
 
 part 'chart_provider.g.dart';
@@ -15,7 +14,6 @@ ChartService chartService(Ref ref) {
   return ChartService(
     transactionsDao: TransactionsDao(db),
     categoriesDao: CategoriesDao(db),
-    journalEntriesDao: JournalEntriesDao(db),
   );
 }
 
