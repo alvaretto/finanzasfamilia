@@ -222,6 +222,12 @@ class _AttachmentPickerState extends ConsumerState<AttachmentPicker> {
                 ),
               ),
             ),
+          // Indicador de sincronización
+          Positioned(
+            top: 4,
+            left: 4,
+            child: _SyncIndicator(isSynced: attachment.isSynced),
+          ),
           // Botón eliminar
           Positioned(
             top: 4,
@@ -404,6 +410,31 @@ class _AttachmentPickerState extends ConsumerState<AttachmentPicker> {
   }
 }
 
+/// Indicador visual de estado de sincronización
+class _SyncIndicator extends StatelessWidget {
+  final bool isSynced;
+
+  const _SyncIndicator({required this.isSynced});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isSynced
+            ? Colors.green.withValues(alpha: 0.9)
+            : Colors.orange.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        isSynced ? Icons.cloud_done : Icons.cloud_upload,
+        size: 12,
+        color: Colors.white,
+      ),
+    );
+  }
+}
+
 /// Sheet de detalle de un adjunto
 class _AttachmentDetailSheet extends ConsumerWidget {
   final AttachmentData attachment;
@@ -445,9 +476,15 @@ class _AttachmentDetailSheet extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          attachment.formattedSize,
-                          style: Theme.of(context).textTheme.bodySmall,
+                        Row(
+                          children: [
+                            Text(
+                              attachment.formattedSize,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(width: 8),
+                            _SyncStatusChip(isSynced: attachment.isSynced),
+                          ],
                         ),
                       ],
                     ),
@@ -520,6 +557,44 @@ class _AttachmentDetailSheet extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// Chip de estado de sincronización
+class _SyncStatusChip extends StatelessWidget {
+  final bool isSynced;
+
+  const _SyncStatusChip({required this.isSynced});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: isSynced
+            ? Colors.green.shade100
+            : Colors.orange.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSynced ? Icons.cloud_done : Icons.cloud_off,
+            size: 12,
+            color: isSynced ? Colors.green.shade700 : Colors.orange.shade700,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isSynced ? 'Sincronizado' : 'Local',
+            style: TextStyle(
+              fontSize: 10,
+              color: isSynced ? Colors.green.shade700 : Colors.orange.shade700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

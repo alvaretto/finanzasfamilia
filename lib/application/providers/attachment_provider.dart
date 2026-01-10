@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/local/database.dart';
 import '../../data/local/daos/transaction_attachments_dao.dart';
 import '../services/attachment_service.dart';
+import '../services/storage_sync_service.dart';
 import 'database_provider.dart';
 
 part 'attachment_provider.g.dart';
@@ -16,6 +18,12 @@ AttachmentService attachmentService(Ref ref) {
   final service = AttachmentService();
   ref.onDispose(() => service.dispose());
   return service;
+}
+
+/// Provider del servicio de sincronización de Storage
+@riverpod
+StorageSyncService storageSyncService(Ref ref) {
+  return StorageSyncService(Supabase.instance.client);
 }
 
 /// Provider del DAO de adjuntos
@@ -205,14 +213,82 @@ class AttachmentsNotifier extends _$AttachmentsNotifier {
   Future<void> deleteAllAttachments() async {
     final dao = ref.read(transactionAttachmentsDaoProvider);
     final service = ref.read(attachmentServiceProvider);
+    final storageService = ref.read(storageSyncServiceProvider);
 
     final attachments = await dao.getAttachmentsForTransaction(transactionId);
     for (final attachment in attachments) {
       await service.deleteLocalFile(attachment.localPath);
+      // También eliminar del storage remoto si existe
+      if (attachment.isSynced) {
+        await storageService.deleteAttachment(
+          attachmentId: attachment.id,
+          fileName: attachment.fileName,
+        );
+      }
     }
 
     await dao.deleteAttachmentsForTransaction(transactionId);
     ref.invalidateSelf();
+  }
+
+  /// Sincroniza un adjunto específico a Supabase Storage
+  Future<bool> syncAttachment(String attachmentId) async {
+    final dao = ref.read(transactionAttachmentsDaoProvider);
+    final storageService = ref.read(storageSyncServiceProvider);
+
+    final attachment = await dao.getAttachmentById(attachmentId);
+    if (attachment == null || attachment.isSynced) return false;
+
+    final result = await storageService.uploadAttachment(
+      attachmentId: attachment.id,
+      localPath: attachment.localPath,
+      fileName: attachment.fileName,
+      mimeType: attachment.mimeType,
+    );
+
+    if (result.success && result.remoteUrl != null) {
+      await dao.markAsSynced(attachmentId, result.remoteUrl!);
+      ref.invalidateSelf();
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Sincroniza todos los adjuntos pendientes de esta transacción
+  Future<int> syncAllPending() async {
+    final dao = ref.read(transactionAttachmentsDaoProvider);
+    final storageService = ref.read(storageSyncServiceProvider);
+
+    final attachments = await dao.getAttachmentsForTransaction(transactionId);
+    final pending = attachments.where((a) => !a.isSynced).toList();
+
+    if (pending.isEmpty) return 0;
+
+    final pendingAttachments = pending
+        .map((a) => PendingAttachment(
+              id: a.id,
+              localPath: a.localPath,
+              fileName: a.fileName,
+              mimeType: a.mimeType,
+            ))
+        .toList();
+
+    final results = await storageService.syncPendingAttachments(pendingAttachments);
+
+    int syncedCount = 0;
+    for (final entry in results.entries) {
+      if (entry.value.success && entry.value.remoteUrl != null) {
+        await dao.markAsSynced(entry.key, entry.value.remoteUrl!);
+        syncedCount++;
+      }
+    }
+
+    if (syncedCount > 0) {
+      ref.invalidateSelf();
+    }
+
+    return syncedCount;
   }
 }
 
@@ -229,4 +305,106 @@ Future<List<AttachmentData>> pendingSyncAttachments(Ref ref) async {
   final dao = ref.watch(transactionAttachmentsDaoProvider);
   final entries = await dao.getPendingSyncAttachments();
   return entries.map(AttachmentData.fromEntry).toList();
+}
+
+/// Estado de sincronización global de adjuntos
+class AttachmentSyncState {
+  final bool isSyncing;
+  final int pendingCount;
+  final int syncedCount;
+  final String? lastError;
+
+  const AttachmentSyncState({
+    this.isSyncing = false,
+    this.pendingCount = 0,
+    this.syncedCount = 0,
+    this.lastError,
+  });
+
+  AttachmentSyncState copyWith({
+    bool? isSyncing,
+    int? pendingCount,
+    int? syncedCount,
+    String? lastError,
+  }) {
+    return AttachmentSyncState(
+      isSyncing: isSyncing ?? this.isSyncing,
+      pendingCount: pendingCount ?? this.pendingCount,
+      syncedCount: syncedCount ?? this.syncedCount,
+      lastError: lastError,
+    );
+  }
+}
+
+/// Notifier para sincronización global de adjuntos
+@riverpod
+class GlobalAttachmentSync extends _$GlobalAttachmentSync {
+  @override
+  AttachmentSyncState build() {
+    _updatePendingCount();
+    return const AttachmentSyncState();
+  }
+
+  Future<void> _updatePendingCount() async {
+    final dao = ref.read(transactionAttachmentsDaoProvider);
+    final pending = await dao.getPendingSyncAttachments();
+    state = state.copyWith(pendingCount: pending.length);
+  }
+
+  /// Sincroniza todos los adjuntos pendientes del sistema
+  Future<int> syncAllPendingAttachments() async {
+    if (state.isSyncing) return 0;
+
+    state = state.copyWith(isSyncing: true, lastError: null);
+
+    try {
+      final dao = ref.read(transactionAttachmentsDaoProvider);
+      final storageService = ref.read(storageSyncServiceProvider);
+
+      final pending = await dao.getPendingSyncAttachments();
+      if (pending.isEmpty) {
+        state = state.copyWith(isSyncing: false, pendingCount: 0);
+        return 0;
+      }
+
+      final pendingAttachments = pending
+          .map((a) => PendingAttachment(
+                id: a.id,
+                localPath: a.localPath,
+                fileName: a.fileName,
+                mimeType: a.mimeType,
+              ))
+          .toList();
+
+      final results = await storageService.syncPendingAttachments(pendingAttachments);
+
+      int syncedCount = 0;
+      for (final entry in results.entries) {
+        if (entry.value.success && entry.value.remoteUrl != null) {
+          await dao.markAsSynced(entry.key, entry.value.remoteUrl!);
+          syncedCount++;
+        }
+      }
+
+      // Actualizar conteo de pendientes
+      final remainingPending = await dao.getPendingSyncAttachments();
+
+      state = state.copyWith(
+        isSyncing: false,
+        pendingCount: remainingPending.length,
+        syncedCount: state.syncedCount + syncedCount,
+      );
+
+      // Invalidar provider de pendientes
+      ref.invalidate(pendingSyncAttachmentsProvider);
+
+      return syncedCount;
+    } catch (e) {
+      state = state.copyWith(
+        isSyncing: false,
+        lastError: e.toString(),
+      );
+      return 0;
+    }
+  }
 }

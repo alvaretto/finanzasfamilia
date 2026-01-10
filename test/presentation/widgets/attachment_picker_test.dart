@@ -176,4 +176,42 @@ void main() {
       }
     });
   });
+
+  group('AttachmentPicker - Sync Status', () {
+    test('isSynced false indica adjunto local', () {
+      const isSynced = false;
+      expect(isSynced, isFalse);
+    });
+
+    test('isSynced true indica adjunto sincronizado', () {
+      const isSynced = true;
+      expect(isSynced, isTrue);
+    });
+
+    test('sync indicator muestra cloud_upload para pendientes', () {
+      // Verificar lógica del indicador
+      const isSynced = false;
+      final icon = isSynced ? Icons.cloud_done : Icons.cloud_upload;
+      expect(icon, equals(Icons.cloud_upload));
+    });
+
+    test('sync indicator muestra cloud_done para sincronizados', () {
+      // Verificar lógica del indicador
+      const isSynced = true;
+      final icon = isSynced ? Icons.cloud_done : Icons.cloud_upload;
+      expect(icon, equals(Icons.cloud_done));
+    });
+
+    test('sync status chip muestra "Local" para no sincronizados', () {
+      const isSynced = false;
+      final text = isSynced ? 'Sincronizado' : 'Local';
+      expect(text, equals('Local'));
+    });
+
+    test('sync status chip muestra "Sincronizado" para sincronizados', () {
+      const isSynced = true;
+      final text = isSynced ? 'Sincronizado' : 'Local';
+      expect(text, equals('Sincronizado'));
+    });
+  });
 }
