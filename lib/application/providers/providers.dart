@@ -9,3 +9,4 @@ export 'backup_provider.dart';
 export 'accounting_provider.dart';
 export 'reports_provider.dart';
 export 'savings_goals_provider.dart';
+export 'attachment_provider.dart';

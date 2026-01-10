@@ -23,9 +23,9 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 | Métrica | Valor |
 |---------|-------|
-| Versión | 2.5 |
-| Fase Actual | 27 Completada |
-| Tests | 447+ pasando |
+| Versión | 2.6 |
+| Fase Actual | 28 Completada |
+| Tests | 478+ pasando |
 | Cobertura | ~85% |
 
 ### Funcionalidades Implementadas
@@ -51,6 +51,7 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 | Notificaciones Locales | ✅ | 25 |
 | Gráficos Avanzados | ✅ | 26 |
 | Metas de Ahorro | ✅ | 27 |
+| Adjuntos y OCR | ✅ | 28 |
 
 ---
 
@@ -233,20 +234,39 @@ Aplicación de finanzas personales **Offline-First** con sincronización híbrid
 
 ---
 
-## Roadmap Post-MVP
-
-### Fase 28: Adjuntos y OCR
+### ~~Fase 28: Adjuntos y OCR~~ ✅ COMPLETADA
 **Objetivo:** Digitalizar recibos
-**Prioridad:** BAJA
+**Completado:** 2026-01-09
 
-| Tarea | Descripción |
-|-------|-------------|
-| 28.1 | Adjuntar fotos a transacciones |
-| 28.2 | Galería de recibos |
-| 28.3 | OCR para extraer monto automáticamente |
-| 28.4 | Almacenamiento en Supabase Storage |
+| Tarea | Descripción | Estado |
+|-------|-------------|--------|
+| 28.1 | Adjuntar fotos a transacciones | ✅ |
+| 28.2 | Galería de recibos | ✅ |
+| 28.3 | OCR para extraer monto automáticamente | ✅ |
+| 28.4 | Almacenamiento local (Supabase Storage pendiente) | ✅ |
+
+**Implementaciones:**
+- `TransactionAttachmentsTable`: Tabla Drift con migración v5
+- `TransactionAttachmentsDao`: CRUD completo + streams reactivos
+- `AttachmentService`: Captura de cámara/galería + OCR con ML Kit
+- Parser de montos colombianos ($1.234.567)
+- `AttachmentsNotifier`: Riverpod AsyncNotifier
+- `AttachmentPicker`: Widget UI con galería horizontal
+- Badge de monto detectado por OCR
+- `_AttachmentDetailSheet`: Vista detallada con texto OCR
+- Dependencias: image_picker ^1.1.2, google_mlkit_text_recognition ^0.14.0
+- 31 tests nuevos (14 DAO + 7 service + 10 widget)
+
+**Entregables:**
+- ✅ Captura desde cámara y galería
+- ✅ OCR extracción automática de montos
+- ✅ Galería de adjuntos por transacción
+- ✅ Almacenamiento local
+- ⏳ Sincronización a Supabase Storage (pendiente)
 
 ---
+
+## Roadmap Post-MVP
 
 ### Fase 29: Modo Familiar
 **Objetivo:** Finanzas compartidas
@@ -340,6 +360,7 @@ Usuario → App → Drift (SQLite local) → PowerSync → Supabase (Postgres)
 | 1.4 | 2026-01-09 | Fase 25 completada (Notificaciones) |
 | 1.5 | 2026-01-09 | Fase 26 completada (Gráficos Avanzados) |
 | 1.6 | 2026-01-09 | Fase 27 completada (Metas de Ahorro) |
+| 1.7 | 2026-01-09 | Fase 28 completada (Adjuntos y OCR) |
 
 ---
 

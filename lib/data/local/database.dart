@@ -24,6 +24,7 @@ part 'database.g.dart';
 /// - RecurringTransactions: Transacciones recurrentes (servicios, suscripciones)
 /// - SavingsGoals: Metas de ahorro
 /// - SavingsContributions: Contribuciones a metas de ahorro
+/// - TransactionAttachments: Adjuntos de transacciones (recibos, facturas)
 @DriftDatabase(tables: [
   Categories,
   Accounts,
@@ -37,6 +38,7 @@ part 'database.g.dart';
   RecurringTransactions,
   SavingsGoals,
   SavingsContributions,
+  TransactionAttachments,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -49,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4; // v4: SavingsGoals + SavingsContributions
+  int get schemaVersion => 5; // v5: TransactionAttachments
 
   @override
   MigrationStrategy get migration {
@@ -79,6 +81,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           await m.createTable(savingsGoals);
           await m.createTable(savingsContributions);
+        }
+        // Migración de v4 a v5: Agregar TransactionAttachments
+        if (from < 5) {
+          await m.createTable(transactionAttachments);
         }
       },
       beforeOpen: (details) async {

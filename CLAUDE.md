@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v2.5
+**Nombre:** Finanzas Familiares AS - Modo Personal v2.6
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase
-**Estado:** En desarrollo - Fase 27 completada
+**Estado:** En desarrollo - Fase 28 completada
 
 ---
 
@@ -356,12 +356,43 @@ POWERSYNC_URL=https://your-powersync-instance.powersync.co
 | 25 | Notificaciones Locales | ✅ Completado (NotificationService + Settings Screen) |
 | 26 | Gráficos Avanzados | ✅ Completado (ChartService + StatisticsScreen) |
 | 27 | Metas de Ahorro | ✅ Completado (SavingsGoals + Contributions + UI) |
+| 28 | Adjuntos y OCR | ✅ Completado (AttachmentService + OCR + UI) |
 
 **Roadmap completo:** Ver [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
 ---
 
 ## Changelog Reciente
+
+### v2.6 (2026-01-09)
+- **FASE 28:** Adjuntos y OCR (Digitalización de Recibos)
+  - `TransactionAttachmentsTable`: Tabla Drift para adjuntos
+    - Campos: id, transactionId, fileName, mimeType, localPath, remoteUrl
+    - Campos adicionales: fileSize, ocrText, ocrAmount, isSynced, createdAt
+  - `TransactionAttachmentsDao`: DAO completo con CRUD
+    - `getAttachmentsForTransaction()`, `watchAttachmentsForTransaction()`
+    - `getPendingSyncAttachments()`, `getAttachmentsWithOcrAmount()`
+    - `markAsSynced()`, `updateOcrData()`, `countAttachmentsForTransaction()`
+  - `AttachmentService`: Servicio de captura y OCR
+    - `captureFromCamera()`: Captura de imagen desde cámara
+    - `pickFromGallery()`: Selección desde galería
+    - `processWithOcr()`: Extracción de texto con ML Kit
+    - `_extractAmounts()`: Parser de montos colombianos ($1.234.567)
+    - Soporte para formatos: JPEG, PNG, WebP, GIF, PDF
+  - Modelos: `OcrResult`, `CapturedImage`, `AttachmentData`
+  - `AttachmentsNotifier`: Riverpod AsyncNotifier
+    - `captureFromCamera()`, `pickFromGallery()`, `reprocessOcr()`
+    - `deleteAttachment()` con eliminación de archivo local
+  - `AttachmentPicker`: Widget UI completo
+    - Estado vacío con botón de agregar
+    - Botones de cámara y galería
+    - Galería horizontal de adjuntos
+    - Badge de monto detectado por OCR
+    - `_AttachmentDetailSheet`: Detalle con imagen y texto OCR
+  - Dependencias nuevas: `image_picker ^1.1.2`, `google_mlkit_text_recognition ^0.14.0`
+  - Database migration v4 → v5
+  - 31 tests nuevos (14 DAO + 7 service + 10 widget)
+  - Tests totales: 478+ pasando
 
 ### v2.5 (2026-01-09)
 - **FASE 27:** Metas de Ahorro (Gamificación)

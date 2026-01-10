@@ -18,3 +18,6 @@ export 'recurring_transactions_table.dart';
 
 // Metas de ahorro - Fase 27
 export 'savings_goals_table.dart';
+
+// Adjuntos de transacciones - Fase 28
+export 'transaction_attachments_table.dart';

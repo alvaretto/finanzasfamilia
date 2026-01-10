@@ -12,6 +12,7 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 - **Reportes Financieros**: Balance General, Estado de Resultados, Flujo de Efectivo
 - **Gráficos Avanzados**: Pie chart de gastos, tendencias mensuales, comparativos
 - **Metas de Ahorro**: Sistema gamificado con progreso visual y contribuciones
+- **Adjuntos y OCR**: Digitalización de recibos con extracción automática de montos
 - **Asistente IA "Fina"**: Consejos financieros personalizados
 - **Notificaciones**: Alertas de presupuesto y recordatorios
 - **Firebase Crashlytics**: Monitoreo de errores en producción
@@ -29,6 +30,8 @@ Aplicación de finanzas personales con arquitectura **Offline-First**, diseñada
 | Monitoreo | Firebase Crashlytics + Analytics |
 | Gráficos | fl_chart |
 | Notificaciones | flutter_local_notifications |
+| OCR | google_mlkit_text_recognition |
+| Cámara/Galería | image_picker |
 | Export | Excel, CSV, PDF |
 
 ## Inicio Rápido
@@ -188,10 +191,21 @@ test/
 | 25 | Notificaciones Locales | ✅ |
 | 26 | Gráficos Avanzados | ✅ |
 | 27 | Metas de Ahorro | ✅ |
+| 28 | Adjuntos y OCR | ✅ |
 
-**Tests:** 447+ pasando | **Versión:** 1.3.0
+**Tests:** 478+ pasando | **Versión:** 1.4.0
 
 ## Changelog
+
+### v1.4.0 (2026-01-09)
+- Sistema de Adjuntos y OCR:
+  - Captura de fotos desde cámara y galería
+  - OCR con Google ML Kit para extraer texto
+  - Parser de montos colombianos ($1.234.567)
+  - Galería horizontal de adjuntos por transacción
+  - Badge visual de monto detectado
+  - Vista detallada con texto OCR completo
+- 31 tests nuevos (14 DAO + 7 service + 10 widget)
 
 ### v1.3.0 (2026-01-09)
 - Sistema de Metas de Ahorro completo:
