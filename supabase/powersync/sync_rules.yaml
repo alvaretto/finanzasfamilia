@@ -1,0 +1,408 @@
+# =============================================================================
+# FINANZAS FAMILIARES - PowerSync Sync Rules
+# Archivo: sync_rules.yaml
+# Descripción: Define qué datos sincronizar para cada usuario
+# =============================================================================
+#
+# Documentación: https://docs.powersync.com/usage/sync-rules
+#
+# Este archivo define las reglas de sincronización para PowerSync.
+# Cada usuario solo sincroniza sus propios datos (filtrado por user_id).
+#
+# IMPORTANTE: Las columnas aquí deben coincidir exactamente con:
+# - supabase/migrations/001_initial_schema.sql
+# - lib/data/sync/powersync_schema.dart
+#
+# SYNC SEQUENCE (Estilo Linear):
+# - Cada tabla tiene una columna sync_sequence (BIGINT)
+# - Asignada automáticamente por triggers en INSERT
+# - Garantiza orden global de operaciones
+# - ORDER BY sync_sequence asegura que padres lleguen antes que hijos
+#
+
+bucket_definitions:
+  # ---------------------------------------------------------------------------
+  # Bucket: Datos del Usuario
+  # Sincroniza todas las tablas pertenecientes al usuario autenticado
+  # ---------------------------------------------------------------------------
+  user_data:
+    # Define los parámetros del bucket
+    parameters:
+      - SELECT token_parameters.user_id AS user_id
+
+    # ---------------------------------------------------------------------------
+    # Categorías
+    # Incluye categorías del usuario Y categorías del sistema (is_system = true)
+    # ORDER BY sync_sequence garantiza que padres lleguen antes que hijos
+    # ---------------------------------------------------------------------------
+    data:
+      - SELECT
+          id,
+          name,
+          icon,
+          type,
+          parent_id,
+          level,
+          sort_order,
+          is_active,
+          is_system,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM categories
+        WHERE user_id = bucket.user_id OR is_system = true
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Cuentas / Billeteras
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          type,
+          icon,
+          category_id,
+          balance,
+          currency,
+          color,
+          description,
+          include_in_total,
+          is_active,
+          is_system,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM accounts
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Lugares
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          type,
+          address,
+          city,
+          latitude,
+          longitude,
+          notes,
+          is_active,
+          is_system,
+          usage_count,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM places
+        WHERE user_id = bucket.user_id OR is_system = true
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Métodos de Pago
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          account_id,
+          icon,
+          color,
+          is_default,
+          is_active,
+          sort_order,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM payment_methods
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Unidades de Medida
+      # Incluye unidades del usuario Y unidades del sistema
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          abbreviation,
+          type,
+          conversion_factor,
+          base_unit_id,
+          is_system,
+          is_active,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM measurement_units
+        WHERE user_id = bucket.user_id OR is_system = true
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Transacciones
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          type,
+          amount,
+          description,
+          from_account_id,
+          to_account_id,
+          category_id,
+          place_id,
+          transaction_date,
+          is_confirmed,
+          has_details,
+          item_count,
+          sync_status,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM transactions
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Detalles de Transacciones (Shopping Cart)
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          transaction_id,
+          concept,
+          category_id,
+          unit_value,
+          quantity,
+          measurement_unit_id,
+          total_value,
+          payment_method_id,
+          mode,
+          accrual_date,
+          discount,
+          notes,
+          sort_order,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM transaction_details
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Presupuestos
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          category_id,
+          amount,
+          month,
+          year,
+          is_active,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM budgets
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Asientos Contables (Journal Entries)
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          transaction_id,
+          transaction_detail_id,
+          account_id,
+          category_id,
+          entry_type,
+          amount,
+          description,
+          entry_number,
+          entry_date,
+          is_reconciled,
+          reconciled_at,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM journal_entries
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Metas de Ahorro
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          description,
+          target_amount,
+          current_amount,
+          target_date,
+          account_id,
+          color,
+          icon,
+          is_active,
+          is_completed,
+          completed_at,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM savings_goals
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Contribuciones a Metas de Ahorro
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          goal_id,
+          amount,
+          note,
+          date,
+          sync_sequence,
+          created_at
+        FROM savings_contributions
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Adjuntos de Transacciones
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          transaction_id,
+          file_name,
+          mime_type,
+          local_path,
+          remote_url,
+          file_size,
+          ocr_text,
+          ocr_amount,
+          is_synced,
+          sync_sequence,
+          created_at
+        FROM transaction_attachments
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Transacciones Recurrentes
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          type,
+          amount,
+          description,
+          from_account_id,
+          to_account_id,
+          category_id,
+          frequency,
+          day_of_execution,
+          start_date,
+          end_date,
+          last_executed_at,
+          next_execution_date,
+          is_active,
+          requires_confirmation,
+          execution_count,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM recurring_transactions
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Familias
+      # Sincroniza familias donde el usuario es owner
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          name,
+          description,
+          icon,
+          color,
+          owner_id,
+          invite_code,
+          is_active,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM families
+        WHERE user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Miembros de Familia
+      # Sincroniza miembros de familias donde el usuario es miembro activo
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          family_id,
+          user_id,
+          user_email,
+          display_name,
+          avatar_url,
+          role,
+          is_active,
+          joined_at,
+          sync_sequence,
+          created_at,
+          updated_at
+        FROM family_members
+        WHERE sync_user_id = bucket.user_id
+        ORDER BY sync_sequence ASC NULLS LAST
+
+      # ---------------------------------------------------------------------------
+      # Invitaciones Familiares
+      # Sincroniza invitaciones enviadas por el usuario o dirigidas a su email
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          family_id,
+          invited_email,
+          invited_by_user_id,
+          role,
+          status,
+          token,
+          expires_at,
+          message,
+          created_at,
+          updated_at
+        FROM family_invitations
+        WHERE user_id = bucket.user_id
+
+      # ---------------------------------------------------------------------------
+      # Cuentas Compartidas
+      # Sincroniza cuentas compartidas en familias donde el usuario es miembro
+      # ---------------------------------------------------------------------------
+      - SELECT
+          id,
+          family_id,
+          account_id,
+          owner_user_id,
+          visible_to_all,
+          members_can_transact,
+          created_at
+        FROM shared_accounts
+        WHERE user_id = bucket.user_id
+
+      # ---------------------------------------------------------------------------
+      # Configuración de Usuario
+      # Sincroniza preferencias del usuario (tema, notificaciones, etc.)
+      # ---------------------------------------------------------------------------
+      - SELECT
+          user_id,
+          theme_mode,
+          onboarding_completed,
+          notifications_enabled,
+          budget_alerts_enabled,
+          recurring_reminders_enabled,
+          daily_reminder_enabled,
+          daily_reminder_hour,
+          currency,
+          date_format,
+          created_at,
+          updated_at
+        FROM user_settings
+        WHERE user_id = bucket.user_id

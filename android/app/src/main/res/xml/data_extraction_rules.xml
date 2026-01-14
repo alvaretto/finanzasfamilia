@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Data Extraction Rules para Android 12+ (API 31+)
+
+  Este archivo reemplaza backup_rules.xml en Android 12+ y permite
+  configurar reglas separadas para:
+  - Cloud backup (Google Drive)
+  - Device-to-device transfer (Quick Share, etc.)
+
+  Documentación: https://developer.android.com/about/versions/12/backup-restore
+-->
+<data-extraction-rules>
+    <!-- Reglas para backup en la nube (Google Drive) -->
+    <cloud-backup>
+        <!-- Base de datos SQLite con todos los datos financieros -->
+        <include domain="database" path="finanzas_familiares.db"/>
+
+        <!-- Archivos de la app -->
+        <include domain="file" path="."/>
+
+        <!-- SharedPreferences (configuraciones, tema, etc.) -->
+        <include domain="sharedpref" path="."/>
+
+        <!-- EXCLUIR flutter_secure_storage - sesión OAuth debe re-autenticarse -->
+        <exclude domain="sharedpref" path="FlutterSecureStorage"/>
+    </cloud-backup>
+
+    <!-- Reglas para transferencia entre dispositivos (Quick Share, etc.) -->
+    <device-transfer>
+        <!-- Base de datos SQLite -->
+        <include domain="database" path="finanzas_familiares.db"/>
+
+        <!-- Archivos de la app -->
+        <include domain="file" path="."/>
+
+        <!-- SharedPreferences -->
+        <include domain="sharedpref" path="."/>
+
+        <!-- EXCLUIR datos sensibles de seguridad -->
+        <exclude domain="sharedpref" path="FlutterSecureStorage"/>
+    </device-transfer>
+</data-extraction-rules>

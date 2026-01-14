@@ -1,0 +1,56 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+pubspec.lock
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Build outputs
+/build/
+releases/
+
+# Platform specific
+android/.gradle/
+android/local.properties
+android/*.keystore
+android/key.properties
+android/app/keystore/
+android/app/google-services.json
+# Release keystore (ubicado en home)
+*-release-key.jks
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# Test outputs
+coverage/
+test_output.log
+test_results.txt
+
+# Misc
+.DS_Store
+*.log
+
+# FVM Version Cache
+.fvm/

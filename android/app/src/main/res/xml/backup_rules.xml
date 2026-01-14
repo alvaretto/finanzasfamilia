@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android Auto Backup Rules para Finanzas Familiares
+
+  IMPORTANTE: Estas reglas aseguran que la base de datos SQLite
+  se incluya en el backup automático de Android (Google Drive).
+
+  Documentación: https://developer.android.com/guide/topics/data/autobackup
+-->
+<full-backup-content>
+    <!-- Incluir base de datos SQLite de Drift/PowerSync -->
+    <include domain="database" path="finanzas_familiares.db"/>
+
+    <!-- Incluir archivos de la aplicación (assets descargados, etc.) -->
+    <include domain="file" path="."/>
+
+    <!-- Incluir SharedPreferences (tema, onboarding, configuraciones) -->
+    <include domain="sharedpref" path="."/>
+
+    <!-- EXCLUIR flutter_secure_storage - usa Android Keystore que NO se respalda -->
+    <!-- Esto es INTENCIONAL: la sesión OAuth se debe re-autenticar después de restore -->
+    <exclude domain="sharedpref" path="FlutterSecureStorage"/>
+</full-backup-content>

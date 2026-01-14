@@ -1,0 +1,67 @@
+# Screenshots e imágenes grandes (exceden límite de 2000px de API)
+screenshots/
+assets/images/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+
+# Build artifacts
+build/
+.dart_tool/
+
+# Dependencies (managed by pubspec)
+.pub-cache/
+.pub/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# FVM (Flutter Version Manager)
+.fvm/
+
+# Coverage reports
+coverage/
+
+# Generated files (regenerables con build_runner)
+*.g.dart
+*.freezed.dart
+*.gr.dart
+
+# Platform-specific (no relevantes para lógica de negocio)
+android/.gradle/
+android/build/
+android/app/build/
+ios/Pods/
+ios/.symlinks/
+ios/build/
+linux/flutter/
+macos/Flutter/
+windows/flutter/
+web/
+
+# Environment files (secrets)
+.env
+.env.local
+.env.*.local
+
+# Lock files
+pubspec.lock
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Flutter plugins metadata
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# macOS specific
+.DS_Store

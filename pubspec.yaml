@@ -1,0 +1,122 @@
+name: finanzas_familiares
+description: "Finanzas Familiares AS - Modo Personal v5.16 - Sync Sequence (Estilo Linear)"
+publish_to: 'none'
+version: 1.17.0+38
+
+# IMPORTANTE: Versiones FIJAS para prevenir actualizaciones que rompan el proyecto
+# Última actualización: 2026-01-12
+# Para actualizar: eliminar pubspec.lock, ejecutar flutter pub upgrade, probar exhaustivamente
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"  # Versión exacta del lock
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: 1.0.8
+
+  # State Management - Riverpod 2.0
+  flutter_riverpod: 2.6.1
+  riverpod_annotation: 2.6.1
+
+  # Local Database - Drift
+  drift: 2.28.2
+  sqlite3_flutter_libs: 0.5.41
+  path_provider: 2.1.5
+  path: 1.9.1
+
+  # Offline Sync - PowerSync
+  powersync: 1.17.0
+
+  # Backend - Supabase
+  supabase_flutter: 2.12.0
+  gotrue: 2.18.0  # Dependencia directa para AuthException
+  app_links: 6.4.1  # Dependencia directa para deep links OAuth
+  flutter_secure_storage: 9.2.2  # Almacenamiento seguro para sesiones persistentes
+  google_sign_in: 6.2.2  # Native Google Sign-In (NO abre navegador)
+
+  # Firebase
+  firebase_core: 3.15.2
+  firebase_crashlytics: 4.3.10
+  firebase_analytics: 11.6.0
+
+  # Utilities
+  flutter_dotenv: 5.2.1
+  uuid: 4.5.2
+  intl: 0.20.2
+  equatable: 2.0.8
+  freezed_annotation: 2.4.4
+  json_annotation: 4.9.0
+  excel: 4.0.6
+  csv: 6.0.0
+  pdf: 3.11.3
+  connectivity_plus: 7.0.0
+  shared_preferences: 2.5.3
+
+  # Notifications
+  flutter_local_notifications: 18.0.1
+  timezone: 0.10.1
+
+  # Charts
+  fl_chart: 0.69.2
+
+  # Image & OCR
+  image_picker: 1.2.0
+  google_mlkit_text_recognition: 0.14.0
+  home_widget: 0.9.0
+  quick_actions: 1.1.0
+
+  # Bank Notification Listener (Android only)
+  notification_listener_service: 0.3.5
+
+  # In-App Update (Play Store)
+  in_app_update: 4.2.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # App Icon Generation
+  flutter_launcher_icons: 0.14.4
+
+  # Code Generation
+  build_runner: 2.4.15
+  drift_dev: 2.28.0
+  riverpod_generator: 2.6.4
+  freezed: 2.5.8
+  json_serializable: 6.9.5
+
+  # Linting
+  flutter_lints: 5.0.0
+
+  # Testing
+  mocktail: 1.0.4
+
+  # Integration Testing - Patrol
+  patrol: 3.16.1-dev.1
+  patrol_finders: 2.8.2
+
+  # Golden Tests
+  golden_toolkit: 0.15.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - .env
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#4CAF50"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: false

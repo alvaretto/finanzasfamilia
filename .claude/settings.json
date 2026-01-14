@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "contextDocs": [
+    {
+      "path": "CLAUDE.md",
+      "description": "Reglas de sesión, arquitectura, convenciones de código",
+      "priority": "highest"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "description": "Filosofía Offline-First, capas de arquitectura",
+      "priority": "high"
+    },
+    {
+      "path": "docs/DATABASE.md",
+      "description": "Esquema Drift, tablas, migraciones",
+      "priority": "high"
+    },
+    {
+      "path": "docs/ERRORS.md",
+      "description": "Errores comunes y soluciones (consultar cuando hay errores)",
+      "priority": "medium"
+    },
+    {
+      "path": "docs/TESTING.md",
+      "description": "Estrategia de testing, patrones, comandos",
+      "priority": "medium"
+    },
+    {
+      "path": "docs/SYNC.md",
+      "description": "Estrategia de sincronización PowerSync/Supabase",
+      "priority": "low"
+    }
+  ],
+  "codeStyle": {
+    "maxFunctionLines": 20,
+    "maxNestingLevel": 3,
+    "preferEarlyReturns": true,
+    "language": "dart",
+    "framework": "flutter"
+  },
+  "projectContext": {
+    "type": "mobile-app",
+    "domain": "personal-finance",
+    "locale": "es-CO",
+    "architecture": "offline-first"
+  }
+}

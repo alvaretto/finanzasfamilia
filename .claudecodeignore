@@ -1,0 +1,36 @@
+# === Generados (NUNCA leer) ===
+**/*.g.dart
+**/*.freezed.dart
+**/*.mocks.dart
+
+# === Build artifacts ===
+build/
+.dart_tool/
+.flutter-plugins*
+*.iml
+
+# === Drift generado ===
+lib/data/local/*.drift.dart
+
+# === PowerSync SDK ===
+.powersync/
+
+# === Assets pesados ===
+assets/fonts/
+*.ttf
+*.otf
+
+# === Supabase functions (no editables desde aquí) ===
+supabase/functions/
+
+# === iOS innecesario ===
+ios/Pods/
+ios/.symlinks/
+
+# === Android build ===
+android/.gradle/
+android/app/build/
+
+# === Coverage/Reports ===
+coverage/
+*.lcov
