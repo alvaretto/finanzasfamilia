@@ -1,9 +1,10 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v5.16 - Sync Sequence (Estilo Linear)
+**Nombre:** Finanzas Familiares AS - Modo Personal v5.17 - Test Fixes + Keep-Alive
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase (Clean Architecture Pura)
 **Estado:** Fases 0-35, R1-R8 ✅ | 1139 tests | 8 analyze infos | 0 warnings/errors
+**Play Store:** Prueba Cerrada (3/12 testers) - Pendiente acceso a producción
 
 ---
 
@@ -145,7 +146,7 @@ CRÉDITO (Cr) = Lo que SALE o DISMINUYE
 ## Changelog Reciente
 
 ### v5.17 (2026-01-31)
-- **SUPABASE KEEP-ALIVE + TEST FIXES:**
+- **SUPABASE KEEP-ALIVE + TEST FIXES + RELEASE:**
   - **Supabase Keep-Alive (Anti-Pausa por Inactividad):**
     - Función PostgreSQL `ping()` creada para health checks
     - GitHub Action `.github/workflows/keep-supabase-alive.yml`
@@ -157,6 +158,14 @@ CRÉDITO (Cr) = Lo que SALE o DISMINUYE
     - `transaction_details_dao_test.dart`: Corrige comparación de DateTime con hora
     - `transactions_screen_test.dart`: Usa fecha a mitad de mes para evitar edge cases
     - `notification_settings_screen_test.dart`: Mock de NotificationSettingsNotifier
+  - **Google Play Store - Estado de Publicación:**
+    - App: `app.finanzasfamiliares` (nombre visible: "Platica")
+    - Estado actual: **Prueba Cerrada** activa
+    - Testers: 3/12 requeridos para solicitar producción
+    - Requisitos pendientes para producción:
+      - Conseguir 12 verificadores que acepten participar
+      - Ejecutar prueba cerrada durante 14 días con 12+ testers
+    - AAB generado: `finanzas_familiares_v1.19.0+40.aab` (67MB)
   - **Archivos Creados:**
     - `.github/workflows/keep-supabase-alive.yml`
     - `docs/SUPABASE_KEEP_ALIVE.md`
