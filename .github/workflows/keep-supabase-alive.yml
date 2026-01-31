@@ -1,0 +1,56 @@
+# Keep Supabase Alive - Previene pausa por inactividad
+#
+# Supabase pausa proyectos gratuitos después de 7 días sin actividad.
+# Este workflow ejecuta un ping cada 5 días para mantener el proyecto activo.
+#
+# Requisitos:
+#   - Configurar secrets en GitHub:
+#     - SUPABASE_URL: https://arawzleeiohoyhonisvo.supabase.co
+#     - SUPABASE_ANON_KEY: (obtener desde Supabase Dashboard > Settings > API)
+#
+# Documentación: docs/SUPABASE_KEEP_ALIVE.md
+
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Ejecutar cada 5 días a las 00:00 UTC
+    # Supabase pausa después de 7 días, así que 5 días da margen de seguridad
+    - cron: '0 0 */5 * *'
+
+  # Permite ejecutar manualmente desde GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase Database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase to prevent inactivity pause..."
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${SUPABASE_URL}/rest/v1/rpc/ping" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response: $BODY"
+          echo "HTTP Code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Supabase ping successful!"
+          else
+            echo "❌ Supabase ping failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Log Success
+        run: |
+          echo "🎉 Supabase project kept alive at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
