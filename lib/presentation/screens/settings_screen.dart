@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/providers/auth_provider.dart';
 import '../../application/providers/theme_provider.dart';
 import 'bank_notifications_screen.dart';
+import 'data_export_import_screen.dart';
 import 'family_screen.dart';
 import 'login_screen.dart';
 import 'notification_settings_screen.dart';
@@ -62,6 +63,20 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const FamilyScreen()),
+            ),
+          ),
+          const Divider(),
+
+          // Sección: Datos
+          const _SectionHeader(title: 'Datos', icon: Icons.storage),
+          ListTile(
+            leading: Icon(Icons.import_export, color: colorScheme.primary),
+            title: const Text('Exportar / Importar'),
+            subtitle: const Text('Respaldo y migración de datos'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DataExportImportScreen()),
             ),
           ),
           const Divider(),
