@@ -33,7 +33,7 @@ GRANT EXECUTE ON FUNCTION public.ping() TO authenticated;
 
 Archivo: `.github/workflows/keep-supabase-alive.yml`
 
-- **Frecuencia:** Cada 5 días (margen de seguridad vs. límite de 7 días)
+- **Frecuencia:** Cada 3 días (margen amplio vs. límite de 7 días)
 - **Hora:** 00:00 UTC
 - **Acción:** Llama a la función `ping()` vía REST API
 
