@@ -405,14 +405,18 @@ void main() {
     });
 
     test('monthly: mismo mes si día no ha llegado', () {
-      final now = DateTime(2026, 1, 10); // día 10
+      // Usar fecha futura para evitar que el servicio la sobreescriba con now
+      final now = DateTime.now();
+      // Crear una fecha en el futuro, día 5 del próximo mes
+      final futureDate = DateTime(now.year, now.month + 1, 5);
       final result = service.calculateNextExecution(
         frequency: RecurrenceFrequency.monthly,
-        dayOfExecution: 15, // día 15
-        fromDate: now,
+        dayOfExecution: 15, // día 15 (después del día 5)
+        fromDate: futureDate,
       );
 
-      expect(result.month, equals(1)); // enero
+      // Debería devolver el mismo mes porque día 5 < día 15
+      expect(result.month, equals(futureDate.month));
       expect(result.day, equals(15));
     });
 

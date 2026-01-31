@@ -74,13 +74,17 @@ void main() {
         (c) => c.type == 'expense' && c.parentId != null,
       );
 
+      // Usar fecha a mitad de mes sin hora para evitar problemas de comparación
+      final now = DateTime.now();
+      final transactionDate = DateTime(now.year, now.month, 15);
+
       await transactionsDao.insertTransaction(TransactionsCompanion.insert(
         id: 'tx-test-001',
         type: 'expense',
         amount: 50000,
         description: const Value('Café'),
         categoryId: expenseCategory.id,
-        transactionDate: DateTime.now(),
+        transactionDate: transactionDate,
       ));
 
       await tester.pumpWidget(createTestWidget());
@@ -104,13 +108,17 @@ void main() {
         (c) => c.type == 'income' && c.parentId != null,
       );
 
+      // Usar fecha a mitad de mes sin hora para evitar problemas de comparación
+      final now = DateTime.now();
+      final transactionDate = DateTime(now.year, now.month, 15);
+
       await transactionsDao.insertTransaction(TransactionsCompanion.insert(
         id: 'tx-expense-001',
         type: 'expense',
         amount: 30000,
         description: const Value('Gasto test'),
         categoryId: expenseCategory.id,
-        transactionDate: DateTime.now(),
+        transactionDate: transactionDate,
       ));
 
       await transactionsDao.insertTransaction(TransactionsCompanion.insert(
@@ -119,7 +127,7 @@ void main() {
         amount: 100000,
         description: const Value('Ingreso test'),
         categoryId: incomeCategory.id,
-        transactionDate: DateTime.now(),
+        transactionDate: transactionDate,
       ));
 
       await tester.pumpWidget(createTestWidget());

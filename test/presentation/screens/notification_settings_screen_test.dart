@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:finanzas_familiares/presentation/screens/notification_settings_screen.dart';
+import 'package:finanzas_familiares/application/providers/notification_provider.dart';
 
 void main() {
   group('NotificationSettingsScreen', () {
@@ -12,8 +13,14 @@ void main() {
     });
 
     Widget createTestWidget() {
-      return const ProviderScope(
-        child: MaterialApp(
+      return ProviderScope(
+        overrides: [
+          // Mockear el provider con un valor fijo para evitar dependencias async
+          notificationSettingsNotifierProvider.overrideWith(
+            () => _MockNotificationSettingsNotifier(),
+          ),
+        ],
+        child: const MaterialApp(
           home: NotificationSettingsScreen(),
         ),
       );
@@ -79,4 +86,44 @@ void main() {
       expect(find.byIcon(Icons.today), findsOneWidget);
     });
   });
+}
+
+/// Mock del NotificationSettingsNotifier para tests
+class _MockNotificationSettingsNotifier extends NotificationSettingsNotifier {
+  @override
+  Future<NotificationSettings> build() async {
+    // Devolver configuración por defecto inmediatamente
+    return const NotificationSettings(
+      globalEnabled: true,
+      budgetAlertsEnabled: true,
+      recurringRemindersEnabled: true,
+      dailyReminderEnabled: false,
+      dailyReminderHour: 20,
+    );
+  }
+
+  @override
+  Future<void> setGlobalEnabled(bool enabled) async {
+    state = AsyncData(state.value!.copyWith(globalEnabled: enabled));
+  }
+
+  @override
+  Future<void> setBudgetAlertsEnabled(bool enabled) async {
+    state = AsyncData(state.value!.copyWith(budgetAlertsEnabled: enabled));
+  }
+
+  @override
+  Future<void> setRecurringRemindersEnabled(bool enabled) async {
+    state = AsyncData(state.value!.copyWith(recurringRemindersEnabled: enabled));
+  }
+
+  @override
+  Future<void> setDailyReminderEnabled(bool enabled) async {
+    state = AsyncData(state.value!.copyWith(dailyReminderEnabled: enabled));
+  }
+
+  @override
+  Future<void> setDailyReminderHour(int hour) async {
+    state = AsyncData(state.value!.copyWith(dailyReminderHour: hour));
+  }
 }

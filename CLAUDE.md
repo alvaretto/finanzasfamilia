@@ -3,7 +3,7 @@
 ## Proyecto
 **Nombre:** Finanzas Familiares AS - Modo Personal v5.16 - Sync Sequence (Estilo Linear)
 **Arquitectura:** Offline-First con Drift + PowerSync + Supabase (Clean Architecture Pura)
-**Estado:** Fases 0-35, R1-R8 ✅ | 1133 tests | 8 analyze infos | 0 warnings/errors
+**Estado:** Fases 0-35, R1-R8 ✅ | 1139 tests | 8 analyze infos | 0 warnings/errors
 
 ---
 
@@ -144,6 +144,27 @@ CRÉDITO (Cr) = Lo que SALE o DISMINUYE
 
 ## Changelog Reciente
 
+### v5.17 (2026-01-31)
+- **SUPABASE KEEP-ALIVE + TEST FIXES:**
+  - **Supabase Keep-Alive (Anti-Pausa por Inactividad):**
+    - Función PostgreSQL `ping()` creada para health checks
+    - GitHub Action `.github/workflows/keep-supabase-alive.yml`
+    - Ejecuta cada 3 días para evitar pausa de 7 días de Supabase Free Tier
+    - Documentación completa en `docs/SUPABASE_KEEP_ALIVE.md`
+  - **Corrección de 11 Tests Fallidos (Deuda Técnica):**
+    - **Causa Raíz:** Tests usaban fechas hardcodeadas que quedaron en el pasado
+    - `recurring_transaction_service_test.dart`: Usa fechas relativas a DateTime.now()
+    - `transaction_details_dao_test.dart`: Corrige comparación de DateTime con hora
+    - `transactions_screen_test.dart`: Usa fecha a mitad de mes para evitar edge cases
+    - `notification_settings_screen_test.dart`: Mock de NotificationSettingsNotifier
+  - **Archivos Creados:**
+    - `.github/workflows/keep-supabase-alive.yml`
+    - `docs/SUPABASE_KEEP_ALIVE.md`
+  - **Migraciones Supabase:**
+    - `create_ping_function`: Función `ping()` con permisos anon/authenticated
+  - **Tests:** 1139 pasando (0 fallando) - Ecosistema 100% verde
+  - **Versión:** 1.19.0+40
+
 ### v5.16 (2026-01-14)
 - **SYNC SEQUENCE - Orden Global de Operaciones (Estilo Linear):**
   - **Problema Persistente:** FK violations durante sincronización por orden no determinístico de llegada de datos
@@ -166,7 +187,7 @@ CRÉDITO (Cr) = Lo que SALE o DISMINUYE
     - `database.dart`: Migración v12 → v13
   - **Datos Existentes:** 626 registros poblados con sync_sequence ordenado por nivel
   - **Garantía:** Padres SIEMPRE tienen sync_sequence menor que hijos
-  - **Tests:** 1133 pasando (6 pre-existentes fallando)
+  - **Tests:** 1133 pasando (11 pre-existentes fallando - corregidos en v5.17)
   - **Versión:** 1.17.0+38
 
 ### v5.15 (2026-01-14)

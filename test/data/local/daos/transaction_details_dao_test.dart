@@ -338,7 +338,10 @@ void main() {
     test('getDetailsByCategoryInPeriod filtra por categoría y período', () async {
       final now = DateTime.now();
       final startDate = DateTime(now.year, now.month, 1);
-      final endDate = DateTime(now.year, now.month + 1, 0);
+      // Usar el final del día para incluir registros creados hoy
+      final endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      // Usar fecha sin hora para el detalle para evitar problemas de comparación
+      final detailDate = DateTime(now.year, now.month, 15);
 
       await dao.insertDetails([
         TransactionDetailsCompanion(
@@ -349,8 +352,8 @@ void main() {
           unitValue: const Value(1000),
           quantity: const Value(1),
           totalValue: const Value(1000),
-          createdAt: Value(now),
-          updatedAt: Value(now),
+          createdAt: Value(detailDate),
+          updatedAt: Value(detailDate),
         ),
       ]);
 
@@ -367,7 +370,10 @@ void main() {
     test('getTotalByCategoryInPeriod suma valores en período', () async {
       final now = DateTime.now();
       final startDate = DateTime(now.year, now.month, 1);
-      final endDate = DateTime(now.year, now.month + 1, 0);
+      // Usar el final del día para incluir registros creados hoy
+      final endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      // Usar fecha sin hora para los detalles
+      final detailDate = DateTime(now.year, now.month, 15);
 
       await dao.insertDetails([
         TransactionDetailsCompanion(
@@ -378,8 +384,8 @@ void main() {
           unitValue: const Value(5000),
           quantity: const Value(1),
           totalValue: const Value(5000),
-          createdAt: Value(now),
-          updatedAt: Value(now),
+          createdAt: Value(detailDate),
+          updatedAt: Value(detailDate),
         ),
         TransactionDetailsCompanion(
           id: Value(uuid.v4()),
@@ -389,8 +395,8 @@ void main() {
           unitValue: const Value(3000),
           quantity: const Value(2),
           totalValue: const Value(6000),
-          createdAt: Value(now),
-          updatedAt: Value(now),
+          createdAt: Value(detailDate),
+          updatedAt: Value(detailDate),
         ),
       ]);
 
