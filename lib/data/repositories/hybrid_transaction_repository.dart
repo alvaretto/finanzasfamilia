@@ -48,6 +48,7 @@ class HybridTransactionRepository implements TransactionRepository {
       'from_account_id': transaction.fromAccountId,
       'to_account_id': transaction.toAccountId,
       'transaction_date': transaction.transactionDate.toIso8601String(),
+      'satisfaction_level': transaction.satisfactionLevel,
       'created_at': (transaction.createdAt).toIso8601String(),
       'updated_at': now.toIso8601String(),
     };
@@ -67,6 +68,7 @@ class HybridTransactionRepository implements TransactionRepository {
         fromAccountId: Value(transaction.fromAccountId),
         toAccountId: Value(transaction.toAccountId),
         transactionDate: transaction.transactionDate,
+        satisfactionLevel: Value(transaction.satisfactionLevel),
         createdAt: Value(transaction.createdAt),
         updatedAt: Value(now),
       ),
@@ -108,6 +110,7 @@ class HybridTransactionRepository implements TransactionRepository {
       transactionDate: entry.transactionDate,
       createdAt: entry.createdAt ?? DateTime.now(),
       updatedAt: entry.updatedAt ?? DateTime.now(),
+      satisfactionLevel: entry.satisfactionLevel,
     );
   }
 }

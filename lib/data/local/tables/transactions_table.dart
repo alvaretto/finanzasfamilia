@@ -59,6 +59,11 @@ class Transactions extends Table {
   /// Orden global de sincronización (estilo Linear)
   IntColumn get syncSequence => integer().nullable()();
 
+  /// Nivel de satisfacción del gasto (solo para type='expense')
+  /// Valores: 'low', 'medium', 'high', 'neutral'
+  /// Nullable porque solo aplica a gastos y es opcional
+  TextColumn get satisfactionLevel => text().nullable()();
+
   /// Timestamps - Nullable para compatibilidad con PowerSync
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();

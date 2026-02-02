@@ -434,27 +434,35 @@ void main() {
     });
 
     test('quarterly: avanza 3 meses', () {
-      final now = DateTime(2026, 1, 20);
+      // Usar fecha futura para evitar que el servicio la sobreescriba con now
+      final now = DateTime.now();
+      final futureDate = DateTime(now.year, now.month + 1, 20);
       final result = service.calculateNextExecution(
         frequency: RecurrenceFrequency.quarterly,
         dayOfExecution: 15,
-        fromDate: now,
+        fromDate: futureDate,
       );
 
-      expect(result.month, equals(4)); // abril
+      // Debería avanzar 3 meses desde la fecha dada
       expect(result.day, equals(15));
+      // Verificar que avanzó ~3 meses
+      final monthDiff = (result.month - futureDate.month + 12) % 12;
+      expect(monthDiff, equals(3));
     });
 
     test('yearly: avanza 1 año', () {
-      final now = DateTime(2026, 1, 15);
+      // Usar fecha futura para evitar que el servicio la sobreescriba con now
+      final now = DateTime.now();
+      final futureDate = DateTime(now.year, now.month + 1, 15);
       final result = service.calculateNextExecution(
         frequency: RecurrenceFrequency.yearly,
         dayOfExecution: 15,
-        fromDate: now,
+        fromDate: futureDate,
       );
 
-      expect(result.year, equals(2027));
-      expect(result.month, equals(1));
+      // Debería avanzar 1 año desde la fecha dada
+      expect(result.year, equals(futureDate.year + 1));
+      expect(result.month, equals(futureDate.month));
       expect(result.day, equals(15));
     });
   });

@@ -1,9 +1,9 @@
 # CLAUDE.md - Reglas de Sesión para Finanzas Familiares AS
 
 ## Proyecto
-**Nombre:** Finanzas Familiares AS - Modo Personal v5.17 - Test Fixes + Keep-Alive
-**Arquitectura:** Offline-First con Drift + PowerSync + Supabase (Clean Architecture Pura)
-**Estado:** Fases 0-35, R1-R8 ✅ | 1139 tests | 8 analyze infos | 0 warnings/errors
+**Nombre:** Finanzas Familiares AS - Modo Personal v5.18 - Satisfaction Level + Ficha Técnica
+**Arquitectura:** Drift + PowerSync + Supabase (Clean Architecture Pura) - Offline después de sync inicial
+**Estado:** Fases 0-36, R1-R8 ✅ | 1139 tests | 8 analyze infos | 0 warnings/errors
 **Play Store:** Prueba Cerrada (3/12 testers) - Pendiente acceso a producción
 
 ---
@@ -144,6 +144,42 @@ CRÉDITO (Cr) = Lo que SALE o DISMINUYE
 ---
 
 ## Changelog Reciente
+
+### v5.18 (2026-02-02)
+- **FASE 36: Satisfaction Level + Ficha Técnica:**
+  - **Campo Satisfacción en Gastos:**
+    - Nuevo campo `satisfactionLevel` en transacciones (solo gastos)
+    - Valores: `low` (Baja), `medium` (Media), `high` (Alta), `neutral` (N/A)
+    - Enum `SatisfactionLevel` en `lib/core/constants/enums.dart`
+    - UI: `SegmentedButton` condicional (solo visible para type='expense')
+    - Migración Drift v14: Nueva columna en tabla transactions
+    - Migración Supabase: Campo con CHECK constraint
+    - PowerSync schema actualizado
+    - sync_rules.yaml actualizado
+  - **Ficha Técnica:**
+    - Nuevo documento `docs/FICHA_TECNICA.md`
+    - Información de contacto: GitHub (@alvaretto), Play Store
+    - Especificaciones técnicas completas
+    - Requisitos de conectividad clarificados
+  - **Corrección de Documentación Offline:**
+    - Clarificado que requiere internet para login inicial
+    - CLAUDE.md y FICHA_TECNICA.md actualizados
+  - **Fix de Tests:**
+    - `recurring_transaction_service_test.dart`: Tests quarterly/yearly usan fechas relativas
+  - **Archivos Modificados:**
+    - `lib/core/constants/enums.dart`: Enum SatisfactionLevel
+    - `lib/data/local/tables/transactions_table.dart`: Campo satisfactionLevel
+    - `lib/data/local/database.dart`: Migración v14
+    - `lib/data/sync/powersync_schema.dart`: Campo satisfaction_level
+    - `supabase/powersync/sync_rules.yaml`: Campo en SELECT
+    - `lib/domain/entities/transaction.dart`: Campo + getter satisfactionName
+    - `lib/domain/repositories/transaction_repository.dart`: Campo en DTO
+    - `lib/domain/services/accounting_service.dart`: Parámetro en recordExpense
+    - `lib/presentation/screens/transaction_form_screen.dart`: UI selector
+  - **Migraciones Supabase:**
+    - `add_satisfaction_level`: Campo TEXT con CHECK constraint
+  - **Tests:** 1139 pasando (0 fallando)
+  - **Versión:** 1.20.0+41
 
 ### v5.17 (2026-01-31)
 - **SUPABASE KEEP-ALIVE + TEST FIXES + RELEASE:**
@@ -701,4 +737,4 @@ CRÉDITO (Cr) = Lo que SALE o DISMINUYE
 
 ---
 
-**Última actualización:** 2026-01-14
+**Última actualización:** 2026-02-02

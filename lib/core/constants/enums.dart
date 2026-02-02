@@ -36,3 +36,19 @@ enum SyncStatus {
   /// Error en sincronización
   error,
 }
+
+/// Nivel de satisfacción para transacciones de gasto
+/// Solo aplica a transacciones tipo 'expense'
+enum SatisfactionLevel {
+  /// Baja - Compra innecesaria o arrepentimiento
+  low,
+
+  /// Media - Compra aceptable, ni buena ni mala
+  medium,
+
+  /// Alta - Compra satisfactoria y valiosa
+  high,
+
+  /// Neutra - Sin opinión o no aplicable
+  neutral,
+}

@@ -31,6 +31,10 @@ class TransactionData {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// Nivel de satisfacción del gasto (solo para type='expense')
+  /// Valores: 'low', 'medium', 'high', 'neutral'
+  final String? satisfactionLevel;
+
   const TransactionData({
     required this.id,
     required this.type,
@@ -42,5 +46,6 @@ class TransactionData {
     required this.transactionDate,
     required this.createdAt,
     required this.updatedAt,
+    this.satisfactionLevel,
   });
 }

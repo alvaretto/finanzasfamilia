@@ -34,6 +34,9 @@ class Transaction with _$Transaction {
     @Default(false) bool isRecurring,
     String? recurringId,
     @Default(false) bool isPending,
+    /// Nivel de satisfacción del gasto (solo para type=expense)
+    /// Valores: 'low', 'medium', 'high', 'neutral'
+    String? satisfactionLevel,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Transaction;
@@ -71,6 +74,22 @@ class Transaction with _$Transaction {
         return 'Gasto';
       case TransactionType.transfer:
         return 'Transferencia';
+    }
+  }
+
+  /// Nombre del nivel de satisfacción en español (solo para gastos)
+  String? get satisfactionName {
+    switch (satisfactionLevel) {
+      case 'low':
+        return 'Baja';
+      case 'medium':
+        return 'Media';
+      case 'high':
+        return 'Alta';
+      case 'neutral':
+        return 'Neutra';
+      default:
+        return null;
     }
   }
 }

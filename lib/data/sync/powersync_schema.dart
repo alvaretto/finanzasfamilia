@@ -132,6 +132,7 @@ const schema = Schema([
     Column.integer('item_count'),
     Column.text('sync_status'), // pending, synced, error
     Column.integer('sync_sequence'), // Orden global de operaciones
+    Column.text('satisfaction_level'), // low, medium, high, neutral (solo gastos)
     Column.text('created_at'),
     Column.text('updated_at'),
   ]),

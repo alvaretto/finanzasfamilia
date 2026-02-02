@@ -1,7 +1,7 @@
 name: finanzas_familiares
 description: "Finanzas Familiares AS - Modo Personal v5.16 - Sync Sequence (Estilo Linear)"
 publish_to: 'none'
-version: 1.19.0+40
+version: 1.20.0+41
 
 # IMPORTANTE: Versiones FIJAS para prevenir actualizaciones que rompan el proyecto
 # Última actualización: 2026-01-12

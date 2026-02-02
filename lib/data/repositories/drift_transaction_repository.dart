@@ -42,6 +42,7 @@ class DriftTransactionRepository implements TransactionRepository {
           fromAccountId: Value(transaction.fromAccountId),
           toAccountId: Value(transaction.toAccountId),
           transactionDate: transaction.transactionDate,
+          satisfactionLevel: Value(transaction.satisfactionLevel),
           createdAt: Value(transaction.createdAt),
           updatedAt: Value(transaction.updatedAt),
         ));
@@ -77,6 +78,7 @@ class DriftTransactionRepository implements TransactionRepository {
       transactionDate: entry.transactionDate,
       createdAt: entry.createdAt ?? DateTime.now(),
       updatedAt: entry.updatedAt ?? DateTime.now(),
+      satisfactionLevel: entry.satisfactionLevel,
     );
   }
 }

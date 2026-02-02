@@ -37,12 +37,15 @@ class AccountingService {
   ///
   /// Throws [InsufficientFundsException] si la cuenta de activo líquido
   /// no tiene saldo suficiente.
+  ///
+  /// [satisfactionLevel] es opcional y puede ser: 'low', 'medium', 'high', 'neutral'
   Future<TransactionData> recordExpense({
     required String categoryId,
     required String paymentAccountId,
     required double amount,
     required String description,
     required DateTime date,
+    String? satisfactionLevel,
   }) async {
     _validateAmount(amount);
     await _validateAccountExists(paymentAccountId);
@@ -62,6 +65,7 @@ class AccountingService {
         fromAccountId: paymentAccountId,
         date: date,
         now: now,
+        satisfactionLevel: satisfactionLevel,
       );
       await transactionRepository.insertTransaction(transaction);
 
@@ -402,6 +406,7 @@ class AccountingService {
     String? toAccountId,
     required DateTime date,
     required DateTime now,
+    String? satisfactionLevel,
   }) {
     return TransactionData(
       id: id,
@@ -414,6 +419,7 @@ class AccountingService {
       transactionDate: date,
       createdAt: now,
       updatedAt: now,
+      satisfactionLevel: satisfactionLevel,
     );
   }
 

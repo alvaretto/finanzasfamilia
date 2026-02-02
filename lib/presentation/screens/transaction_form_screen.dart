@@ -25,6 +25,9 @@ final selectedFromAccountIdProvider = StateProvider<String?>((ref) => null);
 /// Provider para la cuenta destino seleccionada (transferencias)
 final selectedToAccountIdProvider = StateProvider<String?>((ref) => null);
 
+/// Provider para el nivel de satisfacción del gasto (solo expenses)
+final selectedSatisfactionProvider = StateProvider<String?>((ref) => null);
+
 /// Provider para obtener cuentas activas para el formulario de transacciones
 /// Usa el DAO para obtener cuentas ordenadas por nombre
 final transactionFormAccountsProvider =
@@ -100,6 +103,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       ref.read(selectedCategoryIdProvider.notifier).state = tx.categoryId;
       ref.read(selectedFromAccountIdProvider.notifier).state = tx.fromAccountId;
       ref.read(selectedToAccountIdProvider.notifier).state = tx.toAccountId;
+      ref.read(selectedSatisfactionProvider.notifier).state =
+          tx.satisfactionLevel;
     });
   }
 
@@ -154,6 +159,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
             // Campo de descripción
             _buildDescriptionField(),
+
+            // Selector de satisfacción (solo para gastos)
+            if (transactionType == 'expense') ...[
+              const SizedBox(height: 16),
+              _buildSatisfactionSelector(),
+            ],
             const SizedBox(height: 32),
 
             // Botón guardar
@@ -474,6 +485,56 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     );
   }
 
+  Widget _buildSatisfactionSelector() {
+    final satisfaction = ref.watch(selectedSatisfactionProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Satisfacción con la compra (opcional)',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 8),
+        SegmentedButton<String?>(
+          segments: const [
+            ButtonSegment(
+              value: 'low',
+              label: Text('Baja'),
+              icon: Icon(Icons.sentiment_very_dissatisfied),
+            ),
+            ButtonSegment(
+              value: 'medium',
+              label: Text('Media'),
+              icon: Icon(Icons.sentiment_neutral),
+            ),
+            ButtonSegment(
+              value: 'high',
+              label: Text('Alta'),
+              icon: Icon(Icons.sentiment_very_satisfied),
+            ),
+            ButtonSegment(
+              value: 'neutral',
+              label: Text('N/A'),
+              icon: Icon(Icons.remove_circle_outline),
+            ),
+          ],
+          selected: satisfaction != null ? {satisfaction} : {},
+          emptySelectionAllowed: true,
+          onSelectionChanged: (selected) {
+            ref.read(selectedSatisfactionProvider.notifier).state =
+                selected.isEmpty ? null : selected.first;
+          },
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _saveTransaction() async {
     if (!_formKey.currentState!.validate()) return;
     if (_isSaving) return;
@@ -485,6 +546,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     final categoryId = ref.read(selectedCategoryIdProvider);
     final fromAccountId = ref.read(selectedFromAccountIdProvider);
     final toAccountId = ref.read(selectedToAccountIdProvider);
+    final satisfactionLevel = ref.read(selectedSatisfactionProvider);
 
     // Validaciones adicionales para transferencias
     if (transactionType == 'transfer') {
@@ -547,6 +609,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               amount: amount,
               description: description.isEmpty ? 'Gasto' : description,
               date: selectedDate,
+              satisfactionLevel: satisfactionLevel,
             );
             break;
 

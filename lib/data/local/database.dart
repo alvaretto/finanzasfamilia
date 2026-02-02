@@ -63,7 +63,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 13; // v13: Agregar sync_sequence para orden global (estilo Linear)
+  int get schemaVersion => 14; // v14: Agregar satisfaction_level a transactions
 
   @override
   MigrationStrategy get migration {
@@ -172,6 +172,11 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(transactionAttachments, transactionAttachments.syncSequence);
           await m.addColumn(families, families.syncSequence);
           await m.addColumn(familyMembers, familyMembers.syncSequence);
+        }
+        // Migración de v13 a v14: Agregar satisfaction_level a transactions
+        // Campo opcional para registrar satisfacción del gasto (solo type='expense')
+        if (from < 14) {
+          await m.addColumn(transactions, transactions.satisfactionLevel);
         }
       },
       beforeOpen: (details) async {

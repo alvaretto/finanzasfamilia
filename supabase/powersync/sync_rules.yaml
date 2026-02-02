@@ -155,6 +155,7 @@ bucket_definitions:
           item_count,
           sync_status,
           sync_sequence,
+          satisfaction_level,
           created_at,
           updated_at
         FROM transactions
